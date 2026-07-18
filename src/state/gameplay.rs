@@ -483,6 +483,7 @@ impl GameplayState {
             &mut self.persistent.rng,
             &data.treasures,
             &self.persistent.discovered_treasures,
+            self.persistent.prestige_count,
             chance,
         );
         // A complete hoard rolls `AllDiscovered` before touching the RNG, so

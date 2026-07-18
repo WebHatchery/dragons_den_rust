@@ -359,7 +359,7 @@ impl Game {
                     .action_log
                     .push(format!("Salvage run sparked a Hoard Rush! x{mult:.0} gold"));
                 self.notifications.success(format!(
-                    "Hoard complete — the salvage run sparks a Hoard Rush! x{mult:.0} income"
+                    "No treasures within reach — a salvage run sparks a Hoard Rush! x{mult:.0} income"
                 ));
             }
             Err(_) => self

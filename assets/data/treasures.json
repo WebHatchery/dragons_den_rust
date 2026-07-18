@@ -126,5 +126,156 @@
     "drop_weight": 1,
     "description": "The single greatest gem ever unearthed. Kingdoms would burn for it.",
     "effect": { "stat": "hoard_point_gain", "percent": 10 }
+  },
+  {
+    "id": "bent_copper_key",
+    "name": "Bent Copper Key",
+    "rarity": "common",
+    "drop_weight": 52,
+    "description": "It opens nothing anymore, but the kobolds pocket the coppers all the same.",
+    "effect": { "stat": "gold_per_click", "percent": 2 }
+  },
+  {
+    "id": "mossy_skull",
+    "name": "Mossy Skull",
+    "rarity": "common",
+    "drop_weight": 42,
+    "description": "A previous treasure-hunter. A cautionary ornament for the hoard.",
+    "effect": { "stat": "gold_per_second", "percent": 2 }
+  },
+  {
+    "id": "amber_pendant",
+    "name": "Amber Pendant",
+    "rarity": "rare",
+    "drop_weight": 20,
+    "description": "A bead of ancient sap with an insect frozen mid-flight inside.",
+    "effect": { "stat": "gold_per_click", "percent": 4 }
+  },
+  {
+    "id": "ivory_warhorn",
+    "name": "Ivory Warhorn",
+    "rarity": "rare",
+    "drop_weight": 19,
+    "description": "One blast and the whole brood digs twice as hard.",
+    "effect": { "stat": "minion_efficiency", "percent": 4 }
+  },
+  {
+    "id": "frost_opal",
+    "name": "Frost Opal",
+    "rarity": "rare",
+    "drop_weight": 17,
+    "description": "It fogs the air with cold and reveals paths the eye would miss.",
+    "effect": { "stat": "discovery_chance", "percent": 3 }
+  },
+  {
+    "id": "emberglass_vial",
+    "name": "Emberglass Vial",
+    "rarity": "epic",
+    "drop_weight": 6,
+    "description": "Molten light sealed in glass, warm against a mountain of coin.",
+    "effect": { "stat": "gold_per_second", "percent": 12 }
+  },
+  {
+    "id": "runed_gauntlet",
+    "name": "Runed Gauntlet",
+    "rarity": "epic",
+    "drop_weight": 6,
+    "description": "Every strike lands heavier when the old runes catch the firelight.",
+    "effect": { "stat": "gold_per_click", "percent": 8 }
+  },
+  {
+    "id": "phoenix_feather",
+    "name": "Phoenix Feather",
+    "rarity": "epic",
+    "drop_weight": 5,
+    "description": "Still smoldering. It whispers of hoards reborn greater than before.",
+    "effect": { "stat": "hoard_point_gain", "percent": 6 }
+  },
+  {
+    "id": "crown_of_ages",
+    "name": "Crown of Ages",
+    "rarity": "legendary",
+    "drop_weight": 2,
+    "description": "Worn by every dragon-king in turn. The brood labors for its favor.",
+    "effect": { "stat": "minion_efficiency", "percent": 15 }
+  },
+  {
+    "id": "sunfire_scepter",
+    "name": "Sunfire Scepter",
+    "rarity": "legendary",
+    "drop_weight": 2,
+    "description": "A rod of caged daylight; the hoard grows even as it sleeps.",
+    "effect": { "stat": "gold_per_second", "percent": 20 }
+  },
+  {
+    "id": "void_pearl",
+    "name": "Void Pearl",
+    "rarity": "legendary",
+    "drop_weight": 1,
+    "description": "A black sphere that swallows light and gives back only secrets.",
+    "effect": { "stat": "discovery_chance", "percent": 8 }
+  },
+  {
+    "id": "heart_of_the_mountain",
+    "name": "Heart of the Mountain",
+    "rarity": "mythic",
+    "drop_weight": 5,
+    "prestige_required": 1,
+    "description": "The living ember at the world's root. Every coin you own runs hotter.",
+    "effect": { "stat": "all_gold", "percent": 10 }
+  },
+  {
+    "id": "wyrmfire_ruby",
+    "name": "Wyrmfire Ruby",
+    "rarity": "mythic",
+    "drop_weight": 5,
+    "prestige_required": 1,
+    "description": "A gem that burns with a dead dragon's greed, and never cools.",
+    "effect": { "stat": "gold_per_second", "percent": 30 }
+  },
+  {
+    "id": "astral_hoardstone",
+    "name": "Astral Hoardstone",
+    "rarity": "mythic",
+    "drop_weight": 4,
+    "prestige_required": 2,
+    "description": "It remembers every hoard you have ever burned, and pays the memory forward.",
+    "effect": { "stat": "hoard_point_gain", "percent": 15 }
+  },
+  {
+    "id": "titanforged_idol",
+    "name": "Titanforged Idol",
+    "rarity": "mythic",
+    "drop_weight": 4,
+    "prestige_required": 2,
+    "description": "Cast by giants for a god of avarice. The brood works itself to legend before it.",
+    "effect": { "stat": "minion_efficiency", "percent": 25 }
+  },
+  {
+    "id": "crown_of_avarice",
+    "name": "Crown of Avarice",
+    "rarity": "mythic",
+    "drop_weight": 3,
+    "prestige_required": 3,
+    "description": "To wear it is to want everything, forever. Conveniently, everything pays more.",
+    "effect": { "stat": "all_gold", "percent": 20 }
+  },
+  {
+    "id": "eye_of_the_wyrm",
+    "name": "Eye of the Wyrm",
+    "rarity": "mythic",
+    "drop_weight": 3,
+    "prestige_required": 3,
+    "description": "The last sight of the eldest dragon, still hungry, still counting.",
+    "effect": { "stat": "gold_per_click", "percent": 25 }
+  },
+  {
+    "id": "worldforge_core",
+    "name": "Worldforge Core",
+    "rarity": "mythic",
+    "drop_weight": 2,
+    "prestige_required": 4,
+    "description": "The furnace at the center of creation. Gold is merely what it exhales.",
+    "effect": { "stat": "all_gold", "percent": 35 }
   }
 ]

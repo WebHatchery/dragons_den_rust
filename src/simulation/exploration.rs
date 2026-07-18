@@ -1,6 +1,8 @@
 //! Expedition treasure rolls (GDD §5.3): a discovery-chance gate, then a
-//! rarity-weighted pick among *undiscovered* treasures — fixing the
-//! original's flat uniform pick that ignored its own rarity tiers.
+//! rarity-weighted pick among *undiscovered, currently-unlocked* treasures —
+//! fixing the original's flat uniform pick that ignored its own rarity tiers.
+//! Prestige-gated finds (#8) only enter the pool once enough hoards are burned,
+//! giving exploration a long tail that reopens after every prestige.
 
 use crate::data::TreasureDef;
 use macroquad_toolkit::rng::SeededRng;
@@ -18,28 +20,33 @@ pub fn roll_treasure<'a>(
     rng: &mut SeededRng,
     treasures: &'a [TreasureDef],
     discovered: &[String],
+    prestige_count: u32,
     chance: f64,
 ) -> ExploreOutcome<'a> {
-    let undiscovered: Vec<&TreasureDef> = treasures
+    // The pool is treasures that are both unlocked at the current prestige and
+    // not yet in the hoard. An exhausted pool with gated finds still remaining
+    // reports `AllDiscovered` — "nothing within reach right now" — so the button
+    // stays quiet until the next prestige reopens it.
+    let available: Vec<&TreasureDef> = treasures
         .iter()
-        .filter(|def| !discovered.contains(&def.id))
+        .filter(|def| def.prestige_required <= prestige_count && !discovered.contains(&def.id))
         .collect();
-    if undiscovered.is_empty() {
+    if available.is_empty() {
         return ExploreOutcome::AllDiscovered;
     }
     if f64::from(rng.next_f32()) >= chance {
         return ExploreOutcome::NothingFound;
     }
 
-    let total_weight: u32 = undiscovered.iter().map(|def| def.drop_weight).sum();
+    let total_weight: u32 = available.iter().map(|def| def.drop_weight).sum();
     let mut roll = rng.below(total_weight.max(1) as usize) as u32;
-    for def in &undiscovered {
+    for def in &available {
         if roll < def.drop_weight {
             return ExploreOutcome::Found(def);
         }
         roll -= def.drop_weight;
     }
-    ExploreOutcome::Found(undiscovered[undiscovered.len() - 1])
+    ExploreOutcome::Found(available[available.len() - 1])
 }
 
 #[cfg(test)]
@@ -53,7 +60,7 @@ mod tests {
         let mut rng = SeededRng::new(7);
         let discovered = vec!["common_stone".to_owned()];
 
-        match roll_treasure(&mut rng, &data.treasures, &discovered, 1.0) {
+        match roll_treasure(&mut rng, &data.treasures, &discovered, 0, 1.0) {
             ExploreOutcome::Found(def) => assert_ne!(def.id, "common_stone"),
             other => panic!("expected a find, got {:?}", other),
         }
@@ -64,7 +71,7 @@ mod tests {
         let data = GameData::load().unwrap();
         let mut rng = SeededRng::new(7);
         assert_eq!(
-            roll_treasure(&mut rng, &data.treasures, &[], 0.0),
+            roll_treasure(&mut rng, &data.treasures, &[], 0, 0.0),
             ExploreOutcome::NothingFound
         );
     }
@@ -75,8 +82,51 @@ mod tests {
         let mut rng = SeededRng::new(7);
         let discovered: Vec<String> = data.treasures.iter().map(|d| d.id.clone()).collect();
         assert_eq!(
-            roll_treasure(&mut rng, &data.treasures, &discovered, 1.0),
+            roll_treasure(&mut rng, &data.treasures, &discovered, u32::MAX, 1.0),
             ExploreOutcome::AllDiscovered
+        );
+    }
+
+    #[test]
+    fn prestige_gate_locks_treasures_until_enough_prestige() {
+        let data = GameData::load().unwrap();
+        // The lowest positive gate in the catalog, and every ungated treasure.
+        let gate = data
+            .treasures
+            .iter()
+            .map(|t| t.prestige_required)
+            .filter(|&p| p > 0)
+            .min()
+            .expect("catalog should include prestige-gated treasures");
+        let ungated: Vec<String> = data
+            .treasures
+            .iter()
+            .filter(|t| t.prestige_required == 0)
+            .map(|t| t.id.clone())
+            .collect();
+
+        // Below the gate, the reachable pool is exhausted → AllDiscovered.
+        let mut rng = SeededRng::new(1);
+        assert_eq!(
+            roll_treasure(&mut rng, &data.treasures, &ungated, gate - 1, 1.0),
+            ExploreOutcome::AllDiscovered
+        );
+
+        // At the gate, the newly-unlocked tier becomes findable.
+        let mut rng = SeededRng::new(2);
+        let mut found_gated = false;
+        for _ in 0..200 {
+            if let ExploreOutcome::Found(def) =
+                roll_treasure(&mut rng, &data.treasures, &ungated, gate, 1.0)
+            {
+                assert!(def.prestige_required <= gate);
+                found_gated = true;
+                break;
+            }
+        }
+        assert!(
+            found_gated,
+            "a gated treasure should be findable once unlocked"
         );
     }
 
@@ -87,7 +137,9 @@ mod tests {
         let mut common = 0;
         let mut legendary = 0;
         for _ in 0..500 {
-            if let ExploreOutcome::Found(def) = roll_treasure(&mut rng, &data.treasures, &[], 1.0) {
+            if let ExploreOutcome::Found(def) =
+                roll_treasure(&mut rng, &data.treasures, &[], 0, 1.0)
+            {
                 match def.id.as_str() {
                     "common_stone" => common += 1,
                     "golden_goblet" => legendary += 1,

@@ -129,8 +129,8 @@
     "id": "treasure_hoarder",
     "name": "Treasure Hoarder",
     "description": "Discover every type of treasure.",
-    "condition": { "stat": "treasures_discovered", "gte": 16 },
-    "reward": { "hoard_points": 5 }
+    "condition": { "stat": "treasures_discovered", "gte": 34 },
+    "reward": { "hoard_points": 25 }
   },
   {
     "id": "prestige_pro",

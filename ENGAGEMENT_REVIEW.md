@@ -26,8 +26,19 @@ ways to make it entertaining. All numbers are the ones actually shipping in
 > and Explore stays a live, rewarding button for the whole game. The surge is
 > applied in the `GameplayState` income wrappers (not `economy`), keeping the
 > balance sim an honest measure of the core loop. Bottom-bar Expeditions panel
-> shows a live "Hoard Rush x2 · Ns left" readout. Next: **#8** (treasure long
-> tail — rarer, prestige-gated finds), then Tier 3. Rest of Tiers 2–3 open.
+> shows a live "Hoard Rush x2 · Ns left" readout.
+>
+> **Tier 2 #8 (treasure long tail) has landed:** the catalog grew 16 → 34 with
+> a new prestige-gated **Mythic** rarity. `TreasureDef.prestige_required`
+> (`serde(default)` 0) gates the strongest finds; `roll_treasure` filters the
+> pool to unlocked+undiscovered, so exploration reopens after every prestige
+> instead of dead-ending. Mythics span prestige 1–4 (incl. the first
+> `all_gold` treasures: +10/+20/+35%). Treasures tab shows gated cards as
+> "Sealed · Mythic · Reach Prestige N"; "Treasure Hoarder" achievement retuned
+> 16 → 34 (reward 5 → 25 HP) into a real prestige-4 capstone. **Tier 2 is now
+> complete.** Next: **Tier 3 #9** (Golden Hoard active-play burst / Dragon's
+> Frenzy), then #10 (prestige-gated qualitative unlocks) and #11 (soft-caps +
+> wall-breakers).
 
 ---
 
