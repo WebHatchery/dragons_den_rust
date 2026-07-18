@@ -113,7 +113,7 @@ fn draw_minion_card(
 /// The expedition launcher (moved off the Hoard tab so it is always reachable).
 fn draw_expeditions(ctx: &GameplayCtx<'_>, rect: Rect, actions: &mut Vec<UiAction>) {
     let content = ui::panel(rect, "Expeditions");
-    let cost = ctx.data.config.explore_cost;
+    let cost = ctx.state.explore_cost(ctx.data);
     let chance = ctx.state.discovery_chance(ctx.data);
     let discovered = ctx.state.persistent.discovered_treasures.len();
 

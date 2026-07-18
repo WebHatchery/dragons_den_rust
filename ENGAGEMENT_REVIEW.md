@@ -11,7 +11,15 @@ ways to make it entertaining. All numbers are the ones actually shipping in
 > 10,000→150, reward exponent sqrt→0.55, a compounding ×2/level "Dragon's
 > Avarice" all-gold node, a prestige-2-gated Drake minion tier, and a CI
 > regression test asserting cycle 2 ≤ 70% of cycle 1 (currently ~42%).
-> Failures B (exploration dead-end) and the rest of Tiers 2–3 remain open.
+>
+> **Tier 2 #6 (scaling expedition cost) has landed:** `explore_cost` now rises
+> `base × 1.25^discovered` (new `explore_cost_growth` config + `economy::
+> explore_cost`), so the treasure sweep is an escalating investment rather than
+> free button-mashing; a complete set is no longer charged (guaranteed-empty
+> outcome). Failed rolls don't raise the price. Next: **#7** (never let Explore
+> dead-end — gold / Hoard Rush buff / treasure-dust payout on a
+> duplicate/complete roll), then #8 (treasure long tail). Rest of Tiers 2–3
+> open.
 
 ---
 

@@ -368,6 +368,11 @@ impl GameplayState {
         economy::discovery_chance(&data.config, &self.rates(data), &self.percents(data))
     }
 
+    /// Current expedition cost, rising with treasures already discovered (#6).
+    pub fn explore_cost(&self, data: &GameData) -> f64 {
+        economy::explore_cost(&data.config, self.persistent.discovered_treasures.len())
+    }
+
     // --- actions ---------------------------------------------------------
 
     fn earn(&mut self, amount: f64) {
@@ -428,20 +433,28 @@ impl GameplayState {
         Ok((count, cost))
     }
 
-    /// Pays the expedition cost and rolls for treasure (GDD §5.3).
+    /// Pays the expedition cost and rolls for treasure (GDD §5.3). The cost
+    /// scales with treasures already found (#6); a complete set is never
+    /// charged, since its outcome is a guaranteed empty result.
     pub fn try_explore(&mut self, data: &GameData) -> Result<ExploreResult, BuyError> {
-        if self.run.gold < data.config.explore_cost {
+        let cost = self.explore_cost(data);
+        if self.run.gold < cost {
             return Err(BuyError::CannotAfford);
         }
         let chance = self.discovery_chance(data);
-        self.run.gold -= data.config.explore_cost;
-
         let outcome = exploration::roll_treasure(
             &mut self.persistent.rng,
             &data.treasures,
             &self.persistent.discovered_treasures,
             chance,
         );
+        // A complete hoard rolls `AllDiscovered` before touching the RNG, so
+        // don't charge for an expedition that can't find anything.
+        if outcome == ExploreOutcome::AllDiscovered {
+            return Ok(ExploreResult::AllDiscovered);
+        }
+        self.run.gold -= cost;
+
         Ok(match outcome {
             ExploreOutcome::NothingFound => ExploreResult::NothingFound,
             ExploreOutcome::AllDiscovered => ExploreResult::AllDiscovered,
@@ -708,6 +721,37 @@ mod tests {
         state.try_prestige(&data).unwrap();
         // +25% permanent click bonus survives the reset.
         assert!((state.gold_per_click(&data) - data.config.base_click * 1.25).abs() < 1e-9);
+    }
+
+    #[test]
+    fn expedition_cost_scales_and_complete_set_is_free() {
+        let (data, mut state) = setup();
+        // Guaranteed discovery so each successful expedition raises the cost.
+        state.run.gold = 1e12;
+        let first_cost = state.explore_cost(&data);
+        assert!((first_cost - data.config.explore_cost).abs() < 1e-9);
+
+        // Discover one treasure at a 100% find rate; the next cost is higher.
+        let discovered_before = state.persistent.discovered_treasures.len();
+        // Force a certain find by exhausting the roll against a full catalog is
+        // awkward, so drive it directly through the discovery list instead.
+        state
+            .persistent
+            .discovered_treasures
+            .push(data.treasures[0].id.clone());
+        let second_cost = state.explore_cost(&data);
+        assert!(second_cost > first_cost, "cost must rise after a discovery");
+        assert_eq!(
+            state.persistent.discovered_treasures.len(),
+            discovered_before + 1
+        );
+
+        // Complete the set: exploring is refused-free — no gold is spent.
+        state.persistent.discovered_treasures =
+            data.treasures.iter().map(|d| d.id.clone()).collect();
+        let gold_before = state.run.gold;
+        assert_eq!(state.try_explore(&data), Ok(ExploreResult::AllDiscovered));
+        assert!((state.run.gold - gold_before).abs() < 1e-9);
     }
 
     #[test]

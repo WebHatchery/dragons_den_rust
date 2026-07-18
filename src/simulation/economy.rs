@@ -105,6 +105,15 @@ pub fn discovery_chance(config: &GameConfig, rates: &Bonuses, percents: &Bonuses
     chance.clamp(0.0, 0.95)
 }
 
+/// Expedition cost, rising with the number of treasures already discovered so
+/// late finds are a real investment instead of button-mash filler (engagement
+/// review #6): `explore_cost(n) = floor(base * growth^n)`. Only actual
+/// discoveries raise it — an unlucky (empty) expedition never does — so bad
+/// luck is never punished with a higher price.
+pub fn explore_cost(config: &GameConfig, discovered: usize) -> f64 {
+    (config.explore_cost * config.explore_cost_growth.powi(discovered as i32)).floor()
+}
+
 /// `upgrade_cost(l) = floor(base * growth^l)` — kept from the original. Hire
 /// costs share this curve via `config.base_hire_cost` / `hire_cost_growth`.
 pub fn upgrade_cost(base_cost: f64, cost_growth: f64, level: u32) -> f64 {
@@ -312,6 +321,21 @@ mod tests {
         // Discovery stays within its clamp even with everything stacked.
         let chance = discovery_chance(&data.config, &rates, &percents);
         assert!((0.0..=0.95).contains(&chance));
+    }
+
+    #[test]
+    fn explore_cost_rises_with_each_discovery() {
+        let (data, _) = setup();
+        let base = data.config.explore_cost;
+        let growth = data.config.explore_cost_growth;
+        assert!(growth > 1.0, "expedition cost must actually scale");
+
+        // The first expedition (nothing discovered yet) is exactly the base.
+        assert!((explore_cost(&data.config, 0) - base).abs() < 1e-9);
+        // Each discovery multiplies the base by the floored geometric curve.
+        assert!((explore_cost(&data.config, 3) - (base * growth.powi(3)).floor()).abs() < 1e-9);
+        // Strictly increasing, so late treasures cost more than early ones.
+        assert!(explore_cost(&data.config, 5) > explore_cost(&data.config, 4));
     }
 
     #[test]

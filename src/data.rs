@@ -43,6 +43,11 @@ pub struct GameConfig {
     pub base_hire_cost: f64,
     pub hire_cost_growth: f64,
     pub explore_cost: f64,
+    /// Multiplier applied to the expedition cost per treasure already discovered
+    /// (engagement review #6): `explore_cost_n = explore_cost * growth^n`. Turns
+    /// the mid-game treasure sweep from free button-mashing into an escalating
+    /// investment. Only actual discoveries raise it — failed rolls do not.
+    pub explore_cost_growth: f64,
     pub base_discovery_chance: f64,
     pub prestige_threshold: f64,
     /// Multiplier applied to the prestige threshold per prestige already done
