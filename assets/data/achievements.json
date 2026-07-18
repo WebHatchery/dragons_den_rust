@@ -152,5 +152,103 @@
     "description": "Unlock 15 other achievements.",
     "condition": { "stat": "achievements_unlocked", "gte": 15 },
     "reward": { "gold": 5000 }
+  },
+  {
+    "id": "completionist",
+    "name": "Completionist",
+    "description": "Unlock 30 other achievements.",
+    "condition": { "stat": "achievements_unlocked", "gte": 30 },
+    "reward": { "hoard_points": 10 }
+  },
+  {
+    "id": "antiquarian",
+    "name": "Antiquarian",
+    "description": "Discover 20 different treasures.",
+    "condition": { "stat": "treasures_discovered", "gte": 20 },
+    "reward": { "gold": 8000 }
+  },
+  {
+    "id": "glint_catcher",
+    "name": "Glint Catcher",
+    "description": "Snatch your first Golden Hoard before it fades.",
+    "condition": { "stat": "golden_hoards_collected", "gte": 1 },
+    "reward": { "gold": 1000 }
+  },
+  {
+    "id": "frenzy_addict",
+    "name": "Frenzy Addict",
+    "description": "Collect 25 Golden Hoards and ride the frenzy.",
+    "condition": { "stat": "golden_hoards_collected", "gte": 25 },
+    "reward": { "hoard_points": 6 }
+  },
+  {
+    "id": "ruin_delver",
+    "name": "Ruin Delver",
+    "description": "Launch 10 expeditions into the ruins.",
+    "condition": { "stat": "expeditions_launched", "gte": 10 },
+    "reward": { "gold": 1500 }
+  },
+  {
+    "id": "tomb_raider",
+    "name": "Tomb Raider",
+    "description": "Launch 100 expeditions into the ruins.",
+    "condition": { "stat": "expeditions_launched", "gte": 100 },
+    "reward": { "hoard_points": 5 }
+  },
+  {
+    "id": "blistering_claws",
+    "name": "Blistering Claws",
+    "description": "Click the hoard 50,000 times.",
+    "condition": { "stat": "clicks_total", "gte": 50000 },
+    "reward": { "hoard_points": 4 }
+  },
+  {
+    "id": "trillionaire_wyrm",
+    "name": "Trillionaire Wyrm",
+    "description": "Earn a total of 1,000,000,000,000 gold.",
+    "condition": { "stat": "gold_total_earned", "gte": 1000000000000 },
+    "reward": { "hoard_points": 15 }
+  },
+  {
+    "id": "kobold_horde",
+    "name": "Kobold Horde",
+    "description": "Command 100 kobolds at once.",
+    "condition": { "stat": "goblins", "gte": 100 },
+    "reward": { "hoard_points": 5 }
+  },
+  {
+    "id": "endless_warren",
+    "name": "Endless Warren",
+    "description": "Command 200 kobolds at once — break the warren's walls.",
+    "condition": { "stat": "goblins", "gte": 200 },
+    "reward": { "hoard_points": 10 }
+  },
+  {
+    "id": "grand_artificer",
+    "name": "Grand Artificer",
+    "description": "Purchase 150 upgrades.",
+    "condition": { "stat": "upgrades_purchased", "gte": 150 },
+    "reward": { "hoard_points": 6 }
+  },
+  {
+    "id": "reborn_in_fire",
+    "name": "Reborn in Fire",
+    "description": "Prestige 3 times.",
+    "condition": { "stat": "prestige_count", "gte": 3 },
+    "reward": { "hoard_points": 2 }
+  },
+  {
+    "id": "ancient_one",
+    "name": "Ancient One",
+    "description": "Prestige 25 times.",
+    "condition": { "stat": "prestige_count", "gte": 25 },
+    "reward": { "hoard_points": 20 }
+  },
+  {
+    "id": "elder_wyrm",
+    "name": "Elder Wyrm",
+    "description": "Prestige 50 times.",
+    "condition": { "stat": "prestige_count", "gte": 50 },
+    "reward": { "hoard_points": 40 }
   }
 ]

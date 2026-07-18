@@ -504,6 +504,8 @@ pub(crate) fn condition_text(condition: &StatCondition, data: &GameData) -> Stri
         StatKey::UpgradesPurchased => "upgrades purchased",
         StatKey::PrestigeCount => "prestiges",
         StatKey::AchievementsUnlocked => "achievements unlocked",
+        StatKey::ExpeditionsLaunched => "expeditions launched",
+        StatKey::GoldenHoardsCollected => "Golden Hoards collected",
     };
     format!("Reach {} {}", format_amount(condition.gte), noun)
 }

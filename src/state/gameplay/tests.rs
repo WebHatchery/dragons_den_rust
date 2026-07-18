@@ -3,6 +3,7 @@
 //! `gameplay.rs` under the file-size limit as the state surface grows.
 
 use super::*;
+use crate::data::StatKey;
 use crate::save;
 
 fn setup() -> (GameData, GameplayState) {
@@ -226,6 +227,23 @@ fn golden_hoard_click_grants_dragons_frenzy() {
     state.advance_events(&data, data.config.dragon_frenzy_seconds as f32 + 0.1);
     assert!(!state.frenzy_active());
     assert!((state.gold_per_click(&data) - base_click).abs() < 1e-6);
+}
+
+#[test]
+fn lifetime_counters_track_new_mechanics() {
+    let (data, mut state) = setup();
+    assert_eq!(state.stat_value(StatKey::ExpeditionsLaunched), 0.0);
+    assert_eq!(state.stat_value(StatKey::GoldenHoardsCollected), 0.0);
+
+    // Launching an expedition bumps its lifetime counter.
+    state.run.gold = 1e6;
+    state.try_explore(&data).unwrap();
+    assert_eq!(state.stat_value(StatKey::ExpeditionsLaunched), 1.0);
+
+    // Collecting a Golden Hoard bumps its counter.
+    state.advance_events(&data, data.config.golden_hoard_min_interval as f32 + 0.1);
+    assert!(state.collect_golden_hoard(&data));
+    assert_eq!(state.stat_value(StatKey::GoldenHoardsCollected), 1.0);
 }
 
 #[test]

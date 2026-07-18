@@ -100,6 +100,8 @@ pub enum StatKey {
     UpgradesPurchased,
     PrestigeCount,
     AchievementsUnlocked,
+    ExpeditionsLaunched,
+    GoldenHoardsCollected,
 }
 
 /// Threshold condition shared by achievements and dragon-codex unlocks.

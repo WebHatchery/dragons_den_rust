@@ -141,6 +141,13 @@ pub struct LifetimeStats {
     pub clicks_total: f64,
     pub gold_total_earned: f64,
     pub upgrades_purchased: f64,
+    /// Expeditions launched (#8 mechanic) — every paid or salvage dig. New
+    /// counter, so `serde(default)` keeps old saves loadable.
+    #[serde(default)]
+    pub expeditions_launched: f64,
+    /// Golden Hoard glints collected (#9 mechanic).
+    #[serde(default)]
+    pub golden_hoards_collected: f64,
 }
 
 /// Everything preserved across prestige resets (GDD §5.4).
@@ -433,6 +440,7 @@ impl GameplayState {
     pub fn collect_golden_hoard(&mut self, data: &GameData) -> bool {
         if self.golden_hoard.take().is_some() {
             self.frenzy_secs = data.config.dragon_frenzy_seconds;
+            self.persistent.stats.golden_hoards_collected += 1.0;
             self.schedule_next_glint(data);
             true
         } else {
@@ -589,6 +597,7 @@ impl GameplayState {
         if self.run.gold < cost {
             return Err(BuyError::CannotAfford);
         }
+        self.persistent.stats.expeditions_launched += 1.0;
         let chance = self.discovery_chance(data);
         let outcome = exploration::roll_treasure(
             &mut self.persistent.rng,
@@ -729,6 +738,8 @@ impl GameplayState {
             StatKey::UpgradesPurchased => self.persistent.stats.upgrades_purchased,
             StatKey::PrestigeCount => f64::from(self.persistent.prestige_count),
             StatKey::AchievementsUnlocked => self.persistent.achievements.progress().0 as f64,
+            StatKey::ExpeditionsLaunched => self.persistent.stats.expeditions_launched,
+            StatKey::GoldenHoardsCollected => self.persistent.stats.golden_hoards_collected,
         }
     }
 

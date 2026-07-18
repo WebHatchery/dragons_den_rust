@@ -69,9 +69,17 @@ ways to make it entertaining. All numbers are the ones actually shipping in
 > agreement. The cap (60) sits above the first-prestige goblin count (~44), so
 > it's a *late-game* wall — guards stay green and unchanged (19.7 min / 30%).
 > Minions tab shows a "Kobold soft cap N/60" readout (typed tiers exempt).
-> **All of Tiers 1–3 are done.** Next: **content depth** — extend ladders
-> (more prestige-tree tiers, minion tiers, achievements) per the review's
-> content-depth bullet.
+> **All of Tiers 1–3 are done.**
+>
+> **Content depth — achievements 22 → 36:** added two new lifetime counters
+> (`expeditions_launched`, `golden_hoards_collected`, both `serde(default)`)
+> that let achievements cover the new mechanics — Glint Catcher / Frenzy Addict
+> (#9), Ruin Delver / Tomb Raider (#8) — plus deeper tiers of every existing
+> ladder (clicks 50k, trillion gold, 100/200 kobolds tying into the #11
+> soft-cap wall, 150 upgrades, prestige 3/25/50, a 30-achievement
+> Completionist). `StatKey` + `condition_text` + `stat_value` extended to
+> match. Next content-depth targets: **codex dragons 8 → 12+**, a 5th/6th
+> minion tier for deep prestige, more prestige-tree tiers per branch.
 
 ---
 
