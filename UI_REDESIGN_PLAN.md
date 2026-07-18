@@ -177,9 +177,11 @@ files. Whole UI now reads gold-on-brown (verified hoard/prestige captures).
   upgrades) → `theme::PANEL` + `theme::BORDER_DIM`.
 - *Verify: capture hoard/prestige/upgrades — the whole UI reads gold-on-brown.*
 
-**PT-b — ornate depth (after PT-a):** double/insét gold borders, a faint panel gradient or vignette, the
-"DRAGON'S DEN" title in a heavier gold treatment, active-tab gold underline + brighter fill, subtle warm hover
-glows. Corner filigree beyond simple brackets can graduate into a toolkit `FramedPanel` upgrade.
+**PT-b — ornate depth: ✅ DONE.** `ui::panel` gained an inset bronze line under the gold border (etched double-frame
+read); the active tab now renders as a lit gold-topped panel with a bright label + gold underline (was falling
+through the disabled path and rendering dark); the "Dragon's Den" wordmark is now a gold treatment with a soft drop
+shadow. Verified via prestige/upgrades captures. Remaining ornate ideas (panel gradient/vignette, corner filigree as
+a toolkit `FramedPanel`) deferred to P7/toolkit work.
 
 Each phase: `cargo fmt` + `cargo clippy -D warnings` + `cargo test`, then `scripts/capture_ui.ps1` for the touched
 scenes.

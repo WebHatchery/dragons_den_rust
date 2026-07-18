@@ -61,12 +61,17 @@ pub fn draw_header(ctx: &GameplayCtx<'_>, rect: Rect, actions: &mut Vec<UiAction
             .with_top_highlight(2.0, Color::new(0.95, 0.72, 0.35, 0.75)),
     );
 
+    // Title with a soft drop shadow and gold fill (the mockup's gold wordmark).
+    let title = &ctx.data.config.display_name;
+    let tx = rect.x + 22.0;
+    let ty = rect.y + rect.h / 2.0 + 11.0;
     draw_ui_text_ex(
-        &ctx.data.config.display_name,
-        rect.x + 20.0,
-        rect.y + rect.h / 2.0 + 10.0,
-        TextStyle::new(30.0, theme::TEXT_BRIGHT).params(),
+        title,
+        tx + 2.0,
+        ty + 2.0,
+        TextStyle::new(33.0, Color::new(0.0, 0.0, 0.0, 0.55)).params(),
     );
+    draw_ui_text_ex(title, tx, ty, TextStyle::new(33.0, theme::ACCENT).params());
 
     // Right-aligned controls: gear, then Menu, then Save.
     let btn_y = rect.y + (rect.h - 40.0) / 2.0;

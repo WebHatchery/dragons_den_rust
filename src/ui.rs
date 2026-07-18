@@ -133,16 +133,25 @@ fn draw_tab_bar(ctx: &GameplayCtx<'_>, bar: Rect, actions: &mut Vec<UiAction>) {
     for (index, screen) in Screen::ALL.iter().enumerate() {
         let rect = Rect::new(bar.x + index as f32 * (tab_w + 8.0), bar.y, tab_w, bar.h);
         let active = *screen == ctx.state.screen;
-        let tone = if active {
-            ButtonTone::Primary
-        } else {
-            ButtonTone::Secondary
-        };
-        if button(rect, screen.label(), !active, tone, ctx.mouse) {
-            actions.push(UiAction::SwitchScreen(*screen));
-        }
         if active {
+            // The active tab reads as a lit, gold-topped panel with an underline.
+            draw_surface(
+                rect,
+                &SurfaceStyle::new(shade(theme::PANEL_HEADER, 1.5))
+                    .with_border(1.0, theme::BORDER)
+                    .with_top_highlight(2.0, theme::ACCENT),
+            );
+            draw_text_centered_in_box_ex(
+                screen.label(),
+                rect.x,
+                rect.y,
+                rect.w,
+                rect.h,
+                TextStyle::new(17.0, theme::TEXT_BRIGHT),
+            );
             draw_rectangle(rect.x, rect.bottom() - 3.0, rect.w, 3.0, theme::ACCENT);
+        } else if button(rect, screen.label(), true, ButtonTone::Secondary, ctx.mouse) {
+            actions.push(UiAction::SwitchScreen(*screen));
         }
     }
 }
@@ -160,6 +169,20 @@ pub(crate) fn panel(rect: Rect, title: &str) -> Rect {
         Some(title),
         &style,
         TextStyle::new(18.0, theme::TEXT_BRIGHT),
+    );
+    // Etched depth: a thin inset bronze line plus gold corner brackets.
+    draw_rectangle_lines(
+        rect.x + 3.0,
+        rect.y + 3.0,
+        rect.w - 6.0,
+        rect.h - 6.0,
+        1.0,
+        Color::new(
+            theme::BORDER_DIM.r,
+            theme::BORDER_DIM.g,
+            theme::BORDER_DIM.b,
+            0.6,
+        ),
     );
     theme::draw_corner_marks(rect, theme::BORDER);
     Rect::new(rect.x + 18.0, rect.y + 56.0, rect.w - 36.0, rect.h - 74.0)
