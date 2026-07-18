@@ -5,6 +5,7 @@
 
 pub mod achievements;
 pub mod dragons;
+pub mod minions;
 pub mod treasures;
 pub mod upgrades;
 
@@ -13,6 +14,7 @@ use serde::{Deserialize, Serialize};
 
 pub use achievements::AchievementDef;
 pub use dragons::DragonDef;
+pub use minions::MinionDef;
 pub use treasures::TreasureDef;
 pub use upgrades::{PrestigeUpgradeDef, UpgradeDef};
 
@@ -22,6 +24,7 @@ const PRESTIGE_UPGRADES_JSON: &str = include_str!("../assets/data/prestige_upgra
 const TREASURES_JSON: &str = include_str!("../assets/data/treasures.json");
 const ACHIEVEMENTS_JSON: &str = include_str!("../assets/data/achievements.json");
 const DRAGONS_JSON: &str = include_str!("../assets/data/dragons.json");
+const MINIONS_JSON: &str = include_str!("../assets/data/minions.json");
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct GameConfig {
@@ -100,6 +103,7 @@ pub struct GameData {
     pub treasures: Vec<TreasureDef>,
     pub achievements: Vec<AchievementDef>,
     pub dragons: Vec<DragonDef>,
+    pub minions: Vec<MinionDef>,
 }
 
 impl GameData {
@@ -114,6 +118,7 @@ impl GameData {
             treasures: load_embedded_json_labeled("treasures", TREASURES_JSON)?,
             achievements: load_embedded_json_labeled("achievements", ACHIEVEMENTS_JSON)?,
             dragons: load_embedded_json_labeled("dragons", DRAGONS_JSON)?,
+            minions: load_embedded_json_labeled("minions", MINIONS_JSON)?,
         })
     }
 

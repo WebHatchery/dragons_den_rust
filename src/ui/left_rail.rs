@@ -106,7 +106,7 @@ fn draw_footer(ctx: &GameplayCtx<'_>, content: Rect) {
         TextStyle::new(20.0, theme::POSITIVE).params(),
     );
     draw_ui_text_ex(
-        &format!("({} {minions})", ctx.state.run.goblins),
+        &format!("({} {minions})", ctx.state.total_minions()),
         content.x,
         base + 46.0,
         TextStyle::new(14.0, theme::TEXT_DIM).params(),

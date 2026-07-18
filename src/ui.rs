@@ -40,6 +40,8 @@ pub enum UiAction {
     SwitchScreen(Screen),
     ClickHoard,
     HireGoblin,
+    /// Hire an extra minion tier by `MinionDef::id` (P4).
+    HireMinion(String),
     Explore,
     BuyUpgrade(String),
     BuyPrestigeUpgrade(String),

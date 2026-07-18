@@ -111,7 +111,7 @@ pub fn draw_header(ctx: &GameplayCtx<'_>, rect: Rect, actions: &mut Vec<UiAction
         Color::new(0.36, 0.60, 0.30, 1.0),
         "M",
         &ctx.data.config.minion_name_plural,
-        &ctx.state.run.goblins.to_string(),
+        &ctx.state.total_minions().to_string(),
         Some(&rate),
     );
     x += card_w + GAP;

@@ -113,6 +113,10 @@ pub struct RunState {
     pub gold: f64,
     pub goblins: u32,
     pub upgrade_levels: HashMap<String, u32>,
+    /// Counts of the extra minion tiers (P4), keyed by `MinionDef::id`. The base
+    /// Kobold tier stays in `goblins`. `serde(default)` keeps old saves loadable.
+    #[serde(default)]
+    pub minion_counts: HashMap<String, u32>,
     /// Active-play seconds since this run began (reset on prestige). Drives the
     /// left rail's "run time" readout. `serde(default)` keeps old saves loadable.
     #[serde(default)]
@@ -125,6 +129,7 @@ impl RunState {
             gold: 0.0,
             goblins: 0,
             upgrade_levels: HashMap::new(),
+            minion_counts: HashMap::new(),
             run_seconds: 0.0,
         }
     }
@@ -283,12 +288,61 @@ impl GameplayState {
     }
 
     pub fn gold_per_second(&self, data: &GameData) -> f64 {
-        economy::gold_per_second(
-            &data.config,
-            self.run.goblins,
-            &self.rates(data),
-            &self.percents(data),
-        )
+        let rates = self.rates(data);
+        let percents = self.percents(data);
+        economy::gold_per_second(&data.config, self.run.goblins, &rates, &percents)
+            + economy::extra_minion_income(
+                &data.minions,
+                &self.run.minion_counts,
+                &rates,
+                &percents,
+            )
+    }
+
+    /// Total minions across every tier (base Kobolds + extra tiers).
+    pub fn total_minions(&self) -> u32 {
+        self.run.goblins + self.run.minion_counts.values().sum::<u32>()
+    }
+
+    /// Current count of an extra minion tier.
+    pub fn minion_count(&self, id: &str) -> u32 {
+        self.run.minion_counts.get(id).copied().unwrap_or(0)
+    }
+
+    /// An extra tier is available once total minions reach its `unlock_at`.
+    pub fn minion_unlocked(&self, def: &crate::data::MinionDef) -> bool {
+        self.total_minions() >= def.unlock_at
+    }
+
+    /// Hires up to `requested` of an extra minion tier, buying as many as gold
+    /// allows. Returns `(hired, total_cost)`.
+    pub fn try_hire_minion(
+        &mut self,
+        data: &GameData,
+        id: &str,
+        requested: u32,
+    ) -> Result<(u32, f64), BuyError> {
+        let def = data
+            .minions
+            .iter()
+            .find(|d| d.id == id)
+            .ok_or(BuyError::UnknownId)?;
+        if !self.minion_unlocked(def) {
+            return Err(BuyError::CannotAfford);
+        }
+        let (count, cost) = economy::affordable_levels(
+            def.base_cost,
+            def.cost_growth,
+            self.minion_count(id),
+            self.run.gold,
+            requested,
+        );
+        if count == 0 {
+            return Err(BuyError::CannotAfford);
+        }
+        self.run.gold -= cost;
+        *self.run.minion_counts.entry(id.to_owned()).or_insert(0) += count;
+        Ok((count, cost))
     }
 
     pub fn discovery_chance(&self, data: &GameData) -> f64 {
@@ -470,12 +524,12 @@ impl GameplayState {
     // --- unlock conditions ----------------------------------------------
 
     /// Current value for a condition stat (GDD §5.6). Lifetime stats survive
-    /// prestige; `Goblins` is deliberately the current-run count.
+    /// prestige; `Goblins` is deliberately the current-run count (all tiers).
     pub fn stat_value(&self, key: StatKey) -> f64 {
         match key {
             StatKey::ClicksTotal => self.persistent.stats.clicks_total,
             StatKey::GoldTotalEarned => self.persistent.stats.gold_total_earned,
-            StatKey::Goblins => f64::from(self.run.goblins),
+            StatKey::Goblins => f64::from(self.total_minions()),
             StatKey::TreasuresDiscovered => self.persistent.discovered_treasures.len() as f64,
             StatKey::UpgradesPurchased => self.persistent.stats.upgrades_purchased,
             StatKey::PrestigeCount => f64::from(self.persistent.prestige_count),

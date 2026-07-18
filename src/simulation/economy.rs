@@ -1,7 +1,7 @@
 //! Core economy formulas (GDD §5.1). One source of truth: both the live tick
 //! and offline progress read these same functions.
 
-use crate::data::{EffectStat, GameConfig, PrestigeUpgradeDef, UpgradeDef};
+use crate::data::{EffectStat, GameConfig, MinionDef, PrestigeUpgradeDef, UpgradeDef};
 use crate::simulation::Bonuses;
 use std::collections::HashMap;
 
@@ -48,6 +48,24 @@ pub fn gold_per_second(
 ) -> f64 {
     let per_goblin = config.gold_per_goblin * rates.factor(EffectStat::MinionEfficiency);
     (config.base_passive + f64::from(goblins) * per_goblin)
+        * rates.factor(EffectStat::GoldPerSecond)
+        * percents.percent_multiplier(EffectStat::GoldPerSecond)
+}
+
+/// Passive income from the extra minion tiers (P4), sharing the same efficiency
+/// and gold/second modifiers as the base tier. Zero until such minions are hired,
+/// so the base economy and balance sim are unaffected.
+pub fn extra_minion_income(
+    minions: &[MinionDef],
+    counts: &HashMap<String, u32>,
+    rates: &Bonuses,
+    percents: &Bonuses,
+) -> f64 {
+    let raw: f64 = minions
+        .iter()
+        .map(|def| f64::from(counts.get(&def.id).copied().unwrap_or(0)) * def.base_rate)
+        .sum();
+    raw * rates.factor(EffectStat::MinionEfficiency)
         * rates.factor(EffectStat::GoldPerSecond)
         * percents.percent_multiplier(EffectStat::GoldPerSecond)
 }

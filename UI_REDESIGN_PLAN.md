@@ -124,8 +124,11 @@ New modules (each < 400 lines):
       placeholder for P4), the Expeditions launcher (moved off the Hoard tab, so it's reachable from any tab), and a
       Recent Treasures list (newest-first, rarity-tagged, reusing `treasures::rarity_color`). Hoard tab side column
       is now just Prestige Progress. Verified via captures.
-- [ ] **P4 — Typed minions.** `minions.json`, state migration (additive, save-safe), economy sum, Minions tab +
-      bottom cards, hire `UiAction` per type. *Verify: hire raises rate; save round-trips.*
+- [x] **P4 — Typed minions.** `minions.json` (Worker/Scavenger/Thief tiers) + `data/minions.rs`; additive,
+      save-safe `RunState::minion_counts` (base Kobold stays `goblins`); `economy::extra_minion_income` folded into
+      `gold_per_second`; `total_minions()` now drives the header/rail count + the `Goblins` stat. Minions tab is a
+      tier grid, bottom strip has compact tier cards, both gated by `unlock_at`; new `HireMinion(id)` action. Balance
+      sim untouched (extra income is 0 until hired) — 36 tests green. Verified via minions/hoard captures.
 - [ ] **P5 — Prestige tree.** Branch schema, `ui/prestige_tree.rs`, connectors + locks, Burn card, **Multipliers**
       summary. *Verify: buy gated by prereq/HP; capture matches mockup.*
 - [ ] **P6 — Icons.** PNG/procedural icon set + manifest; wire into resource cards, minion cards, treasure/branch

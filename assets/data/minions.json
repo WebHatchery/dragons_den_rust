@@ -1,0 +1,26 @@
+[
+  {
+    "id": "worker",
+    "name": "Worker",
+    "base_rate": 30.0,
+    "base_cost": 2500.0,
+    "cost_growth": 1.17,
+    "unlock_at": 10
+  },
+  {
+    "id": "scavenger",
+    "name": "Scavenger",
+    "base_rate": 160.0,
+    "base_cost": 60000.0,
+    "cost_growth": 1.18,
+    "unlock_at": 25
+  },
+  {
+    "id": "thief",
+    "name": "Thief",
+    "base_rate": 950.0,
+    "base_cost": 1500000.0,
+    "cost_growth": 1.2,
+    "unlock_at": 50
+  }
+]

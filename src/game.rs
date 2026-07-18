@@ -181,6 +181,7 @@ impl Game {
                 }
             }
             UiAction::HireGoblin => self.hire_goblin(),
+            UiAction::HireMinion(id) => self.hire_minion(&id),
             UiAction::Explore => self.explore(),
             UiAction::BuyUpgrade(id) => self.buy_upgrade(&id),
             UiAction::BuyPrestigeUpgrade(id) => self.buy_prestige_upgrade(&id),
@@ -305,6 +306,27 @@ impl Game {
                 },
                 format_amount(cost),
                 gameplay.run.goblins
+            )),
+            Err(_) => self.notifications.warning("Not enough gold to hire"),
+        }
+    }
+
+    fn hire_minion(&mut self, id: &str) {
+        let GameState::Gameplay(gameplay) = &mut self.state else {
+            return;
+        };
+        let name = self
+            .data
+            .minions
+            .iter()
+            .find(|d| d.id == id)
+            .map(|d| d.name.clone())
+            .unwrap_or_else(|| id.to_owned());
+        let requested = gameplay.buy_mode.requested();
+        match gameplay.try_hire_minion(&self.data, id, requested) {
+            Ok((hired, cost)) => self.notifications.success(format!(
+                "Hired {hired} {name} for {} gold",
+                format_amount(cost)
             )),
             Err(_) => self.notifications.warning("Not enough gold to hire"),
         }
