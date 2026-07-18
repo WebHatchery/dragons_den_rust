@@ -130,8 +130,12 @@ Capture harness: `DRAGONS_DEN_CAPTURE_SCENE` = `menu` | `hoard` | `settings`
   locks it into a 10–40 min window so future config edits can't silently break
   pacing. Value-dependent unit tests now derive expectations from `config`
   instead of hardcoding the old constants.
-- [ ] Fix or replace `scripts/capture_ui.ps1` wrapper (the shared script errored
-  finding the output; manual env-var capture works — see README).
+- [x] Fixed `scripts/capture_ui.ps1` — the template wrapper hardcoded
+  `-Prefix "GAME_TEMPLATE"`, so it set `GAME_TEMPLATE_CAPTURE_*` env vars the
+  game (which reads `DRAGONS_DEN_*`) ignored; no PNG was written and the shared
+  script reported the missing output. Dropped the override (the shared script
+  derives `DRAGONS_DEN` from the package name) and defaulted `-Scenes` to
+  `menu,hoard,settings`. Verified end-to-end: all three PNGs regenerate.
 
 ### Toward M3 (content-complete, GDD §8 full targets)
 

@@ -29,9 +29,20 @@ cargo clippy --all-targets --all-features -- -D warnings
 
 ## Screenshot capture (headless UI verification)
 
+Preferred — the wrapper builds once and captures every scene, sanity-checking
+each PNG:
+
+```powershell
+.\scripts\capture_ui.ps1                      # menu, hoard, settings
+.\scripts\capture_ui.ps1 -Scenes hoard -SkipBuild
+```
+
+Manual single-scene capture (scenes: `menu`, `hoard`, `settings`; anything else
+boots a fresh gameplay session):
+
 ```powershell
 $env:DRAGONS_DEN_CAPTURE_PATH="docs\verification\ui_menu.png"
-$env:DRAGONS_DEN_CAPTURE_SCENE="menu"        # or "hoard" (gameplay)
+$env:DRAGONS_DEN_CAPTURE_SCENE="menu"
 cargo run
 ```
 
