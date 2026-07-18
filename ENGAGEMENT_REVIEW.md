@@ -86,8 +86,15 @@ ways to make it entertaining. All numbers are the ones actually shipping in
 > `minion_efficiency` dragon), Astral Leviathan (prestige 5) and Worldeater
 > Wyrm (trillion gold) — the last two the first `all_gold` codex bonuses.
 > Dragons unlock via `check_unlocks`, which the balance sim never runs, so
-> guards are untouched. Next content-depth targets: a 5th/6th minion tier for
-> deep prestige, more prestige-tree tiers per branch, more run-upgrade lines.
+> guards are untouched.
+>
+> **Content depth — minion tiers 5 → 6:** added the **Wyvern** tier (base_rate
+> 40k, unlock_at 100, prestige 4) past Drake, a deep-prestige hire target that
+> continues the ~6.7× geometric rate curve. One tier (not two) to keep the
+> 3-col Minions grid at two rows and the compact bottom-bar strip legible —
+> both verified. Extra minion tiers aren't in the balance sim, so guards are
+> untouched. Next content-depth targets: more prestige-tree tiers per branch,
+> more run-upgrade lines, deeper wall cliffs.
 
 ---
 

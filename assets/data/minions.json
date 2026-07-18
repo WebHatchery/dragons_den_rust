@@ -31,5 +31,14 @@
     "cost_growth": 1.22,
     "unlock_at": 75,
     "prestige_required": 2
+  },
+  {
+    "id": "wyvern",
+    "name": "Wyvern",
+    "base_rate": 40000.0,
+    "base_cost": 600000000.0,
+    "cost_growth": 1.23,
+    "unlock_at": 100,
+    "prestige_required": 4
   }
 ]
