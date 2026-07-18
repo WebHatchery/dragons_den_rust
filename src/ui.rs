@@ -12,8 +12,9 @@ pub mod treasures;
 pub mod upgrades;
 
 use crate::data::{EffectStat, GameData, PercentEffect, StatCondition, StatKey};
+use crate::simulation::economy;
 use crate::simulation::idle_number::{format_amount, format_rate};
-use crate::state::gameplay::{GameplayState, Screen};
+use crate::state::gameplay::{BuyMode, GameplayState, Screen};
 use macroquad::prelude::*;
 use macroquad_toolkit::prelude::*;
 use macroquad_toolkit::ui::{draw_ui_text_ex, RectExt, VirtualUi};
@@ -37,6 +38,7 @@ pub enum UiAction {
     BuyUpgrade(String),
     BuyPrestigeUpgrade(String),
     Prestige,
+    SetBuyMode(BuyMode),
 }
 
 /// Read-only view context handed to every gameplay screen.
@@ -208,6 +210,88 @@ pub(crate) fn stat_label(stat: EffectStat) -> &'static str {
 
 pub(crate) fn effect_text(effect: &PercentEffect) -> String {
     format!("+{}% {}", effect.percent, stat_label(effect.stat))
+}
+
+/// What a bulk purchase would cost right now for the current [`BuyMode`],
+/// shared by the hire and upgrade screens so their affordances match.
+pub(crate) struct BulkQuote {
+    /// Levels this purchase would grant (0 when nothing is affordable).
+    pub count: u32,
+    /// Gold required; for an unaffordable `Max` this is the next single level.
+    pub cost: f64,
+    pub affordable: bool,
+}
+
+/// Resolves a bulk quote against the `floor(base * growth^level)` curve.
+/// `remaining` caps how many levels are left (`u32::MAX` for the uncapped
+/// goblin hire). `x1`/`x10` require the full requested amount to be affordable;
+/// `Max` buys as many as gold allows.
+pub(crate) fn bulk_quote(
+    base_cost: f64,
+    cost_growth: f64,
+    level: u32,
+    remaining: u32,
+    gold: f64,
+    mode: BuyMode,
+) -> BulkQuote {
+    let requested = mode.requested().min(remaining);
+    if requested == 0 {
+        return BulkQuote {
+            count: 0,
+            cost: 0.0,
+            affordable: false,
+        };
+    }
+    match mode {
+        BuyMode::Max => {
+            let (count, cost) =
+                economy::affordable_levels(base_cost, cost_growth, level, gold, requested);
+            if count == 0 {
+                BulkQuote {
+                    count: 0,
+                    cost: economy::upgrade_cost(base_cost, cost_growth, level),
+                    affordable: false,
+                }
+            } else {
+                BulkQuote {
+                    count,
+                    cost,
+                    affordable: true,
+                }
+            }
+        }
+        BuyMode::One | BuyMode::Ten => {
+            let cost = economy::bulk_cost(base_cost, cost_growth, level, requested);
+            BulkQuote {
+                count: requested,
+                cost,
+                affordable: gold >= cost,
+            }
+        }
+    }
+}
+
+/// A small `x1 / x10 / Max` segmented selector; pushes `SetBuyMode` on change.
+pub(crate) fn buy_mode_selector(
+    rect: Rect,
+    current: BuyMode,
+    mouse: Vec2,
+    actions: &mut Vec<UiAction>,
+) {
+    let gap = 6.0;
+    let seg_w = (rect.w - gap * (BuyMode::ALL.len() as f32 - 1.0)) / BuyMode::ALL.len() as f32;
+    for (index, mode) in BuyMode::ALL.iter().enumerate() {
+        let seg = Rect::new(rect.x + index as f32 * (seg_w + gap), rect.y, seg_w, rect.h);
+        let active = *mode == current;
+        let tone = if active {
+            ButtonTone::Primary
+        } else {
+            ButtonTone::Secondary
+        };
+        if button(seg, mode.label(), !active, tone, mouse) {
+            actions.push(UiAction::SetBuyMode(*mode));
+        }
+    }
 }
 
 pub(crate) fn condition_text(condition: &StatCondition) -> String {

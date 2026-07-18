@@ -7,7 +7,6 @@ use macroquad_toolkit::prelude::*;
 
 pub fn draw(ctx: &GameplayCtx<'_>, rect: Rect, actions: &mut Vec<UiAction>) {
     let content = ui::panel(rect, "Goblin Minions");
-    let cost = ctx.state.next_hire_cost(ctx.data);
     let gps = ctx.state.gold_per_second(ctx.data);
 
     draw_text_centered_in_box(
@@ -29,16 +28,47 @@ pub fn draw(ctx: &GameplayCtx<'_>, rect: Rect, actions: &mut Vec<UiAction>) {
         dark::TEXT,
     );
 
+    // Buy-quantity selector: goblins are uncapped, so remaining is u32::MAX.
+    let selector_w = 260.0;
+    ui::buy_mode_selector(
+        Rect::new(
+            content.x + (content.w - selector_w) / 2.0,
+            content.y + 108.0,
+            selector_w,
+            34.0,
+        ),
+        ctx.state.buy_mode,
+        ctx.mouse,
+        actions,
+    );
+
+    let quote = ui::bulk_quote(
+        ctx.data.config.base_hire_cost,
+        ctx.data.config.hire_cost_growth,
+        ctx.state.run.goblins,
+        u32::MAX,
+        ctx.state.run.gold,
+        ctx.state.buy_mode,
+    );
+    let label = if quote.count > 1 {
+        format!(
+            "Hire {} Goblins — {} gold",
+            quote.count,
+            format_amount(quote.cost)
+        )
+    } else {
+        format!("Hire Goblin — {} gold", format_amount(quote.cost))
+    };
     let button_w = 340.0;
     if ui::button(
         Rect::new(
             content.x + (content.w - button_w) / 2.0,
-            content.y + 120.0,
+            content.y + 156.0,
             button_w,
             52.0,
         ),
-        &format!("Hire Goblin — {} gold", format_amount(cost)),
-        ctx.state.run.gold >= cost,
+        &label,
+        quote.affordable,
         ButtonTone::Positive,
         ctx.mouse,
     ) {
@@ -48,7 +78,7 @@ pub fn draw(ctx: &GameplayCtx<'_>, rect: Rect, actions: &mut Vec<UiAction>) {
     draw_text_block(
         "Each goblin adds passive income that keeps flowing while you're away.\nHire costs grow with every goblin (50 × 1.2ⁿ). The Minion Efficiency\nupgrade makes every goblin work harder.",
         content.x + (content.w - 560.0) / 2.0,
-        content.y + 200.0,
+        content.y + 240.0,
         560.0,
         90.0,
         16.0,

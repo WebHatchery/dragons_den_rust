@@ -1,6 +1,5 @@
 //! Upgrade shop: the single converged catalog (GDD §0 — one catalog, wired).
 
-use crate::simulation::economy;
 use crate::simulation::idle_number::format_amount;
 use crate::ui::{self, GameplayCtx, UiAction};
 use macroquad::prelude::*;
@@ -9,7 +8,18 @@ use macroquad_toolkit::ui::draw_ui_text_ex;
 
 pub fn draw(ctx: &GameplayCtx<'_>, rect: Rect, actions: &mut Vec<UiAction>) {
     let content = ui::panel(rect, "Upgrade Shop");
-    let layout = GridLayout::new(content.x, content.y, content.w, 12.0, 2, 110.0);
+
+    // Buy-quantity selector spans the top; the card grid starts below it.
+    let selector_w = 260.0;
+    ui::buy_mode_selector(
+        Rect::new(content.right() - selector_w, content.y, selector_w, 34.0),
+        ctx.state.buy_mode,
+        ctx.mouse,
+        actions,
+    );
+
+    let grid_top = content.y + 46.0;
+    let layout = GridLayout::new(content.x, grid_top, content.w, 12.0, 2, 110.0);
 
     for (index, def) in ctx.data.upgrades.iter().enumerate() {
         let (x, y, w, h) = layout.get_item_rect(index, 0.0);
@@ -22,7 +32,15 @@ pub fn draw(ctx: &GameplayCtx<'_>, rect: Rect, actions: &mut Vec<UiAction>) {
             .copied()
             .unwrap_or(0);
         let maxed = level >= def.max_level;
-        let cost = economy::upgrade_cost(def.base_cost, def.cost_growth, level);
+        let remaining = def.max_level.saturating_sub(level);
+        let quote = ui::bulk_quote(
+            def.base_cost,
+            def.cost_growth,
+            level,
+            remaining,
+            ctx.state.run.gold,
+            ctx.state.buy_mode,
+        );
 
         draw_surface(
             card,
@@ -59,13 +77,15 @@ pub fn draw(ctx: &GameplayCtx<'_>, rect: Rect, actions: &mut Vec<UiAction>) {
 
         let label = if maxed {
             "MAX".to_owned()
+        } else if quote.count > 1 {
+            format!("×{}  {} gold", quote.count, format_amount(quote.cost))
         } else {
-            format!("{} gold", format_amount(cost))
+            format!("{} gold", format_amount(quote.cost))
         };
         if ui::button(
-            Rect::new(card.right() - 156.0, card.y + h - 54.0, 140.0, 40.0),
+            Rect::new(card.right() - 176.0, card.y + h - 54.0, 160.0, 40.0),
             &label,
-            !maxed && ctx.state.run.gold >= cost,
+            !maxed && quote.affordable,
             ButtonTone::Positive,
             ctx.mouse,
         ) {

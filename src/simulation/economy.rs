@@ -57,14 +57,43 @@ pub fn discovery_chance(config: &GameConfig, rates: &Bonuses, percents: &Bonuses
     chance.clamp(0.0, 0.95)
 }
 
-/// `hire_cost(n) = base * growth^n` — kept from the original (50 * 1.2^n).
-pub fn hire_cost(config: &GameConfig, goblins_owned: u32) -> f64 {
-    (config.base_hire_cost * config.hire_cost_growth.powi(goblins_owned as i32)).floor()
-}
-
-/// `upgrade_cost(l) = floor(base * growth^l)` — kept from the original.
+/// `upgrade_cost(l) = floor(base * growth^l)` — kept from the original. Hire
+/// costs share this curve via `config.base_hire_cost` / `hire_cost_growth`.
 pub fn upgrade_cost(base_cost: f64, cost_growth: f64, level: u32) -> f64 {
     (base_cost * cost_growth.powi(level as i32)).floor()
+}
+
+/// Total cost to buy `count` successive levels starting from `start_level`,
+/// summing the per-level floored cost so bulk buys match buying one at a time.
+/// Both hire and upgrade share the `floor(base * growth^level)` curve, so this
+/// serves both.
+pub fn bulk_cost(base_cost: f64, cost_growth: f64, start_level: u32, count: u32) -> f64 {
+    (0..count)
+        .map(|i| upgrade_cost(base_cost, cost_growth, start_level + i))
+        .sum()
+}
+
+/// How many successive levels are affordable with `budget`, capped at `max`.
+/// Returns `(count, total_cost)`; costs grow geometrically so the loop
+/// terminates quickly even for a `u32::MAX` cap.
+pub fn affordable_levels(
+    base_cost: f64,
+    cost_growth: f64,
+    start_level: u32,
+    budget: f64,
+    max: u32,
+) -> (u32, f64) {
+    let mut spent = 0.0;
+    let mut count = 0;
+    while count < max {
+        let next = upgrade_cost(base_cost, cost_growth, start_level + count);
+        if spent + next > budget {
+            break;
+        }
+        spent += next;
+        count += 1;
+    }
+    (count, spent)
 }
 
 #[cfg(test)]
@@ -136,10 +165,44 @@ mod tests {
     #[test]
     fn cost_curves_match_original_formulas() {
         let (data, _) = setup();
-        assert!((hire_cost(&data.config, 0) - 50.0).abs() < 1e-9);
-        assert!((hire_cost(&data.config, 2) - 72.0).abs() < 1e-9); // floor(50 * 1.44)
+        let base = data.config.base_hire_cost;
+        let growth = data.config.hire_cost_growth;
+        assert!((upgrade_cost(base, growth, 0) - 50.0).abs() < 1e-9);
+        assert!((upgrade_cost(base, growth, 2) - 72.0).abs() < 1e-9); // floor(50 * 1.44)
         assert!((upgrade_cost(100.0, 1.5, 0) - 100.0).abs() < 1e-9);
         assert!((upgrade_cost(100.0, 1.5, 3) - 337.0).abs() < 1e-9); // floor(337.5)
+    }
+
+    #[test]
+    fn bulk_cost_sums_per_level_floors() {
+        // Three levels from 0 at 100 * 1.5^l: 100 + 150 + 225 = 475.
+        assert!((bulk_cost(100.0, 1.5, 0, 3) - 475.0).abs() < 1e-9);
+        // Buying zero costs nothing.
+        assert!(bulk_cost(100.0, 1.5, 0, 0).abs() < 1e-9);
+        // Starting partway matches the single-level curve.
+        assert!((bulk_cost(100.0, 1.5, 3, 1) - upgrade_cost(100.0, 1.5, 3)).abs() < 1e-9);
+    }
+
+    #[test]
+    fn affordable_levels_stops_at_budget() {
+        // Budget 470 buys 2 levels (100 + 150 = 250, next 225 → 475 > 470).
+        let (count, cost) = affordable_levels(100.0, 1.5, 0, 470.0, 100);
+        assert_eq!(count, 2);
+        assert!((cost - 250.0).abs() < 1e-9);
+
+        // Budget 475 buys exactly 3.
+        let (count, cost) = affordable_levels(100.0, 1.5, 0, 475.0, 100);
+        assert_eq!(count, 3);
+        assert!((cost - 475.0).abs() < 1e-9);
+
+        // The `max` cap wins when budget is ample.
+        let (count, _) = affordable_levels(100.0, 1.5, 0, 1e12, 5);
+        assert_eq!(count, 5);
+
+        // Nothing affordable → zero, no spend.
+        let (count, cost) = affordable_levels(100.0, 1.5, 0, 50.0, 10);
+        assert_eq!(count, 0);
+        assert!(cost.abs() < 1e-9);
     }
 
     #[test]

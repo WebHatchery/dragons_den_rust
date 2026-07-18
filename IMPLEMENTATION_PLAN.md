@@ -98,8 +98,12 @@ boots a fresh gameplay session, seed 42).
   space; click intents anchor to the cursor pos captured each draw.
 - [ ] **Action log** on the Hoard screen (GDD §9) — a small scrolling list of
   recent events (expedition results, unlocks) to complement the toasts.
-- [ ] **Buy-max / buy-10 affordances** on hire and upgrades (quality-of-life
-  standard for the genre).
+- [x] **Buy-max / buy-10 affordances** on hire and upgrades. `BuyMode`
+  (x1/x10/Max) is a transient field on `GameplayState`, toggled via a shared
+  `buy_mode_selector` on both the Minions and Upgrades screens. Economy gained
+  `bulk_cost` + `affordable_levels` (unit-tested); state gained `try_hire_bulk`
+  / `try_buy_upgrade_bulk`. x1/x10 require the full amount affordable; Max buys
+  as much as gold allows. Buttons show the resolved count and total cost.
 - [ ] **Settings screen** (GDD §9): audio toggle, autosave interval — toolkit
   `settings` module. Audio itself (click/purchase/unlock blips) via toolkit
   `audio`.

@@ -141,6 +141,11 @@ impl Game {
             UiAction::BuyUpgrade(id) => self.buy_upgrade(&id),
             UiAction::BuyPrestigeUpgrade(id) => self.buy_prestige_upgrade(&id),
             UiAction::Prestige => self.prestige(),
+            UiAction::SetBuyMode(mode) => {
+                if let GameState::Gameplay(gameplay) = &mut self.state {
+                    gameplay.buy_mode = mode;
+                }
+            }
         }
     }
 
@@ -201,9 +206,12 @@ impl Game {
         let GameState::Gameplay(gameplay) = &mut self.state else {
             return;
         };
-        match gameplay.try_hire(&self.data) {
-            Ok(cost) => self.notifications.success(format!(
-                "Goblin hired for {} gold ({} working)",
+        let requested = gameplay.buy_mode.requested();
+        match gameplay.try_hire_bulk(&self.data, requested) {
+            Ok((hired, cost)) => self.notifications.success(format!(
+                "Hired {} goblin{} for {} gold ({} working)",
+                hired,
+                if hired == 1 { "" } else { "s" },
                 format_amount(cost),
                 gameplay.run.goblins
             )),
@@ -240,10 +248,13 @@ impl Game {
             .upgrade(id)
             .map(|def| def.name.clone())
             .unwrap_or_else(|| id.to_owned());
-        match gameplay.try_buy_upgrade(&self.data, id) {
-            Ok(level) => self
-                .notifications
-                .success(format!("{name} is now level {level}")),
+        let requested = gameplay.buy_mode.requested();
+        match gameplay.try_buy_upgrade_bulk(&self.data, id, requested) {
+            Ok((bought, level)) => self.notifications.success(if bought == 1 {
+                format!("{name} is now level {level}")
+            } else {
+                format!("{name} +{bought} → level {level}")
+            }),
             Err(BuyError::MaxLevel) => self.notifications.info(format!("{name} is already maxed")),
             Err(_) => self.notifications.warning("Not enough gold"),
         }

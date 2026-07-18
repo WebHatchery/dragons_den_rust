@@ -25,6 +25,36 @@ pub enum Screen {
     Dragons,
 }
 
+/// How many levels a hire/upgrade button buys at once (GDD §9 QoL). Transient
+/// UI preference — not part of the save.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum BuyMode {
+    One,
+    Ten,
+    Max,
+}
+
+impl BuyMode {
+    pub const ALL: [BuyMode; 3] = [BuyMode::One, BuyMode::Ten, BuyMode::Max];
+
+    pub fn label(self) -> &'static str {
+        match self {
+            BuyMode::One => "x1",
+            BuyMode::Ten => "x10",
+            BuyMode::Max => "Max",
+        }
+    }
+
+    /// The requested level count; `Max` asks for everything affordable.
+    pub fn requested(self) -> u32 {
+        match self {
+            BuyMode::One => 1,
+            BuyMode::Ten => 10,
+            BuyMode::Max => u32::MAX,
+        }
+    }
+}
+
 impl Screen {
     pub const ALL: [Screen; 7] = [
         Screen::Hoard,
@@ -138,6 +168,7 @@ pub struct GameplayState {
     pub run: RunState,
     pub persistent: PersistentState,
     pub screen: Screen,
+    pub buy_mode: BuyMode,
     autosave_accum: f32,
 }
 
@@ -147,6 +178,7 @@ impl GameplayState {
             run: RunState::new(),
             persistent: PersistentState::new(data, seed),
             screen: Screen::Hoard,
+            buy_mode: BuyMode::One,
             autosave_accum: 0.0,
         }
     }
@@ -158,6 +190,7 @@ impl GameplayState {
             run: save.run,
             persistent: save.persistent,
             screen: Screen::Hoard,
+            buy_mode: BuyMode::One,
             autosave_accum: 0.0,
         };
         state
@@ -213,10 +246,6 @@ impl GameplayState {
         economy::discovery_chance(&data.config, &self.rates(data), &self.percents(data))
     }
 
-    pub fn next_hire_cost(&self, data: &GameData) -> f64 {
-        economy::hire_cost(&data.config, self.run.goblins)
-    }
-
     // --- actions ---------------------------------------------------------
 
     fn earn(&mut self, amount: f64) {
@@ -248,15 +277,26 @@ impl GameplayState {
         gained
     }
 
-    /// Hires one goblin; returns the cost paid.
-    pub fn try_hire(&mut self, data: &GameData) -> Result<f64, BuyError> {
-        let cost = self.next_hire_cost(data);
-        if self.run.gold < cost {
+    /// Hires up to `requested` goblins, buying as many as gold allows.
+    /// Returns `(hired, total_cost)`. `requested == u32::MAX` means "buy max".
+    pub fn try_hire_bulk(
+        &mut self,
+        data: &GameData,
+        requested: u32,
+    ) -> Result<(u32, f64), BuyError> {
+        let (count, cost) = economy::affordable_levels(
+            data.config.base_hire_cost,
+            data.config.hire_cost_growth,
+            self.run.goblins,
+            self.run.gold,
+            requested,
+        );
+        if count == 0 {
             return Err(BuyError::CannotAfford);
         }
         self.run.gold -= cost;
-        self.run.goblins += 1;
-        Ok(cost)
+        self.run.goblins += count;
+        Ok((count, cost))
     }
 
     /// Pays the expedition cost and rolls for treasure (GDD §5.3).
@@ -286,21 +326,34 @@ impl GameplayState {
         })
     }
 
-    /// Buys one level of a run upgrade; returns the new level.
-    pub fn try_buy_upgrade(&mut self, data: &GameData, id: &str) -> Result<u32, BuyError> {
+    /// Buys up to `requested` levels of a run upgrade, capped by its max level
+    /// and by affordable gold. Returns `(bought, new_level)`.
+    pub fn try_buy_upgrade_bulk(
+        &mut self,
+        data: &GameData,
+        id: &str,
+        requested: u32,
+    ) -> Result<(u32, u32), BuyError> {
         let def = data.upgrade(id).ok_or(BuyError::UnknownId)?;
         let level = self.run.upgrade_levels.get(id).copied().unwrap_or(0);
         if level >= def.max_level {
             return Err(BuyError::MaxLevel);
         }
-        let cost = economy::upgrade_cost(def.base_cost, def.cost_growth, level);
-        if self.run.gold < cost {
+        let remaining = def.max_level - level;
+        let (count, cost) = economy::affordable_levels(
+            def.base_cost,
+            def.cost_growth,
+            level,
+            self.run.gold,
+            requested.min(remaining),
+        );
+        if count == 0 {
             return Err(BuyError::CannotAfford);
         }
         self.run.gold -= cost;
-        self.run.upgrade_levels.insert(id.to_owned(), level + 1);
-        self.persistent.stats.upgrades_purchased += 1.0;
-        Ok(level + 1)
+        self.run.upgrade_levels.insert(id.to_owned(), level + count);
+        self.persistent.stats.upgrades_purchased += f64::from(count);
+        Ok((count, level + count))
     }
 
     /// Buys one level of a permanent prestige upgrade with Hoard Points.
@@ -435,13 +488,14 @@ mod tests {
 
         // Hire a goblin, passive income becomes real.
         state.run.gold = 100.0;
-        state.try_hire(&data).unwrap();
+        let (hired, _) = state.try_hire_bulk(&data, 1).unwrap();
+        assert_eq!(hired, 1);
         assert_eq!(state.run.goblins, 1);
         assert!(state.gold_per_second(&data) > 0.0);
 
         // Buy a click upgrade; the formula actually reads it (GDD fix).
         state.run.gold = 1000.0;
-        state.try_buy_upgrade(&data, "click_power").unwrap();
+        state.try_buy_upgrade_bulk(&data, "click_power", 1).unwrap();
         assert!(state.gold_per_click(&data) > 1.0);
 
         // Prestige converts the hoard into Hoard Points and resets the run.
@@ -454,6 +508,36 @@ mod tests {
         assert!((state.run.gold).abs() < 1e-9);
         assert_eq!(state.persistent.prestige_count, 1);
         assert!(state.persistent.hoard_points >= 10.0);
+    }
+
+    #[test]
+    fn bulk_hire_buys_as_many_as_affordable() {
+        let (data, mut state) = setup();
+        // base 50 * 1.2^n: 50 + 60 + 72 = 182 buys 3, 4th (86) needs 268.
+        state.run.gold = 200.0;
+        let (hired, cost) = state.try_hire_bulk(&data, u32::MAX).unwrap();
+        assert_eq!(hired, 3);
+        assert!((cost - 182.0).abs() < 1e-9);
+        assert_eq!(state.run.goblins, 3);
+        assert!((state.run.gold - 18.0).abs() < 1e-9);
+    }
+
+    #[test]
+    fn bulk_upgrade_respects_max_level_and_budget() {
+        let (data, mut state) = setup();
+        state.run.gold = 1e12;
+        // Buying "max" cannot exceed the definition's max_level.
+        let def_max = data.upgrade("click_power").unwrap().max_level;
+        let (bought, new_level) = state
+            .try_buy_upgrade_bulk(&data, "click_power", u32::MAX)
+            .unwrap();
+        assert_eq!(new_level, def_max);
+        assert_eq!(bought, def_max);
+        // Already maxed → MaxLevel error.
+        assert_eq!(
+            state.try_buy_upgrade_bulk(&data, "click_power", 1),
+            Err(BuyError::MaxLevel)
+        );
     }
 
     #[test]
