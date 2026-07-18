@@ -1,0 +1,38 @@
+[
+  {
+    "id": "click_power",
+    "name": "Claw Sharpness",
+    "description": "Sharper claws collect more gold per click.",
+    "base_cost": 100,
+    "cost_growth": 1.5,
+    "max_level": 20,
+    "effect": { "stat": "gold_per_click", "rate": 0.5 }
+  },
+  {
+    "id": "minion_efficiency",
+    "name": "Minion Efficiency",
+    "description": "Your goblins work harder for the hoard.",
+    "base_cost": 250,
+    "cost_growth": 1.5,
+    "max_level": 20,
+    "effect": { "stat": "minion_efficiency", "rate": 0.2 }
+  },
+  {
+    "id": "treasure_luck",
+    "name": "Treasure Hunting",
+    "description": "Expeditions are better at sniffing out rare treasures.",
+    "base_cost": 500,
+    "cost_growth": 1.6,
+    "max_level": 10,
+    "effect": { "stat": "discovery_chance", "rate": 0.05 }
+  },
+  {
+    "id": "hoard_greed",
+    "name": "Hoard Greed",
+    "description": "A greedier dragon earns more Hoard Points when prestiging.",
+    "base_cost": 2000,
+    "cost_growth": 1.8,
+    "max_level": 10,
+    "effect": { "stat": "hoard_point_gain", "rate": 0.1 }
+  }
+]

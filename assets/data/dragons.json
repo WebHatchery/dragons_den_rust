@@ -1,0 +1,74 @@
+[
+  {
+    "id": "ember_wyrm",
+    "name": "Ember Wyrm",
+    "element": "fire",
+    "color": "#FF4500",
+    "flavor": "A master of flame and heat, drawn to hoards that burn brightest.",
+    "unlock": { "stat": "prestige_count", "gte": 1 },
+    "effect": { "stat": "gold_per_second", "percent": 3 }
+  },
+  {
+    "id": "frost_sovereign",
+    "name": "Frost Sovereign",
+    "element": "ice",
+    "color": "#87CEEB",
+    "flavor": "A controller of frost whose patience outlasts glaciers.",
+    "unlock": { "stat": "prestige_count", "gte": 2 },
+    "effect": { "stat": "gold_per_click", "percent": 3 }
+  },
+  {
+    "id": "granite_warden",
+    "name": "Granite Warden",
+    "element": "earth",
+    "color": "#8B4513",
+    "flavor": "A stalwart defender who counts every stone in the pile.",
+    "unlock": { "stat": "goblins", "gte": 25 },
+    "effect": { "stat": "gold_per_second", "percent": 3 }
+  },
+  {
+    "id": "zephyr_drake",
+    "name": "Zephyr Drake",
+    "element": "air",
+    "color": "#E0E0E0",
+    "flavor": "Swift and restless — no claw taps the hoard faster.",
+    "unlock": { "stat": "clicks_total", "gte": 1000 },
+    "effect": { "stat": "gold_per_click", "percent": 3 }
+  },
+  {
+    "id": "umbral_shade",
+    "name": "Umbral Shade",
+    "element": "shadow",
+    "color": "#2F2F2F",
+    "flavor": "Mysterious and cunning, hoarding wealth no one ever sees.",
+    "unlock": { "stat": "gold_total_earned", "gte": 100000000 },
+    "effect": { "stat": "gold_per_second", "percent": 5 }
+  },
+  {
+    "id": "dawn_regent",
+    "name": "Dawn Regent",
+    "element": "light",
+    "color": "#FFD700",
+    "flavor": "A radiant collector — every achievement gleams in its scales.",
+    "unlock": { "stat": "achievements_unlocked", "gte": 10 },
+    "effect": { "stat": "hoard_point_gain", "percent": 5 }
+  },
+  {
+    "id": "venom_coil",
+    "name": "Venom Coil",
+    "element": "poison",
+    "color": "#32CD32",
+    "flavor": "A toxic specialist who never lets a relic slip away.",
+    "unlock": { "stat": "treasures_discovered", "gte": 5 },
+    "effect": { "stat": "discovery_chance", "percent": 5 }
+  },
+  {
+    "id": "storm_tyrant",
+    "name": "Storm Tyrant",
+    "element": "lightning",
+    "color": "#9370DB",
+    "flavor": "An energetic striker whose fortunes arrive in bursts.",
+    "unlock": { "stat": "prestige_count", "gte": 3 },
+    "effect": { "stat": "gold_per_click", "percent": 5 }
+  }
+]

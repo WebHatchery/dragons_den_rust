@@ -1,0 +1,29 @@
+[
+  {
+    "id": "ancient_claws",
+    "name": "Ancient Claws",
+    "description": "Permanently multiplies gold per click.",
+    "base_cost": 5,
+    "cost_growth": 2.0,
+    "max_level": 10,
+    "effect": { "stat": "gold_per_click", "percent": 25 }
+  },
+  {
+    "id": "goblin_dynasty",
+    "name": "Goblin Dynasty",
+    "description": "Permanently multiplies passive income.",
+    "base_cost": 5,
+    "cost_growth": 2.0,
+    "max_level": 10,
+    "effect": { "stat": "gold_per_second", "percent": 25 }
+  },
+  {
+    "id": "dragon_senses",
+    "name": "Dragon Senses",
+    "description": "Permanently improves treasure discovery chance.",
+    "base_cost": 8,
+    "cost_growth": 2.5,
+    "max_level": 5,
+    "effect": { "stat": "discovery_chance", "percent": 10 }
+  }
+]

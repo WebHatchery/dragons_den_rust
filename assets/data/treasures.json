@@ -1,0 +1,42 @@
+[
+  {
+    "id": "common_stone",
+    "name": "Common Stone",
+    "rarity": "common",
+    "drop_weight": 60,
+    "description": "A simple stone. Even a dragon's hoard has filler.",
+    "effect": { "stat": "gold_per_second", "percent": 1 }
+  },
+  {
+    "id": "rare_ruby",
+    "name": "Rare Ruby",
+    "rarity": "rare",
+    "drop_weight": 25,
+    "description": "A ruby that glimmers with a fiery glow.",
+    "effect": { "stat": "discovery_chance", "percent": 2 }
+  },
+  {
+    "id": "mystic_sapphire",
+    "name": "Mystic Sapphire",
+    "rarity": "epic",
+    "drop_weight": 8,
+    "description": "A sapphire that holds the secrets of the universe.",
+    "effect": { "stat": "gold_per_second", "percent": 10 }
+  },
+  {
+    "id": "enchanted_amulet",
+    "name": "Enchanted Amulet",
+    "rarity": "epic",
+    "drop_weight": 6,
+    "description": "An amulet that grants the wearer protection and luck.",
+    "effect": { "stat": "discovery_chance", "percent": 5 }
+  },
+  {
+    "id": "golden_goblet",
+    "name": "Ancient Golden Goblet",
+    "rarity": "legendary",
+    "drop_weight": 1,
+    "description": "A goblet that shines with the light of a thousand suns.",
+    "effect": { "stat": "gold_per_click", "percent": 5 }
+  }
+]

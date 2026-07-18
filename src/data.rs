@@ -1,0 +1,161 @@
+//! Embedded game data: config plus the data-driven catalogs (GDD §6).
+//!
+//! All balance values live in `assets/data/*.json` and are embedded with
+//! `include_str!` so native and WASM builds load identically.
+
+pub mod achievements;
+pub mod dragons;
+pub mod treasures;
+pub mod upgrades;
+
+use macroquad_toolkit::data_loader::load_embedded_json_labeled;
+use serde::{Deserialize, Serialize};
+
+pub use achievements::AchievementDef;
+pub use dragons::DragonDef;
+pub use treasures::TreasureDef;
+pub use upgrades::{PrestigeUpgradeDef, UpgradeDef};
+
+const GAME_CONFIG_JSON: &str = include_str!("../assets/data/game_config.json");
+const UPGRADES_JSON: &str = include_str!("../assets/data/upgrades.json");
+const PRESTIGE_UPGRADES_JSON: &str = include_str!("../assets/data/prestige_upgrades.json");
+const TREASURES_JSON: &str = include_str!("../assets/data/treasures.json");
+const ACHIEVEMENTS_JSON: &str = include_str!("../assets/data/achievements.json");
+const DRAGONS_JSON: &str = include_str!("../assets/data/dragons.json");
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GameConfig {
+    pub game_name: String,
+    pub display_name: String,
+    pub save_slot: String,
+    pub version: String,
+    pub autosave_interval: f32,
+    pub base_click: f64,
+    pub base_passive: f64,
+    pub gold_per_goblin: f64,
+    pub base_hire_cost: f64,
+    pub hire_cost_growth: f64,
+    pub explore_cost: f64,
+    pub base_discovery_chance: f64,
+    pub prestige_threshold: f64,
+    pub prestige_divisor: f64,
+}
+
+/// A lifetime/run statistic that unlock conditions can reference.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum StatKey {
+    ClicksTotal,
+    GoldTotalEarned,
+    Goblins,
+    TreasuresDiscovered,
+    UpgradesPurchased,
+    PrestigeCount,
+    AchievementsUnlocked,
+}
+
+/// Threshold condition shared by achievements and dragon-codex unlocks.
+#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
+pub struct StatCondition {
+    pub stat: StatKey,
+    pub gte: f64,
+}
+
+/// A stat that percent/rate effects can modify (GDD §5.1, §5.3, §5.4).
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum EffectStat {
+    GoldPerClick,
+    GoldPerSecond,
+    MinionEfficiency,
+    DiscoveryChance,
+    HoardPointGain,
+}
+
+/// Additive percent bonus, used by treasures, dragons, and prestige upgrades.
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+pub struct PercentEffect {
+    pub stat: EffectStat,
+    pub percent: f64,
+}
+
+#[derive(Debug, Clone)]
+pub struct GameData {
+    pub config: GameConfig,
+    pub upgrades: Vec<UpgradeDef>,
+    pub prestige_upgrades: Vec<PrestigeUpgradeDef>,
+    pub treasures: Vec<TreasureDef>,
+    pub achievements: Vec<AchievementDef>,
+    pub dragons: Vec<DragonDef>,
+}
+
+impl GameData {
+    pub fn load() -> Result<Self, String> {
+        Ok(Self {
+            config: load_embedded_json_labeled("game_config", GAME_CONFIG_JSON)?,
+            upgrades: load_embedded_json_labeled("upgrades", UPGRADES_JSON)?,
+            prestige_upgrades: load_embedded_json_labeled(
+                "prestige_upgrades",
+                PRESTIGE_UPGRADES_JSON,
+            )?,
+            treasures: load_embedded_json_labeled("treasures", TREASURES_JSON)?,
+            achievements: load_embedded_json_labeled("achievements", ACHIEVEMENTS_JSON)?,
+            dragons: load_embedded_json_labeled("dragons", DRAGONS_JSON)?,
+        })
+    }
+
+    pub fn upgrade(&self, id: &str) -> Option<&UpgradeDef> {
+        self.upgrades.iter().find(|def| def.id == id)
+    }
+
+    pub fn prestige_upgrade(&self, id: &str) -> Option<&PrestigeUpgradeDef> {
+        self.prestige_upgrades.iter().find(|def| def.id == id)
+    }
+
+    pub fn treasure(&self, id: &str) -> Option<&TreasureDef> {
+        self.treasures.iter().find(|def| def.id == id)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn embedded_data_loads() {
+        let data = GameData::load().unwrap();
+
+        assert_eq!(data.config.game_name, "dragons_den");
+        assert_eq!(data.upgrades.len(), 4);
+        assert_eq!(data.prestige_upgrades.len(), 3);
+        assert_eq!(data.treasures.len(), 5);
+        assert_eq!(data.achievements.len(), 10);
+        assert_eq!(data.dragons.len(), 8);
+    }
+
+    #[test]
+    fn catalog_ids_are_unique_and_resolvable() {
+        let data = GameData::load().unwrap();
+
+        for def in &data.upgrades {
+            assert!(data.upgrade(&def.id).is_some());
+        }
+        for def in &data.treasures {
+            assert!(data.treasure(&def.id).is_some());
+        }
+
+        let mut ids: Vec<&str> = data
+            .upgrades
+            .iter()
+            .map(|d| d.id.as_str())
+            .chain(data.prestige_upgrades.iter().map(|d| d.id.as_str()))
+            .chain(data.treasures.iter().map(|d| d.id.as_str()))
+            .chain(data.achievements.iter().map(|d| d.id.as_str()))
+            .chain(data.dragons.iter().map(|d| d.id.as_str()))
+            .collect();
+        let total = ids.len();
+        ids.sort_unstable();
+        ids.dedup();
+        assert_eq!(ids.len(), total, "duplicate ids across catalogs");
+    }
+}

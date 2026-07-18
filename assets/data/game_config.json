@@ -1,0 +1,16 @@
+{
+  "game_name": "dragons_den",
+  "display_name": "Dragon's Den",
+  "save_slot": "autosave",
+  "version": "0.1.0",
+  "autosave_interval": 10.0,
+  "base_click": 1.0,
+  "base_passive": 0.0,
+  "gold_per_goblin": 1.0,
+  "base_hire_cost": 50.0,
+  "hire_cost_growth": 1.2,
+  "explore_cost": 100.0,
+  "base_discovery_chance": 0.3,
+  "prestige_threshold": 1000000.0,
+  "prestige_divisor": 10000.0
+}

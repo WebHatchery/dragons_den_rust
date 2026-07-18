@@ -1,0 +1,72 @@
+[
+  {
+    "id": "first_click",
+    "name": "First Click",
+    "description": "Collect gold with your own claws for the first time.",
+    "condition": { "stat": "clicks_total", "gte": 1 },
+    "reward": { "gold": 50 }
+  },
+  {
+    "id": "treasure_hunter",
+    "name": "Treasure Hunter",
+    "description": "Discover your first treasure.",
+    "condition": { "stat": "treasures_discovered", "gte": 1 },
+    "reward": { "gold": 200 }
+  },
+  {
+    "id": "upgrade_master",
+    "name": "Upgrade Master",
+    "description": "Purchase your first upgrade.",
+    "condition": { "stat": "upgrades_purchased", "gte": 1 },
+    "reward": { "gold": 100 }
+  },
+  {
+    "id": "minion_mogul",
+    "name": "Minion Mogul",
+    "description": "Hire your first goblin.",
+    "condition": { "stat": "goblins", "gte": 1 },
+    "reward": { "gold": 100 }
+  },
+  {
+    "id": "prestige_legend",
+    "name": "Prestige Legend",
+    "description": "Prestige for the first time.",
+    "condition": { "stat": "prestige_count", "gte": 1 },
+    "reward": { "hoard_points": 1 }
+  },
+  {
+    "id": "achievement_unlocked",
+    "name": "Achievement Unlocked",
+    "description": "Unlock 9 other achievements.",
+    "condition": { "stat": "achievements_unlocked", "gte": 9 },
+    "reward": { "gold": 1000 }
+  },
+  {
+    "id": "golden_collector",
+    "name": "Golden Collector",
+    "description": "Earn a total of 10,000 gold.",
+    "condition": { "stat": "gold_total_earned", "gte": 10000 },
+    "reward": { "gold": 500 }
+  },
+  {
+    "id": "treasure_hoarder",
+    "name": "Treasure Hoarder",
+    "description": "Discover every type of treasure.",
+    "condition": { "stat": "treasures_discovered", "gte": 5 },
+    "reward": { "gold": 2000 }
+  },
+  {
+    "id": "minion_master",
+    "name": "Minion Master",
+    "description": "Have 10 goblins working for you at once.",
+    "condition": { "stat": "goblins", "gte": 10 },
+    "reward": { "gold": 500 }
+  },
+  {
+    "id": "prestige_pro",
+    "name": "Prestige Pro",
+    "description": "Prestige 5 times.",
+    "condition": { "stat": "prestige_count", "gte": 5 },
+    "reward": { "hoard_points": 3 }
+  }
+]
