@@ -115,5 +115,23 @@
     "flavor": "The apex hoarder. Kingdoms, oceans, stars — all of it is simply inventory.",
     "unlock": { "stat": "gold_total_earned", "gte": 1000000000000 },
     "effect": { "stat": "all_gold", "percent": 6 }
+  },
+  {
+    "id": "solar_monarch",
+    "name": "Solar Monarch",
+    "element": "radiance",
+    "color": "#FFB300",
+    "flavor": "Crowned in caught sunlight, it hoards the glints others let slip away.",
+    "unlock": { "stat": "golden_hoards_collected", "gte": 50 },
+    "effect": { "stat": "gold_per_second", "percent": 8 }
+  },
+  {
+    "id": "nightmother",
+    "name": "Nightmother",
+    "element": "eclipse",
+    "color": "#241B3A",
+    "flavor": "She has watched a hundred worlds burn and reform, and the brood adores her for it.",
+    "unlock": { "stat": "prestige_count", "gte": 8 },
+    "effect": { "stat": "minion_efficiency", "percent": 8 }
   }
 ]

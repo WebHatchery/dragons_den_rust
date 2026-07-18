@@ -131,8 +131,13 @@ ways to make it entertaining. All numbers are the ones actually shipping in
 > **Content depth — achievement long tail 36 → 40:** four multi-month goals for
 > dedicated players extending the deepest existing tiers — Timeless (prestige
 > 100), Quadrillionaire Wyrm (1e15 gold), Hoard Whisperer (100 Golden Hoards),
-> Grave Robber (500 expeditions). Remaining content-depth idea: deeper wall
-> cliffs (a second prestige-threshold band) — the last speculative item.
+> Grave Robber (500 expeditions).
+>
+> **Content depth — codex dragons 13 → 15:** two deep-unlock dragons matching
+> the new long-tail goals — Solar Monarch (50 Golden Hoards, +8% gold/sec) and
+> Nightmother (prestige 8, +8% minion efficiency). Remaining content-depth idea:
+> deeper wall cliffs (a second prestige-threshold band) — the last speculative
+> item.
 
 ---
 
