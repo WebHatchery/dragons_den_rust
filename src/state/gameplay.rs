@@ -201,6 +201,8 @@ pub struct GameplayState {
     /// Vertical scroll offset for the current screen's list; reset to 0 on every
     /// screen switch (only one screen is visible at a time). Transient.
     pub scroll_y: f32,
+    /// Whether the settings overlay is open over the gameplay frame. Transient.
+    pub settings_open: bool,
     autosave_accum: f32,
 }
 
@@ -213,6 +215,7 @@ impl GameplayState {
             buy_mode: BuyMode::One,
             action_log: ActionLog::default(),
             scroll_y: 0.0,
+            settings_open: false,
             autosave_accum: 0.0,
         }
     }
@@ -227,6 +230,7 @@ impl GameplayState {
             buy_mode: BuyMode::One,
             action_log: ActionLog::default(),
             scroll_y: 0.0,
+            settings_open: false,
             autosave_accum: 0.0,
         };
         state

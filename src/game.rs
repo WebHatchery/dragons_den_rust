@@ -133,7 +133,9 @@ impl Game {
         self.last_mouse_logical = virtual_ui.mouse_position();
         let actions = match &self.state {
             GameState::Menu(menu) => ui::menu::draw(&self.data, menu, &self.settings, &virtual_ui),
-            GameState::Gameplay(gameplay) => ui::draw_gameplay(&self.data, gameplay, &virtual_ui),
+            GameState::Gameplay(gameplay) => {
+                ui::draw_gameplay(&self.data, gameplay, &self.settings, &virtual_ui)
+            }
         };
         self.floating.draw();
         end_virtual_ui_frame();
@@ -187,16 +189,14 @@ impl Game {
                     gameplay.buy_mode = mode;
                 }
             }
-            UiAction::OpenSettings => {
-                if let GameState::Menu(menu) = &mut self.state {
-                    menu.screen = MenuScreen::Settings;
-                }
-            }
-            UiAction::CloseSettings => {
-                if let GameState::Menu(menu) = &mut self.state {
-                    menu.screen = MenuScreen::Main;
-                }
-            }
+            UiAction::OpenSettings => match &mut self.state {
+                GameState::Menu(menu) => menu.screen = MenuScreen::Settings,
+                GameState::Gameplay(gameplay) => gameplay.settings_open = true,
+            },
+            UiAction::CloseSettings => match &mut self.state {
+                GameState::Menu(menu) => menu.screen = MenuScreen::Main,
+                GameState::Gameplay(gameplay) => gameplay.settings_open = false,
+            },
             UiAction::ChangeSetting(change) => self.change_setting(change),
             UiAction::SetScroll(offset) => {
                 if let GameState::Gameplay(gameplay) = &mut self.state {

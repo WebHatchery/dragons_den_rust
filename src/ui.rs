@@ -4,6 +4,7 @@
 
 pub mod achievements;
 pub mod dragons;
+pub mod frame;
 pub mod hoard;
 pub mod menu;
 pub mod minions;
@@ -14,11 +15,12 @@ pub mod upgrades;
 
 use crate::data::{EffectStat, GameData, PercentEffect, StatCondition, StatKey};
 use crate::simulation::economy;
-use crate::simulation::idle_number::{format_amount, format_rate};
+use crate::simulation::idle_number::format_amount;
 use crate::state::gameplay::{BuyMode, GameplayState, Screen};
 use macroquad::prelude::*;
 use macroquad_toolkit::prelude::*;
-use macroquad_toolkit::ui::{draw_ui_text_ex, RectExt, VirtualUi};
+use macroquad_toolkit::settings::GameSettings;
+use macroquad_toolkit::ui::{RectExt, VirtualUi};
 
 pub const LOGICAL_WIDTH: f32 = 1280.0;
 pub const LOGICAL_HEIGHT: f32 = 720.0;
@@ -77,18 +79,23 @@ pub struct GameplayCtx<'a> {
     pub mouse: Vec2,
 }
 
-pub fn draw_gameplay(data: &GameData, state: &GameplayState, ui: &VirtualUi) -> Vec<UiAction> {
+pub fn draw_gameplay(
+    data: &GameData,
+    state: &GameplayState,
+    settings: &GameSettings,
+    ui: &VirtualUi,
+) -> Vec<UiAction> {
     let mut actions = Vec::new();
-    let ctx = GameplayCtx {
-        data,
-        state,
-        mouse: ui.mouse_position(),
-    };
+    let mouse = ui.mouse_position();
+    let ctx = GameplayCtx { data, state, mouse };
 
-    draw_header(&ctx, &mut actions);
-    draw_tab_bar(&ctx, &mut actions);
+    let regions = frame::regions();
+    frame::draw_header(&ctx, regions.header, &mut actions);
+    draw_tab_bar(&ctx, regions.tabs, &mut actions);
+    frame::draw_left_rail_placeholder(regions.left_rail);
+    frame::draw_bottom_placeholder(regions.bottom);
 
-    let content = Rect::new(18.0, 150.0, LOGICAL_WIDTH - 36.0, LOGICAL_HEIGHT - 168.0);
+    let content = regions.center;
     match state.screen {
         Screen::Hoard => hoard::draw(&ctx, content, &mut actions),
         Screen::Minions => minions::draw(&ctx, content, &mut actions),
@@ -99,68 +106,26 @@ pub fn draw_gameplay(data: &GameData, state: &GameplayState, ui: &VirtualUi) -> 
         Screen::Dragons => dragons::draw(&ctx, content, &mut actions),
     }
 
+    if state.settings_open {
+        draw_settings_overlay(settings, mouse, &mut actions);
+    }
+
     actions
 }
 
-fn draw_header(ctx: &GameplayCtx<'_>, actions: &mut Vec<UiAction>) {
-    let rect = Rect::new(18.0, 16.0, LOGICAL_WIDTH - 36.0, 64.0);
-    let style = SurfaceStyle::new(Color::new(0.08, 0.09, 0.12, 0.96))
-        .with_border(1.0, dark::ACCENT)
-        .with_top_highlight(2.0, Color::new(0.95, 0.72, 0.35, 0.75));
-    draw_surface(rect, &style);
-
-    draw_ui_text_ex(
-        &ctx.data.config.display_name,
-        rect.x + 18.0,
-        rect.y + 39.0,
-        TextStyle::new(30.0, dark::TEXT_BRIGHT).params(),
+/// Dims the frame and draws the shared settings panel as a gameplay overlay.
+fn draw_settings_overlay(settings: &GameSettings, mouse: Vec2, actions: &mut Vec<UiAction>) {
+    draw_rectangle(
+        0.0,
+        0.0,
+        LOGICAL_WIDTH,
+        LOGICAL_HEIGHT,
+        Color::new(0.0, 0.0, 0.0, 0.72),
     );
-
-    let gps = ctx.state.gold_per_second(ctx.data);
-    draw_badge(
-        Rect::new(rect.x + 280.0, rect.y + 18.0, 170.0, 28.0),
-        &format!("Gold {}", format_amount(ctx.state.run.gold)),
-        Color::new(0.28, 0.23, 0.10, 1.0),
-        dark::TEXT_BRIGHT,
-    );
-    draw_badge(
-        Rect::new(rect.x + 460.0, rect.y + 18.0, 140.0, 28.0),
-        &format!("{}/sec", format_rate(gps)),
-        Color::new(0.18, 0.28, 0.20, 1.0),
-        dark::TEXT,
-    );
-    draw_badge(
-        Rect::new(rect.x + 610.0, rect.y + 18.0, 170.0, 28.0),
-        &format!(
-            "Hoard Pts {}",
-            format_amount(ctx.state.persistent.hoard_points)
-        ),
-        Color::new(0.22, 0.19, 0.30, 1.0),
-        dark::TEXT,
-    );
-
-    if button(
-        Rect::new(rect.right() - 190.0, rect.y + 14.0, 84.0, 36.0),
-        "Save",
-        true,
-        ButtonTone::Positive,
-        ctx.mouse,
-    ) {
-        actions.push(UiAction::SaveNow);
-    }
-    if button(
-        Rect::new(rect.right() - 98.0, rect.y + 14.0, 84.0, 36.0),
-        "Menu",
-        true,
-        ButtonTone::Secondary,
-        ctx.mouse,
-    ) {
-        actions.push(UiAction::BackToMenu);
-    }
+    actions.extend(settings::draw(settings, mouse));
 }
 
-fn draw_tab_bar(ctx: &GameplayCtx<'_>, actions: &mut Vec<UiAction>) {
-    let bar = Rect::new(18.0, 92.0, LOGICAL_WIDTH - 36.0, 46.0);
+fn draw_tab_bar(ctx: &GameplayCtx<'_>, bar: Rect, actions: &mut Vec<UiAction>) {
     let tab_w = (bar.w - (Screen::ALL.len() as f32 - 1.0) * 8.0) / Screen::ALL.len() as f32;
     for (index, screen) in Screen::ALL.iter().enumerate() {
         let rect = Rect::new(bar.x + index as f32 * (tab_w + 8.0), bar.y, tab_w, bar.h);

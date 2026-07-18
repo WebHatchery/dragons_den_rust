@@ -112,8 +112,10 @@ New modules (each < 400 lines):
 
 ## 8. Phased delivery
 
-- [ ] **P1 — Frame skeleton.** `ui/frame.rs`; carve header/left-rail/center/bottom rects; move the header cards +
-      settings gear in. Center still renders existing tab screens unchanged. *Verify: `ui_hoard`, `ui_prestige` captures.*
+- [x] **P1 — Frame skeleton.** `ui/frame.rs` carves header/left-rail/center/bottom regions; header now shows three
+      resource cards + SAVE/MENU/gear (gear opens a settings overlay during gameplay via transient
+      `GameplayState::settings_open`). Center renders existing tab screens in the reduced rect; rail + bottom are
+      labelled placeholders. Verified via `ui_hoard`, `ui_prestige` captures.
 - [ ] **P2 — Left rail.** Move click target + income + **run time** out of `hoard.rs` into the persistent rail;
       reflow Hoard tab to Chronicle/overview. *Verify: click still earns; capture.*
 - [ ] **P3 — Bottom strip.** Expeditions + Recent Treasures panels (read-only first), then minion-type cards once
