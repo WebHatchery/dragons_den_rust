@@ -64,6 +64,8 @@ pub enum SettingChange {
     VolumeDown(VolumeChannel),
     UiScaleUp,
     UiScaleDown,
+    AutosaveUp,
+    AutosaveDown,
     ToggleFullscreen,
     ToggleShowFps,
 }

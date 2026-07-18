@@ -29,7 +29,6 @@ pub struct GameConfig {
     pub display_name: String,
     pub save_slot: String,
     pub version: String,
-    pub autosave_interval: f32,
     pub base_click: f64,
     pub base_passive: f64,
     pub gold_per_goblin: f64,

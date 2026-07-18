@@ -18,7 +18,7 @@ screenshots in `docs/verification/`: `ui_menu`, `ui_hoard`, `ui_settings`,
 
 | File | Contents | Status |
 | --- | --- | --- |
-| `assets/data/game_config.json` | Base rates, cost growths, prestige gate/divisor, autosave interval | Prototype values per GDD §5.1 |
+| `assets/data/game_config.json` | Base rates, cost growths, prestige gate/divisor/growth, offline cap | Prototype values per GDD §5.1 |
 | `assets/data/upgrades.json` | 6 upgrade lines (click, minion eff, discovery, hoard greed, passive mult, hire discount) | Done (M3) |
 | `assets/data/prestige_upgrades.json` | 9 permanent-tree nodes across all 5 effect stats | Done (M3) |
 | `assets/data/treasures.json` | 16 treasures, rarity-weighted, all with real effects | Done (M3) |
@@ -121,15 +121,21 @@ boots a fresh gameplay session (seed 42) on the Hoard screen.
   as much as gold allows. Buttons show the resolved count and total cost.
 - [x] **Settings screen** (GDD §9) — reached from the main menu (`MenuScreen`
   sub-view). Edits the toolkit `GameSettings`: master/SFX/music volumes (+/-
-  steppers), UI text scale, Fullscreen and Show-FPS toggles. Every control
+  steppers), UI text scale, autosave interval, Fullscreen and Show-FPS toggles.
+  Every control
   returns a `ChangeSetting` intent; `game.rs` mutates, `sanitize()`s,
   `apply_display()`s, and persists under `config.game_name` on each change.
   Loaded + applied at startup. Show-FPS overlay is live. New capture scene
   `settings`; verified in `docs/verification/ui_settings.png`.
-  - [ ] **Autosave interval as a setting**: deferred — `GameSettings` has no
-    such field and forking the shared toolkit is out of scope for this loop.
-    Interval still comes from `game_config.json`. Add a toolkit field (or a
-    game-local settings key) when ready.
+  - [x] **Autosave interval as a setting** — done the toolkit-first way (per the
+    RustGames "reach for the toolkit" directive): added `autosave_interval` to
+    the shared `macroquad_toolkit::settings::GameSettings` (default 30s, clamped
+    `[5, 600]` in `sanitize`, additive/backward-compatible via the struct's
+    `#[serde(default)]`; toolkit test added). Dragon's Den now reads the cadence
+    from settings — `game_config.json`'s `autosave_interval` was removed and
+    `GameplayState::autosave_due(interval, dt)` takes it as a param — and the
+    Settings screen has an "Autosave Every Ns" stepper (±5s). Verified in
+    `ui_settings`.
   - [ ] **Audio SFX** (click/purchase/unlock blips) via toolkit `audio`:
     deferred — no sound assets exist yet. Volumes persist and are ready to feed
     a `SoundManager` once packs ship.
@@ -206,11 +212,13 @@ action (deploy), so the autonomous loop leaves them for you.*
 
 ### Blocked / needs external input (not autonomously actionable)
 
-- **Autosave interval as a setting** — needs a shared-toolkit `GameSettings`
-  field (or a game-local settings key); modifying the shared toolkit was kept
-  out of scope for this loop.
 - **Audio SFX** — no sound-asset pack exists yet; the Settings volumes already
   persist and are ready to feed a `SoundManager` once packs ship.
+
+> Note: this loop modified the shared `macroquad-toolkit` (added
+> `GameSettings::autosave_interval`). That change is additive and
+> backward-compatible (all workspace consumers build `GameSettings` via
+> `..Default::default()`), and is committed in the toolkit's own git repo.
 
 ---
 

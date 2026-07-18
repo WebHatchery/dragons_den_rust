@@ -20,6 +20,8 @@ use macroquad_toolkit::settings::GameSettings;
 const VOLUME_STEP: f32 = 0.1;
 /// Step applied per UI-scale +/- press.
 const UI_SCALE_STEP: f32 = 0.1;
+/// Step (seconds) applied per autosave-interval +/- press.
+const AUTOSAVE_STEP: f32 = 5.0;
 
 /// Warm gold used for "+N" click gains.
 const CLICK_GAIN_COLOR: Color = Color::new(0.98, 0.80, 0.35, 1.0);
@@ -110,7 +112,7 @@ impl Game {
                 }
             }
 
-            if gameplay.autosave_due(&self.data, dt) {
+            if gameplay.autosave_due(self.settings.autosave_interval, dt) {
                 self.write_save(false);
             }
             if is_key_pressed(KeyCode::Escape) {
@@ -211,6 +213,8 @@ impl Game {
             SettingChange::VolumeDown(channel) => *self.volume_mut(channel) -= VOLUME_STEP,
             SettingChange::UiScaleUp => self.settings.ui_text_scale += UI_SCALE_STEP,
             SettingChange::UiScaleDown => self.settings.ui_text_scale -= UI_SCALE_STEP,
+            SettingChange::AutosaveUp => self.settings.autosave_interval += AUTOSAVE_STEP,
+            SettingChange::AutosaveDown => self.settings.autosave_interval -= AUTOSAVE_STEP,
             SettingChange::ToggleFullscreen => self.settings.fullscreen = !self.settings.fullscreen,
             SettingChange::ToggleShowFps => self.settings.show_fps = !self.settings.show_fps,
         }

@@ -298,10 +298,11 @@ impl GameplayState {
         self.earn(self.gold_per_second(data) * f64::from(dt));
     }
 
-    /// Counts up the autosave interval; true means "save now".
-    pub fn autosave_due(&mut self, data: &GameData, dt: f32) -> bool {
+    /// Counts up toward the player's autosave interval (seconds, from settings);
+    /// true means "save now".
+    pub fn autosave_due(&mut self, interval_secs: f32, dt: f32) -> bool {
         self.autosave_accum += dt;
-        if self.autosave_accum >= data.config.autosave_interval {
+        if self.autosave_accum >= interval_secs {
             self.autosave_accum = 0.0;
             true
         } else {

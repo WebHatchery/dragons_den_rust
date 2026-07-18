@@ -1,6 +1,7 @@
-//! Global settings sub-screen (GDD §9): audio volumes plus display flags,
-//! backed by the toolkit `GameSettings`. Pure view — every control returns a
-//! `ChangeSetting` intent; `game.rs` mutates, applies, and persists.
+//! Global settings sub-screen (GDD §9): audio volumes, display flags, and the
+//! autosave interval, all backed by the toolkit `GameSettings`. Pure view —
+//! every control returns a `ChangeSetting` intent; `game.rs` mutates, applies,
+//! and persists.
 
 use crate::ui::{self, SettingChange, UiAction, VolumeChannel, LOGICAL_HEIGHT, LOGICAL_WIDTH};
 use macroquad::prelude::*;
@@ -24,11 +25,11 @@ pub fn draw(settings: &GameSettings, mouse: Vec2) -> Vec<UiAction> {
     let panel_w = 620.0;
     let panel = Rect::new(
         (LOGICAL_WIDTH - panel_w) / 2.0,
-        LOGICAL_HEIGHT * 0.24,
+        LOGICAL_HEIGHT * 0.2,
         panel_w,
-        380.0,
+        432.0,
     );
-    let content = ui::panel(panel, "Audio & Display");
+    let content = ui::panel(panel, "Audio, Display & Gameplay");
 
     let mut y = content.y + 8.0;
     let row_h = 46.0;
@@ -66,6 +67,9 @@ pub fn draw(settings: &GameSettings, mouse: Vec2) -> Vec<UiAction> {
 
     // UI scale reuses the stepper visuals but its own intents.
     scale_row(content, y, settings.ui_text_scale, mouse, &mut actions);
+    y += row_h;
+
+    autosave_row(content, y, settings.autosave_interval, mouse, &mut actions);
     y += row_h;
 
     toggle_row(
@@ -177,6 +181,22 @@ fn scale_row(content: Rect, y: f32, scale: f32, mouse: Vec2, actions: &mut Vec<U
     }
     if plus {
         actions.push(UiAction::ChangeSetting(SettingChange::UiScaleUp));
+    }
+}
+
+fn autosave_row(content: Rect, y: f32, interval: f32, mouse: Vec2, actions: &mut Vec<UiAction>) {
+    label_and_value(
+        content,
+        y,
+        "Autosave Every",
+        &format!("{}s", interval.round() as i32),
+    );
+    let (minus, plus) = minus_plus(content, y, mouse);
+    if minus {
+        actions.push(UiAction::ChangeSetting(SettingChange::AutosaveDown));
+    }
+    if plus {
+        actions.push(UiAction::ChangeSetting(SettingChange::AutosaveUp));
     }
 }
 
