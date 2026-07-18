@@ -179,21 +179,6 @@ fn resource_card(
     }
 }
 
-/// Placeholder for the persistent left hoard rail (filled in P2). Renders an
-/// empty framed panel so the frame layout reads correctly in captures.
-pub fn draw_left_rail_placeholder(rect: Rect) {
-    let content = ui::panel(rect, "The Hoard");
-    draw_text_centered_in_box(
-        "click + income\n(P2)",
-        content.x,
-        content.y + content.h / 2.0 - 20.0,
-        content.w,
-        40.0,
-        15.0,
-        dark::TEXT_DIM,
-    );
-}
-
 /// Placeholder for the persistent bottom strip (filled in P3).
 pub fn draw_bottom_placeholder(rect: Rect) {
     let content = ui::panel(rect, "Minions · Expeditions · Treasures");

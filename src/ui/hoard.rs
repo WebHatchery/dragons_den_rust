@@ -1,6 +1,8 @@
-//! Hoard screen: the click target plus expedition and prestige shortcuts.
+//! Hoard tab: the chronicle plus expedition and prestige shortcuts. The click
+//! target now lives in the persistent left rail (`left_rail.rs`), so this tab is
+//! the run's overview rather than the click surface.
 
-use crate::simulation::idle_number::{format_amount, format_rate};
+use crate::simulation::idle_number::format_amount;
 use crate::ui::{self, GameplayCtx, UiAction};
 use macroquad::prelude::*;
 use macroquad_toolkit::prelude::*;
@@ -8,14 +10,7 @@ use macroquad_toolkit::ui::draw_ui_text_ex;
 
 pub fn draw(ctx: &GameplayCtx<'_>, rect: Rect, actions: &mut Vec<UiAction>) {
     let left_w = rect.w * 0.6 - 8.0;
-    let click_h = rect.h * 0.62 - 6.0;
-    let click_target = Rect::new(rect.x, rect.y, left_w, click_h);
-    let log = Rect::new(
-        rect.x,
-        rect.y + click_h + 12.0,
-        left_w,
-        rect.h - click_h - 12.0,
-    );
+    let log = Rect::new(rect.x, rect.y, left_w, rect.h);
     let right = Rect::new(
         rect.x + rect.w * 0.6 + 8.0,
         rect.y,
@@ -23,7 +18,6 @@ pub fn draw(ctx: &GameplayCtx<'_>, rect: Rect, actions: &mut Vec<UiAction>) {
         rect.h,
     );
 
-    draw_click_target(ctx, click_target, actions);
     draw_action_log(ctx, log);
     draw_side_column(ctx, right, actions);
 }
@@ -68,58 +62,6 @@ fn draw_action_log(ctx: &GameplayCtx<'_>, rect: Rect) {
             content.y + 14.0 + index as f32 * line_height,
             TextStyle::new(15.0, color).params(),
         );
-    }
-}
-
-fn draw_click_target(ctx: &GameplayCtx<'_>, rect: Rect, actions: &mut Vec<UiAction>) {
-    let content = ui::panel(rect, "The Hoard");
-    let hovered = content.contains_point(ctx.mouse);
-    let fill = if hovered && is_mouse_button_down(MouseButton::Left) {
-        Color::new(0.24, 0.19, 0.08, 1.0)
-    } else if hovered {
-        Color::new(0.20, 0.16, 0.07, 1.0)
-    } else {
-        Color::new(0.16, 0.13, 0.06, 1.0)
-    };
-    draw_surface(
-        content,
-        &SurfaceStyle::new(fill).with_border(2.0, Color::new(0.95, 0.72, 0.35, 0.8)),
-    );
-
-    draw_text_centered_in_box(
-        &format_amount(ctx.state.run.gold),
-        content.x,
-        content.y + content.h * 0.30,
-        content.w,
-        60.0,
-        54.0,
-        dark::TEXT_BRIGHT,
-    );
-    draw_text_centered_in_box(
-        "gold in the hoard — click to collect more",
-        content.x,
-        content.y + content.h * 0.30 + 64.0,
-        content.w,
-        26.0,
-        17.0,
-        dark::TEXT_DIM,
-    );
-    draw_text_centered_in_box(
-        &format!(
-            "+{} per click   |   +{} per second",
-            format_amount(ctx.state.gold_per_click(ctx.data)),
-            format_rate(ctx.state.gold_per_second(ctx.data))
-        ),
-        content.x,
-        content.bottom() - 44.0,
-        content.w,
-        26.0,
-        17.0,
-        dark::TEXT,
-    );
-
-    if hovered && is_mouse_button_released(MouseButton::Left) {
-        actions.push(UiAction::ClickHoard);
     }
 }
 

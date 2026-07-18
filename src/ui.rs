@@ -6,6 +6,7 @@ pub mod achievements;
 pub mod dragons;
 pub mod frame;
 pub mod hoard;
+pub mod left_rail;
 pub mod menu;
 pub mod minions;
 pub mod prestige;
@@ -92,7 +93,7 @@ pub fn draw_gameplay(
     let regions = frame::regions();
     frame::draw_header(&ctx, regions.header, &mut actions);
     draw_tab_bar(&ctx, regions.tabs, &mut actions);
-    frame::draw_left_rail_placeholder(regions.left_rail);
+    left_rail::draw(&ctx, regions.left_rail, &mut actions);
     frame::draw_bottom_placeholder(regions.bottom);
 
     let content = regions.center;

@@ -113,6 +113,10 @@ pub struct RunState {
     pub gold: f64,
     pub goblins: u32,
     pub upgrade_levels: HashMap<String, u32>,
+    /// Active-play seconds since this run began (reset on prestige). Drives the
+    /// left rail's "run time" readout. `serde(default)` keeps old saves loadable.
+    #[serde(default)]
+    pub run_seconds: f64,
 }
 
 impl RunState {
@@ -121,6 +125,7 @@ impl RunState {
             gold: 0.0,
             goblins: 0,
             upgrade_levels: HashMap::new(),
+            run_seconds: 0.0,
         }
     }
 }
@@ -297,9 +302,10 @@ impl GameplayState {
         self.persistent.stats.gold_total_earned += amount;
     }
 
-    /// Passive income for one frame.
+    /// Passive income for one frame; also advances the run clock.
     pub fn tick(&mut self, data: &GameData, dt: f32) {
         self.earn(self.gold_per_second(data) * f64::from(dt));
+        self.run.run_seconds += f64::from(dt);
     }
 
     /// Counts up toward the player's autosave interval (seconds, from settings);

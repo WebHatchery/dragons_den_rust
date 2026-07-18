@@ -116,8 +116,10 @@ New modules (each < 400 lines):
       resource cards + SAVE/MENU/gear (gear opens a settings overlay during gameplay via transient
       `GameplayState::settings_open`). Center renders existing tab screens in the reduced rect; rail + bottom are
       labelled placeholders. Verified via `ui_hoard`, `ui_prestige` captures.
-- [ ] **P2 — Left rail.** Move click target + income + **run time** out of `hoard.rs` into the persistent rail;
-      reflow Hoard tab to Chronicle/overview. *Verify: click still earns; capture.*
+- [x] **P2 — Left rail.** `ui/left_rail.rs`: persistent hoard art placeholder, circular CLICK target (radial
+      hit-test), live Hoard Income, and Run Time (new save-safe `RunState::run_seconds`, ticked each frame, reset on
+      prestige). Hoard tab reflowed to Chronicle + expedition/prestige column; click removed from `hoard.rs`.
+      Verified: rail persists across tabs, run time accrues.
 - [ ] **P3 — Bottom strip.** Expeditions + Recent Treasures panels (read-only first), then minion-type cards once
       P4 lands. *Verify captures.*
 - [ ] **P4 — Typed minions.** `minions.json`, state migration (additive, save-safe), economy sum, Minions tab +
