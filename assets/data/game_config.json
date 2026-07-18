@@ -13,5 +13,6 @@
   "base_discovery_chance": 0.3,
   "prestige_threshold": 1000000.0,
   "prestige_threshold_growth": 8.0,
-  "prestige_divisor": 10000.0
+  "prestige_divisor": 10000.0,
+  "offline_cap_hours": 12.0
 }

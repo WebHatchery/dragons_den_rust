@@ -234,7 +234,11 @@ impl GameplayState {
             .achievements
             .sync_definitions(achievement_definitions(&data.achievements));
 
-        let earned = offline::offline_gold(state.gold_per_second(data), now - save.timestamp);
+        let earned = offline::offline_gold(
+            state.gold_per_second(data),
+            now - save.timestamp,
+            data.config.offline_cap_hours * 3600.0,
+        );
         state.earn(earned);
         (state, earned)
     }

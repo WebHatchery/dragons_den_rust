@@ -42,6 +42,10 @@ pub struct GameConfig {
     /// (GDD §12 Q2 multi-tier prestige): `threshold_n = base * growth^n`.
     pub prestige_threshold_growth: f64,
     pub prestige_divisor: f64,
+    /// Maximum hours of offline earnings credited on load (GDD §12 Q3). A
+    /// generous cap keeps a multi-week absence from trivializing progression
+    /// while still rewarding daily check-ins; raise it toward uncapped freely.
+    pub offline_cap_hours: f64,
 }
 
 /// A lifetime/run statistic that unlock conditions can reference.

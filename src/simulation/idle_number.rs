@@ -60,4 +60,21 @@ mod tests {
         assert_eq!(format_rate(2.5), "2.5");
         assert_eq!(format_rate(12_500.0), "12.50K");
     }
+
+    #[test]
+    fn handles_extreme_scales_without_panicking() {
+        // Well past any suffix — plain scientific, no overflow or panic.
+        assert_eq!(format_amount(1e100), "1.00e100");
+        assert_eq!(format_amount(1e300), "1.00e300");
+        // f64::MAX (~1.8e308) is still finite and formats.
+        assert!(format_amount(f64::MAX).contains("e308"));
+        // Overflow to infinity degrades gracefully rather than printing junk.
+        assert_eq!(format_amount(f64::INFINITY), "∞");
+        assert_eq!(format_amount(f64::NAN), "∞");
+        // Deep multi-tier prestige thresholds (base 1e6 * 8^n) stay in range
+        // and finite for any count a player could ever reach.
+        let deep = 1e6 * 8f64.powi(100); // ~2e96
+        assert!(deep.is_finite());
+        assert!(format_amount(deep).contains('e'));
+    }
 }

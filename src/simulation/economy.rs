@@ -209,6 +209,29 @@ mod tests {
     }
 
     #[test]
+    fn economy_stays_finite_at_scale() {
+        let (data, mut levels) = setup();
+        // Every gold-relevant line maxed.
+        for def in &data.upgrades {
+            levels.insert(def.id.clone(), def.max_level);
+        }
+        let rates = rate_bonuses(&data.upgrades, &levels);
+        // Large stacked percent bonuses (all treasures + dragons + a deep tree).
+        let mut percents = Bonuses::default();
+        percents.add(EffectStat::GoldPerClick, 500.0);
+        percents.add(EffectStat::GoldPerSecond, 500.0);
+
+        // A hoard-scale goblin army.
+        let gps = gold_per_second(&data.config, 1_000_000_000, &rates, &percents);
+        let gpc = gold_per_click(&data.config, &rates, &percents);
+        assert!(gps.is_finite() && gps > 0.0);
+        assert!(gpc.is_finite() && gpc > 0.0);
+        // Discovery stays within its clamp even with everything stacked.
+        let chance = discovery_chance(&data.config, &rates, &percents);
+        assert!((0.0..=0.95).contains(&chance));
+    }
+
+    #[test]
     fn discovery_chance_is_clamped() {
         let (data, levels) = setup();
         let rates = rate_bonuses(&data.upgrades, &levels);

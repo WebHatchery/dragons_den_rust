@@ -9,7 +9,7 @@ remains, milestone by milestone (GDD §13).*
 ## 1. What is already built (the framework)
 
 The template has been fully converted; nothing of the template's grid/fog/camera
-demo remains. `cargo test` (31 tests, incl. a balance-regression sim),
+demo remains. `cargo test` (34 tests, incl. a balance-regression sim),
 `cargo clippy -D warnings`, and `cargo fmt --check` all pass. Verified
 screenshots in `docs/verification/`: `ui_menu`, `ui_hoard`, `ui_settings`,
 `ui_treasures`, `ui_achievements`, `ui_prestige`.
@@ -34,8 +34,9 @@ Adding content = adding JSON entries; new *kinds* of effect need a new
 
 - `economy.rs` — gold/click, gold/sec, discovery chance, hire/upgrade cost
   curves. Upgrade levels genuinely feed the formulas (the GDD's core fix).
-- `offline.rs` — offline gold at the live rate; uncapped (GDD §12 Q3 decision:
-  leaning uncapped; if a cap is ever wanted it goes here).
+- `offline.rs` — offline gold at the live rate, **capped** to
+  `config.offline_cap_hours` (GDD §12 Q3 decision, default 12h); the clamp lives
+  here. Raise the cap toward uncapped freely in JSON.
 - `exploration.rs` — chance gate then **rarity-weighted** roll among
   undiscovered treasures; `SeededRng` from the toolkit, serialized in the save.
 - `prestige.rs` — HP gain `floor(sqrt(gold/divisor))` scaled by Hoard Greed +
@@ -164,10 +165,17 @@ boots a fresh gameplay session (seed 42) on the Hoard screen.
   tier-aware `can_prestige`; `GameplayState::prestige_threshold(data)` drives
   both prestige meters. Tier 0 is unchanged at 1M, so the balance sim still
   reports ~29 min to first prestige. New unit test covers the rising curve.
-- [ ] Exercise big numbers at real scale; if `f64` precision ever bites,
-  upgrade `idle_number.rs` to significand+exponent (and flag it as a toolkit
-  candidate per GDD §10).
-- [ ] Offline-progress cap decision (GDD §12 Q3) after balance testing.
+- [x] Exercise big numbers at real scale — added scale tests: `format_amount`
+  handles 1e100…f64::MAX, ∞, and NaN gracefully, and the economy stays finite
+  and positive with all lines maxed, 1e9 goblins, and huge stacked percents.
+  `f64` is ample: even a deep 100-prestige tier (1e6·8¹⁰⁰ ≈ 2e96) is far below
+  the ~1e308 ceiling, so the significand+exponent upgrade stays deferred.
+- [x] Offline-progress cap decision (GDD §12 Q3) — **decided: capped, generous**.
+  Offline still accrues at the live rate but is clamped to
+  `config.offline_cap_hours` (12h) in `offline.rs`; a weeks-long absence no
+  longer trivializes the multi-tier climb, while a daily return still pays out.
+  Designers can raise the cap toward uncapped in JSON. Unit test covers the
+  clamp.
 
 ### Release checklist (per repo standards)
 
