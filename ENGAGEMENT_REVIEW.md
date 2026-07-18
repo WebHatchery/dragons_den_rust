@@ -100,8 +100,15 @@ ways to make it entertaining. All numbers are the ones actually shipping in
 > (+30% gold/click) and **Ruinseeker's Crown** (+18% discovery) so all five
 > branches match Greed/Legion/Eternity at three tiers (13 → 15 nodes). Held at
 > three tiers deliberately — a fourth would overflow the tree panel. Guards
-> unchanged (19.7 min / 30%). Next content-depth targets: more run-upgrade
-> lines, deeper wall cliffs / a second prestige-threshold band.
+> unchanged (19.7 min / 30%).
+>
+> **Content depth — run-upgrade lines 9 → 11:** two deeper prestige-gated lines
+> past Cataclysm Claws (p3) — **Dragonhoard Tithe** (p4, +hoard-point gain, the
+> first gated HP line) and **Worldflame** (p5, a stronger +gold/sec than the p1
+> Molten Veins). Both gate past the guarded runs (first prestige is prestige 0;
+> cycle 2 is prestige 1), so the balance sim can't reach them and the guards
+> are unchanged. Verified the sealed cards render. Next content-depth targets:
+> more treasures to clear 35+, deeper wall cliffs.
 
 ---
 

@@ -82,5 +82,25 @@
     "max_level": 15,
     "effect": { "stat": "gold_per_click", "rate": 1.0 },
     "prestige_required": 3
+  },
+  {
+    "id": "dragonhoard_tithe",
+    "name": "Dragonhoard Tithe",
+    "description": "Prestige 4: the hoard tithes a share of itself back into every future burning.",
+    "base_cost": 40000,
+    "cost_growth": 1.7,
+    "max_level": 12,
+    "effect": { "stat": "hoard_point_gain", "rate": 0.2 },
+    "prestige_required": 4
+  },
+  {
+    "id": "worldflame",
+    "name": "Worldflame",
+    "description": "Prestige 5: an inner sun the hoard orbits, gorging passive income like fuel.",
+    "base_cost": 120000,
+    "cost_growth": 1.65,
+    "max_level": 15,
+    "effect": { "stat": "gold_per_second", "rate": 0.4 },
+    "prestige_required": 5
   }
 ]
