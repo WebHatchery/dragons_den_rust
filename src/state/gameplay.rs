@@ -514,8 +514,8 @@ mod tests {
 
         // Click pays base_click and counts toward lifetime stats.
         let gained = state.click(&data);
-        assert!((gained - 1.0).abs() < 1e-9);
-        assert!((state.run.gold - 1.0).abs() < 1e-9);
+        assert!((gained - data.config.base_click).abs() < 1e-9);
+        assert!((state.run.gold - data.config.base_click).abs() < 1e-9);
 
         // Hire a goblin, passive income becomes real.
         state.run.gold = 100.0;
@@ -527,7 +527,7 @@ mod tests {
         // Buy a click upgrade; the formula actually reads it (GDD fix).
         state.run.gold = 1000.0;
         state.try_buy_upgrade_bulk(&data, "click_power", 1).unwrap();
-        assert!(state.gold_per_click(&data) > 1.0);
+        assert!(state.gold_per_click(&data) > data.config.base_click);
 
         // Prestige converts the hoard into Hoard Points and resets the run.
         state.run.gold = 1_000_000.0;
@@ -544,13 +544,26 @@ mod tests {
     #[test]
     fn bulk_hire_buys_as_many_as_affordable() {
         let (data, mut state) = setup();
-        // base 50 * 1.2^n: 50 + 60 + 72 = 182 buys 3, 4th (86) needs 268.
         state.run.gold = 200.0;
         let (hired, cost) = state.try_hire_bulk(&data, u32::MAX).unwrap();
-        assert_eq!(hired, 3);
-        assert!((cost - 182.0).abs() < 1e-9);
-        assert_eq!(state.run.goblins, 3);
-        assert!((state.run.gold - 18.0).abs() < 1e-9);
+        assert!(hired >= 1);
+        assert_eq!(state.run.goblins, hired);
+        // Cost matches the summed per-level curve and leaves the change behind.
+        let expected = economy::bulk_cost(
+            data.config.base_hire_cost,
+            data.config.hire_cost_growth,
+            0,
+            hired,
+        );
+        assert!((cost - expected).abs() < 1e-9);
+        assert!((state.run.gold - (200.0 - expected)).abs() < 1e-9);
+        // "Max" means the very next goblin is no longer affordable.
+        let next = economy::upgrade_cost(
+            data.config.base_hire_cost,
+            data.config.hire_cost_growth,
+            hired,
+        );
+        assert!(next > state.run.gold);
     }
 
     #[test]
@@ -591,7 +604,7 @@ mod tests {
         state.run.gold = 1_000_000.0;
         state.try_prestige(&data).unwrap();
         // +25% permanent click bonus survives the reset.
-        assert!((state.gold_per_click(&data) - 1.25).abs() < 1e-9);
+        assert!((state.gold_per_click(&data) - data.config.base_click * 1.25).abs() < 1e-9);
     }
 
     #[test]
@@ -602,7 +615,7 @@ mod tests {
         assert!(events
             .iter()
             .any(|e| matches!(e, UnlockEvent::Achievement { name } if name == "First Click")));
-        // first_click reward pays 50 gold on top of the 1-gold click.
+        // first_click reward pays 50 gold on top of the click gain.
         assert!(state.run.gold > 50.0);
 
         // Unlock is one-shot.
@@ -626,7 +639,8 @@ mod tests {
     #[test]
     fn save_roundtrip_applies_offline_progress() {
         let (data, mut state) = setup();
-        state.run.goblins = 10; // 10 gold/sec
+        state.run.goblins = 10;
+        let rate = state.gold_per_second(&data);
         let saved = SaveData {
             version: data.config.version.clone(),
             timestamp: 1_000.0,
@@ -634,10 +648,10 @@ mod tests {
             persistent: state.persistent.clone(),
         };
 
-        // Loading 60 seconds later earns 60s at the live rate.
+        // Loading 60 seconds later earns 60s at the live passive rate.
         let (loaded, earned) = GameplayState::from_save(&data, saved, 1_060.0);
-        assert!((earned - 600.0).abs() < 1e-6);
-        assert!((loaded.run.gold - 600.0).abs() < 1e-6);
+        assert!((earned - rate * 60.0).abs() < 1e-6);
+        assert!((loaded.run.gold - rate * 60.0).abs() < 1e-6);
 
         let _ = save::now_timestamp; // referenced: real loads stamp with wall clock
     }

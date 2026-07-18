@@ -115,7 +115,7 @@ mod tests {
             &rate_bonuses(&data.upgrades, &levels),
             &percents,
         );
-        assert!((base - 1.0).abs() < 1e-9);
+        assert!((base - data.config.base_click).abs() < 1e-9);
 
         levels.insert("click_power".to_owned(), 2);
         let upgraded = gold_per_click(
@@ -123,8 +123,8 @@ mod tests {
             &rate_bonuses(&data.upgrades, &levels),
             &percents,
         );
-        // base_click 1.0 * (1 + 2 * 0.5) = 2.0
-        assert!((upgraded - 2.0).abs() < 1e-9);
+        // (1 + 2 * 0.5) = 2x the base click, whatever the tuned base is.
+        assert!((upgraded - data.config.base_click * 2.0).abs() < 1e-9);
     }
 
     #[test]
@@ -138,7 +138,7 @@ mod tests {
             &rate_bonuses(&data.upgrades, &levels),
             &percents,
         );
-        assert!((plain - 10.0).abs() < 1e-9);
+        assert!((plain - 10.0 * data.config.gold_per_goblin).abs() < 1e-9);
 
         levels.insert("minion_efficiency".to_owned(), 5);
         let efficient = gold_per_second(
@@ -147,8 +147,8 @@ mod tests {
             &rate_bonuses(&data.upgrades, &levels),
             &percents,
         );
-        // 10 goblins * 1.0 * (1 + 5 * 0.2) = 20.0
-        assert!((efficient - 20.0).abs() < 1e-9);
+        // 10 goblins * per_goblin * (1 + 5 * 0.2) = 2x the plain rate.
+        assert!((efficient - 20.0 * data.config.gold_per_goblin).abs() < 1e-9);
     }
 
     #[test]
@@ -159,16 +159,19 @@ mod tests {
         percents.add(EffectStat::GoldPerClick, 25.0);
 
         let boosted = gold_per_click(&data.config, &rates, &percents);
-        assert!((boosted - 1.25).abs() < 1e-9);
+        assert!((boosted - data.config.base_click * 1.25).abs() < 1e-9);
     }
 
     #[test]
-    fn cost_curves_match_original_formulas() {
+    fn cost_curves_use_config_and_floor_per_level() {
         let (data, _) = setup();
         let base = data.config.base_hire_cost;
         let growth = data.config.hire_cost_growth;
-        assert!((upgrade_cost(base, growth, 0) - 50.0).abs() < 1e-9);
-        assert!((upgrade_cost(base, growth, 2) - 72.0).abs() < 1e-9); // floor(50 * 1.44)
+        // Hire level 0 is exactly the configured base; higher levels floor the
+        // geometric curve. (Values follow config, not hardcoded constants.)
+        assert!((upgrade_cost(base, growth, 0) - base).abs() < 1e-9);
+        assert!((upgrade_cost(base, growth, 2) - (base * growth.powi(2)).floor()).abs() < 1e-9);
+        // Config-independent formula spot-checks.
         assert!((upgrade_cost(100.0, 1.5, 0) - 100.0).abs() < 1e-9);
         assert!((upgrade_cost(100.0, 1.5, 3) - 337.0).abs() < 1e-9); // floor(337.5)
     }

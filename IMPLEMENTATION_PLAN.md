@@ -9,8 +9,8 @@ remains, milestone by milestone (GDD §13).*
 ## 1. What is already built (the framework)
 
 The template has been fully converted; nothing of the template's grid/fog/camera
-demo remains. `cargo test` (25 tests), `cargo clippy -D warnings`, and
-`cargo fmt --check` all pass. Verified screenshots: `docs/verification/ui_menu.png`,
+demo remains. `cargo test` (31 tests, incl. a balance-regression sim),
+`cargo clippy -D warnings`, and `cargo fmt --check` all pass. Verified screenshots: `docs/verification/ui_menu.png`,
 `docs/verification/ui_hoard.png`, `docs/verification/ui_settings.png`.
 
 ### Data (all content is JSON — never hardcode balance in Rust)
@@ -121,8 +121,15 @@ Capture harness: `DRAGONS_DEN_CAPTURE_SCENE` = `menu` | `hoard` | `settings`
   - [ ] **Audio SFX** (click/purchase/unlock blips) via toolkit `audio`:
     deferred — no sound assets exist yet. Volumes persist and are ready to feed
     a `SoundManager` once packs ship.
-- [ ] **Balance pass on prototype values** — current numbers are GDD-shaped but
-  untested; first prestige should be reachable in a modest first session.
+- [x] **Balance pass on prototype values** — added a headless greedy-player
+  simulation (`simulation/balance.rs`, test-only) that reinvests by best
+  payback against a dynamic "coast to threshold" horizon and reports minutes to
+  first prestige. Tuned `game_config.json` (base_click 1→2, gold_per_goblin
+  1→5, hire_cost_growth 1.2→1.15) to bring optimal-play first prestige from
+  ~146 min to **~29 min** (real, less-optimal play a bit longer). The test
+  locks it into a 10–40 min window so future config edits can't silently break
+  pacing. Value-dependent unit tests now derive expectations from `config`
+  instead of hardcoding the old constants.
 - [ ] Fix or replace `scripts/capture_ui.ps1` wrapper (the shared script errored
   finding the output; manual env-var capture works — see README).
 

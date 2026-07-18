@@ -1,6 +1,8 @@
 //! Stateless simulation services (GDD §11): pure functions that receive
 //! state and data, and return results. No rendering, no persistence.
 
+#[cfg(test)]
+mod balance;
 pub mod economy;
 pub mod exploration;
 pub mod idle_number;
