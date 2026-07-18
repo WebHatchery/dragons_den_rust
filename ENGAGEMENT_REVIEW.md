@@ -140,8 +140,13 @@ ways to make it entertaining. All numbers are the ones actually shipping in
 > **Content depth — treasures 36 → 38:** two ungated mid-tier finds rounding out
 > the rarity spread — Kobold King's Signet (rare, +4% minion efficiency) and
 > Cartographer's Lens (epic, +7% discovery). "Treasure Hoarder" retuned 36 → 38.
-> Remaining content-depth idea: deeper wall cliffs (a second prestige-threshold
-> band) — the last speculative item.
+>
+> **Content depth — run-upgrade lines 11 → 12:** Warlord's Summons (prestige 6,
+> +hire discount) fills the one stat the gated upgrade set lacked, and cheaper
+> mass-hiring synergizes with the #11 minion soft-cap (push past the wall for
+> less). Gated above the guarded runs, so guards unaffected. Remaining
+> content-depth idea: deeper wall cliffs (a second prestige-threshold band) —
+> the last speculative item.
 
 ---
 

@@ -102,5 +102,15 @@
     "max_level": 15,
     "effect": { "stat": "gold_per_second", "rate": 0.4 },
     "prestige_required": 5
+  },
+  {
+    "id": "warlords_summons",
+    "name": "Warlord's Summons",
+    "description": "Prestige 6: a war-horn heard across the underdark — every kobold answers for far less gold.",
+    "base_cost": 200000,
+    "cost_growth": 1.6,
+    "max_level": 10,
+    "effect": { "stat": "hire_discount", "rate": 0.15 },
+    "prestige_required": 6
   }
 ]
