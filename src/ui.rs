@@ -11,6 +11,7 @@ pub mod left_rail;
 pub mod menu;
 pub mod minions;
 pub mod prestige;
+pub mod prestige_tree;
 pub mod settings;
 pub mod theme;
 pub mod treasures;

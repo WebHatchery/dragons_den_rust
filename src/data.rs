@@ -16,7 +16,7 @@ pub use achievements::AchievementDef;
 pub use dragons::DragonDef;
 pub use minions::MinionDef;
 pub use treasures::TreasureDef;
-pub use upgrades::{PrestigeUpgradeDef, UpgradeDef};
+pub use upgrades::{PrestigeBranch, PrestigeUpgradeDef, UpgradeDef};
 
 const GAME_CONFIG_JSON: &str = include_str!("../assets/data/game_config.json");
 const UPGRADES_JSON: &str = include_str!("../assets/data/upgrades.json");

@@ -1,39 +1,14 @@
 [
   {
-    "id": "ancient_claws",
-    "name": "Ancient Claws",
-    "description": "Permanently multiplies gold per click.",
-    "base_cost": 5,
-    "cost_growth": 2.0,
-    "max_level": 10,
-    "effect": { "stat": "gold_per_click", "percent": 25 }
-  },
-  {
     "id": "goblin_dynasty",
     "name": "Kobold Dynasty",
     "description": "Permanently multiplies passive income.",
     "base_cost": 5,
     "cost_growth": 2.0,
     "max_level": 10,
-    "effect": { "stat": "gold_per_second", "percent": 25 }
-  },
-  {
-    "id": "dragon_senses",
-    "name": "Dragon Senses",
-    "description": "Permanently improves treasure discovery chance.",
-    "base_cost": 8,
-    "cost_growth": 2.5,
-    "max_level": 5,
-    "effect": { "stat": "discovery_chance", "percent": 10 }
-  },
-  {
-    "id": "razor_talons",
-    "name": "Razor Talons",
-    "description": "A steadier permanent boost to gold per click.",
-    "base_cost": 8,
-    "cost_growth": 2.2,
-    "max_level": 8,
-    "effect": { "stat": "gold_per_click", "percent": 15 }
+    "effect": { "stat": "gold_per_second", "percent": 25 },
+    "branch": "greed",
+    "tier": 0
   },
   {
     "id": "wyrm_hunger",
@@ -42,34 +17,10 @@
     "base_cost": 8,
     "cost_growth": 2.2,
     "max_level": 8,
-    "effect": { "stat": "gold_per_second", "percent": 15 }
-  },
-  {
-    "id": "efficient_brood",
-    "name": "Efficient Brood",
-    "description": "Every kobold permanently works harder.",
-    "base_cost": 10,
-    "cost_growth": 2.3,
-    "max_level": 6,
-    "effect": { "stat": "minion_efficiency", "percent": 20 }
-  },
-  {
-    "id": "treasure_magnet",
-    "name": "Treasure Magnet",
-    "description": "Expeditions permanently find treasure more often.",
-    "base_cost": 6,
-    "cost_growth": 2.2,
-    "max_level": 5,
-    "effect": { "stat": "discovery_chance", "percent": 8 }
-  },
-  {
-    "id": "greed_incarnate",
-    "name": "Greed Incarnate",
-    "description": "Every prestige yields permanently more Hoard Points.",
-    "base_cost": 12,
-    "cost_growth": 2.5,
-    "max_level": 6,
-    "effect": { "stat": "hoard_point_gain", "percent": 15 }
+    "effect": { "stat": "gold_per_second", "percent": 15 },
+    "branch": "greed",
+    "tier": 1,
+    "prereq": "goblin_dynasty"
   },
   {
     "id": "primal_avarice",
@@ -78,6 +29,101 @@
     "base_cost": 25,
     "cost_growth": 3.0,
     "max_level": 3,
-    "effect": { "stat": "gold_per_second", "percent": 30 }
+    "effect": { "stat": "gold_per_second", "percent": 30 },
+    "branch": "greed",
+    "tier": 2,
+    "prereq": "wyrm_hunger"
+  },
+  {
+    "id": "ancient_claws",
+    "name": "Ancient Claws",
+    "description": "Permanently multiplies gold per click.",
+    "base_cost": 5,
+    "cost_growth": 2.0,
+    "max_level": 10,
+    "effect": { "stat": "gold_per_click", "percent": 25 },
+    "branch": "power",
+    "tier": 0
+  },
+  {
+    "id": "razor_talons",
+    "name": "Razor Talons",
+    "description": "A steadier permanent boost to gold per click.",
+    "base_cost": 8,
+    "cost_growth": 2.2,
+    "max_level": 8,
+    "effect": { "stat": "gold_per_click", "percent": 15 },
+    "branch": "power",
+    "tier": 1,
+    "prereq": "ancient_claws"
+  },
+  {
+    "id": "dragon_senses",
+    "name": "Dragon Senses",
+    "description": "Permanently improves treasure discovery chance.",
+    "base_cost": 8,
+    "cost_growth": 2.5,
+    "max_level": 5,
+    "effect": { "stat": "discovery_chance", "percent": 10 },
+    "branch": "discovery",
+    "tier": 0
+  },
+  {
+    "id": "treasure_magnet",
+    "name": "Treasure Magnet",
+    "description": "Expeditions permanently find treasure more often.",
+    "base_cost": 6,
+    "cost_growth": 2.2,
+    "max_level": 5,
+    "effect": { "stat": "discovery_chance", "percent": 8 },
+    "branch": "discovery",
+    "tier": 1,
+    "prereq": "dragon_senses"
+  },
+  {
+    "id": "efficient_brood",
+    "name": "Efficient Brood",
+    "description": "Every kobold permanently works harder.",
+    "base_cost": 10,
+    "cost_growth": 2.3,
+    "max_level": 6,
+    "effect": { "stat": "minion_efficiency", "percent": 20 },
+    "branch": "legion",
+    "tier": 0
+  },
+  {
+    "id": "warren_master",
+    "name": "Warren Master",
+    "description": "The whole warren labours harder still — permanent minion efficiency.",
+    "base_cost": 14,
+    "cost_growth": 2.4,
+    "max_level": 5,
+    "effect": { "stat": "minion_efficiency", "percent": 15 },
+    "branch": "legion",
+    "tier": 1,
+    "prereq": "efficient_brood"
+  },
+  {
+    "id": "greed_incarnate",
+    "name": "Greed Incarnate",
+    "description": "Every prestige yields permanently more Hoard Points.",
+    "base_cost": 12,
+    "cost_growth": 2.5,
+    "max_level": 6,
+    "effect": { "stat": "hoard_point_gain", "percent": 15 },
+    "branch": "eternity",
+    "tier": 0
+  },
+  {
+    "id": "eternal_avarice",
+    "name": "Eternal Avarice",
+    "description": "The hoard's memory endures — even more Hoard Points per prestige.",
+    "base_cost": 20,
+    "cost_growth": 2.8,
+    "max_level": 4,
+    "effect": { "stat": "hoard_point_gain", "percent": 20 },
+    "branch": "eternity",
+    "tier": 1,
+    "prereq": "greed_incarnate"
   }
 ]

@@ -129,8 +129,12 @@ New modules (each < 400 lines):
       `gold_per_second`; `total_minions()` now drives the header/rail count + the `Goblins` stat. Minions tab is a
       tier grid, bottom strip has compact tier cards, both gated by `unlock_at`; new `HireMinion(id)` action. Balance
       sim untouched (extra income is 0 until hired) — 36 tests green. Verified via minions/hoard captures.
-- [ ] **P5 — Prestige tree.** Branch schema, `ui/prestige_tree.rs`, connectors + locks, Burn card, **Multipliers**
-      summary. *Verify: buy gated by prereq/HP; capture matches mockup.*
+- [x] **P5 — Prestige tree.** `PrestigeBranch` enum + `branch`/`tier`/`prereq` on each node; `prestige_upgrades.json`
+      regrouped into the 5 branches (+2 nodes to flesh out Legion/Eternity). New `ui/prestige_tree.rs` renders 5
+      colored columns of node discs with connectors, level counts, prereq locks, and click-to-buy. `prestige.rs` now
+      shows the tree + Burn-the-Hoard card + a derived **Prestige Multipliers** panel. Also fixed the prestige
+      `MinionEfficiency` percent to actually apply to minion income (balance-safe) so the Legion branch matters.
+      Verified via prestige capture.
 - [ ] **P6 — Icons.** PNG/procedural icon set + manifest; wire into resource cards, minion cards, treasure/branch
       glyphs. (Theme colors already landed in PT.) *Verify: full-screen capture vs. `image.png`.*
 - [ ] **P7 — Polish.** Hover/press states, tooltips, `+N` float feedback, balance retune, docs (`gdd.md` §9,

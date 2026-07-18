@@ -314,6 +314,23 @@ impl GameplayState {
         self.total_minions() >= def.unlock_at
     }
 
+    /// Current purchased level of a prestige tree node.
+    pub fn prestige_level(&self, id: &str) -> u32 {
+        self.persistent
+            .prestige_upgrade_levels
+            .get(id)
+            .copied()
+            .unwrap_or(0)
+    }
+
+    /// A prestige node unlocks once its prerequisite has at least one level.
+    pub fn prestige_prereq_met(&self, def: &crate::data::PrestigeUpgradeDef) -> bool {
+        match &def.prereq {
+            None => true,
+            Some(id) => self.prestige_level(id) >= 1,
+        }
+    }
+
     /// Hires up to `requested` of an extra minion tier, buying as many as gold
     /// allows. Returns `(hired, total_cost)`.
     pub fn try_hire_minion(

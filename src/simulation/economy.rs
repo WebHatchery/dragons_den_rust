@@ -46,7 +46,9 @@ pub fn gold_per_second(
     rates: &Bonuses,
     percents: &Bonuses,
 ) -> f64 {
-    let per_goblin = config.gold_per_goblin * rates.factor(EffectStat::MinionEfficiency);
+    let per_goblin = config.gold_per_goblin
+        * rates.factor(EffectStat::MinionEfficiency)
+        * percents.percent_multiplier(EffectStat::MinionEfficiency);
     (config.base_passive + f64::from(goblins) * per_goblin)
         * rates.factor(EffectStat::GoldPerSecond)
         * percents.percent_multiplier(EffectStat::GoldPerSecond)
@@ -66,6 +68,7 @@ pub fn extra_minion_income(
         .map(|def| f64::from(counts.get(&def.id).copied().unwrap_or(0)) * def.base_rate)
         .sum();
     raw * rates.factor(EffectStat::MinionEfficiency)
+        * percents.percent_multiplier(EffectStat::MinionEfficiency)
         * rates.factor(EffectStat::GoldPerSecond)
         * percents.percent_multiplier(EffectStat::GoldPerSecond)
 }
