@@ -399,6 +399,15 @@ impl Game {
         };
         gameplay.action_log.push(log);
         self.notifications.success(toast);
+        // A Windfall pays instantly, so give it the same "+N" floating pop the
+        // hoard click gets (Frenzy/Rush announce via their own on-screen readouts).
+        if let GoldenReward::Windfall(gold) = reward {
+            self.floating.spawn(
+                format!("+{}", format_amount(gold)),
+                self.last_mouse_logical,
+                CLICK_GAIN_COLOR,
+            );
+        }
     }
 
     fn buy_upgrade(&mut self, id: &str) {

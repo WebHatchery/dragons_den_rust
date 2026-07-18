@@ -124,8 +124,10 @@ ways to make it entertaining. All numbers are the ones actually shipping in
 > the click frenzy, a Hoard Rush (×all-gold), or an instant gold Windfall worth
 > `golden_windfall_seconds` (90) of current income (floored so an early grab
 > still pays). Each reward reuses an existing indicator (Frenzy banner / Hoard
-> Rush readout / toast), so no new UI. Remaining content-depth idea: deeper
-> wall cliffs (a second prestige-threshold band) — the last speculative item.
+> Rush readout / toast), so no new UI. A collected Windfall also spawns the
+> same floating "+N" pop the hoard click uses, giving the instant reward juice
+> parity with the click. Remaining content-depth idea: deeper wall cliffs (a
+> second prestige-threshold band) — the last speculative item.
 
 ---
 
