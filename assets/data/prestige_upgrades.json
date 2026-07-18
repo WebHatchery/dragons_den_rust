@@ -10,7 +10,7 @@
   },
   {
     "id": "goblin_dynasty",
-    "name": "Goblin Dynasty",
+    "name": "Kobold Dynasty",
     "description": "Permanently multiplies passive income.",
     "base_cost": 5,
     "cost_growth": 2.0,
@@ -47,7 +47,7 @@
   {
     "id": "efficient_brood",
     "name": "Efficient Brood",
-    "description": "Every goblin permanently works harder.",
+    "description": "Every kobold permanently works harder.",
     "base_cost": 10,
     "cost_growth": 2.3,
     "max_level": 6,

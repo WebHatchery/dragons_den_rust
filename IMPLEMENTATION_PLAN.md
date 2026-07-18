@@ -166,7 +166,7 @@ boots a fresh gameplay session (seed 42) on the Hoard screen.
     `ui_treasures`, `ui_achievements`, `ui_prestige`.
   - [x] Upgrade lines 4 → **6**: added **Wyrm's Appetite** (`gold_per_second`
     rate — wired as a passive multiplier via `rates.factor(GoldPerSecond)`) and
-    **Goblin Recruiters** (new `EffectStat::HireDiscount` — divides the hire
+    **Kobold Recruiters** (new `EffectStat::HireDiscount` — divides the hire
     curve through `economy::hire_base_cost`, threaded into `try_hire_bulk` +
     minions UI). Balance retuned: the passive multiplier cut first prestige to
     14 min, so Wyrm's Appetite was made a later-game buy (cost 1.5K, growth

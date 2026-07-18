@@ -27,6 +27,11 @@ const DRAGONS_JSON: &str = include_str!("../assets/data/dragons.json");
 pub struct GameConfig {
     pub game_name: String,
     pub display_name: String,
+    /// Display name for hireable minions (singular / plural). Purely cosmetic —
+    /// the internal `goblins` field and `Goblins` stat key are stable save keys
+    /// and intentionally do not follow this rename.
+    pub minion_name: String,
+    pub minion_name_plural: String,
     pub save_slot: String,
     pub version: String,
     pub base_click: f64,

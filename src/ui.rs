@@ -355,11 +355,15 @@ pub(crate) fn buy_mode_selector(
     }
 }
 
-pub(crate) fn condition_text(condition: &StatCondition) -> String {
+pub(crate) fn condition_text(condition: &StatCondition, data: &GameData) -> String {
+    let minions_working = format!(
+        "{} working at once",
+        data.config.minion_name_plural.to_lowercase()
+    );
     let noun = match condition.stat {
         StatKey::ClicksTotal => "total clicks",
         StatKey::GoldTotalEarned => "total gold earned",
-        StatKey::Goblins => "goblins working at once",
+        StatKey::Goblins => &minions_working,
         StatKey::TreasuresDiscovered => "treasures discovered",
         StatKey::UpgradesPurchased => "upgrades purchased",
         StatKey::PrestigeCount => "prestiges",

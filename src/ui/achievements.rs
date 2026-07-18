@@ -45,7 +45,7 @@ pub fn draw(ctx: &GameplayCtx<'_>, rect: Rect, actions: &mut Vec<UiAction>) {
             &format!(
                 "{}\n{} — reward {}",
                 def.description,
-                ui::condition_text(&def.condition),
+                ui::condition_text(&def.condition, ctx.data),
                 reward
             ),
             card.x + 16.0,

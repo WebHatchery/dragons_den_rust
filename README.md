@@ -1,6 +1,6 @@
 # Dragon's Den
 
-An idle/incremental hoard-building game: click for gold, hire goblin minions for
+An idle/incremental hoard-building game: click for gold, hire kobold minions for
 passive income, send expeditions into ruins for treasure, and prestige — burning
 the hoard for permanent Hoard Points — over and over, each run richer than the
 last.

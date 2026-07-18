@@ -248,7 +248,8 @@ impl Game {
                         GameplayState::from_save(&self.data, saved, save::now_timestamp());
                     if offline_gold >= 1.0 {
                         self.notifications.success(format!(
-                            "While you were away, your goblins gathered {} gold",
+                            "While you were away, your {} gathered {} gold",
+                            self.data.config.minion_name_plural.to_lowercase(),
                             format_amount(offline_gold)
                         ));
                     }
@@ -294,9 +295,13 @@ impl Game {
         let requested = gameplay.buy_mode.requested();
         match gameplay.try_hire_bulk(&self.data, requested) {
             Ok((hired, cost)) => self.notifications.success(format!(
-                "Hired {} goblin{} for {} gold ({} working)",
+                "Hired {} {} for {} gold ({} working)",
                 hired,
-                if hired == 1 { "" } else { "s" },
+                if hired == 1 {
+                    self.data.config.minion_name.to_lowercase()
+                } else {
+                    self.data.config.minion_name_plural.to_lowercase()
+                },
                 format_amount(cost),
                 gameplay.run.goblins
             )),

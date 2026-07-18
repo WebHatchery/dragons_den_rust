@@ -11,7 +11,7 @@
   {
     "id": "minion_efficiency",
     "name": "Minion Efficiency",
-    "description": "Your goblins work harder for the hoard.",
+    "description": "Your kobolds work harder for the hoard.",
     "base_cost": 250,
     "cost_growth": 1.5,
     "max_level": 20,
@@ -46,8 +46,8 @@
   },
   {
     "id": "goblin_recruiters",
-    "name": "Goblin Recruiters",
-    "description": "Silver-tongued recruiters make every new goblin cheaper to hire.",
+    "name": "Kobold Recruiters",
+    "description": "Silver-tongued recruiters make every new kobold cheaper to hire.",
     "base_cost": 300,
     "cost_growth": 1.5,
     "max_level": 10,

@@ -28,7 +28,7 @@
     "name": "Rusted Pauldron",
     "rarity": "common",
     "drop_weight": 40,
-    "description": "A knight's shoulder-guard. The goblins find it inspiring.",
+    "description": "A knight's shoulder-guard. The kobolds find it inspiring.",
     "effect": { "stat": "minion_efficiency", "percent": 1 }
   },
   {
@@ -52,7 +52,7 @@
     "name": "Jade Idol",
     "rarity": "rare",
     "drop_weight": 20,
-    "description": "A carved figure the goblins revere; they work harder near it.",
+    "description": "A carved figure the kobolds revere; they work harder near it.",
     "effect": { "stat": "minion_efficiency", "percent": 3 }
   },
   {

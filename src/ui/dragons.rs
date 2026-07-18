@@ -60,7 +60,7 @@ pub fn draw(ctx: &GameplayCtx<'_>, rect: Rect, actions: &mut Vec<UiAction>) {
         let body = if unlocked {
             format!("{}\n{}", def.flavor, ui::effect_text(&def.effect))
         } else {
-            ui::condition_text(&def.unlock)
+            ui::condition_text(&def.unlock, ctx.data)
         };
         draw_text_block(
             &body,

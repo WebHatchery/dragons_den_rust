@@ -138,7 +138,8 @@ fn draw_side_column(ctx: &GameplayCtx<'_>, rect: Rect, actions: &mut Vec<UiActio
     let discovered = ctx.state.persistent.discovered_treasures.len();
     draw_text_block(
         &format!(
-            "Send goblins into the old ruins.\nCost: {} gold\nDiscovery chance: {:.0}%\nTreasures found: {}/{}",
+            "Send {} into the old ruins.\nCost: {} gold\nDiscovery chance: {:.0}%\nTreasures found: {}/{}",
+            ctx.data.config.minion_name_plural.to_lowercase(),
             format_amount(cost),
             chance * 100.0,
             discovered,

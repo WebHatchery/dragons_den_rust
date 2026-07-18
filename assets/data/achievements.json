@@ -23,7 +23,7 @@
   {
     "id": "minion_mogul",
     "name": "Minion Mogul",
-    "description": "Hire your first goblin.",
+    "description": "Hire your first kobold.",
     "condition": { "stat": "goblins", "gte": 1 },
     "reward": { "gold": 100 }
   },
@@ -86,21 +86,21 @@
   {
     "id": "minion_master",
     "name": "Minion Master",
-    "description": "Have 10 goblins working for you at once.",
+    "description": "Have 10 kobolds working for you at once.",
     "condition": { "stat": "goblins", "gte": 10 },
     "reward": { "gold": 500 }
   },
   {
     "id": "goblin_warlord",
-    "name": "Goblin Warlord",
-    "description": "Command 25 goblins at once.",
+    "name": "Kobold Warlord",
+    "description": "Command 25 kobolds at once.",
     "condition": { "stat": "goblins", "gte": 25 },
     "reward": { "gold": 2500 }
   },
   {
     "id": "goblin_legion",
-    "name": "Goblin Legion",
-    "description": "Command 50 goblins at once.",
+    "name": "Kobold Legion",
+    "description": "Command 50 kobolds at once.",
     "condition": { "stat": "goblins", "gte": 50 },
     "reward": { "hoard_points": 3 }
   },

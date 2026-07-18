@@ -2,9 +2,16 @@
 
 *Draft v0.1 — living document.*
 
-> A dragon-hoarder's idle empire. Click for gold, send goblin minions to work while
+> A dragon-hoarder's idle empire. Click for gold, send kobold minions to work while
 > you're away, send expeditions into ruins for treasure, and burn it all down for a
 > permanent prestige bonus — over and over, each run a little richer than the last.
+
+> **Naming note:** This port renames the original's *goblin* minions to **kobolds** in
+> all player-facing text. §0 (Migration Snapshot) describes the source React/PHP game,
+> which was goblin-themed, so it deliberately keeps the original term. Internal code also
+> keeps the `goblin` name — the run-state minion-count field, the `Goblins` stat key, and
+> the `gold_per_goblin` config key are stable save-file keys, so they don't follow the
+> cosmetic rename. Pseudocode/formula blocks below therefore still read `goblins`.
 
 Sources: `game_apps/dragons_den/` (React/PHP original), `RustGames/migration_candidates.md`,
 `RustGames/standing.md`, `RustGames/docs/GAME_DEVELOPMENT_GUIDE.md`,
@@ -85,7 +92,7 @@ Sources: `game_apps/dragons_den/` (React/PHP original), `RustGames/migration_can
 ## 1. High Concept
 
 - **Pitch:** You're a dragon guarding a hoard that never stops growing. Click for gold,
-  put goblins to work while you're away, send expeditions into old ruins for treasure —
+  put kobolds to work while you're away, send expeditions into old ruins for treasure —
   then, when the hoard is big enough, burn it all down and start again richer, wiser,
   and permanently stronger.
 - **Genre:** Idle/incremental with a prestige loop. The single lowest-art genre that
@@ -96,7 +103,7 @@ Sources: `game_apps/dragons_den/` (React/PHP original), `RustGames/migration_can
   port but even more so (no event-modal complexity either).
 - **Tone:** Playful and a little greedy — a dragon's smug satisfaction at a bigger pile.
   Light, not dry (contrast with `stellar_legacy`'s ledger tone) — flavor text can be fun
-  about goblins and hoards without undermining the numbers.
+  about kobolds and hoards without undermining the numbers.
 - **Comparables:** *Cookie Clicker* (the click+idle+prestige backbone), *Adventure
   Capitalist* (multiple parallel income sources feeding one hoard), *Melvor Idle*
   (structured, legible upgrade progression instead of pure chaos-scaling).
@@ -140,7 +147,7 @@ Sources: `game_apps/dragons_den/` (React/PHP original), `RustGames/migration_can
 **Moment-to-moment loop:**
 
 1. Click the hoard to collect gold (scales with the click-power upgrade line).
-2. Spend gold hiring/upgrading goblin minions for passive income.
+2. Spend gold hiring/upgrading kobold minions for passive income.
 3. Send an expedition into a ruin for a chance at treasure (rarity-weighted, each
    treasure grants a small permanent passive bonus once discovered).
 4. Spend gold in the upgrade shop across a few converging lines (click power, minion
@@ -153,7 +160,7 @@ Sources: `game_apps/dragons_den/` (React/PHP original), `RustGames/migration_can
 
 1. Grow the hoard toward the prestige threshold.
 2. Prestige: convert the current hoard into a permanent currency (§5.4) and reset gold/
-   goblins/active upgrades.
+   kobolds/active upgrades.
 3. Spend the permanent currency on a small permanent-multiplier tree — these persist
    across every future prestige.
 4. Each subsequent run is faster because of the accumulated permanent multipliers;
@@ -168,13 +175,13 @@ Sources: `game_apps/dragons_den/` (React/PHP original), `RustGames/migration_can
 
 - **The player is:** the dragon — never a named character, never voiced, purely the
   hoard's owner. No portrait, no avatar art needed (matches §0's art audit).
-- **The player directly controls:** clicking, hiring/upgrading goblins, sending
+- **The player directly controls:** clicking, hiring/upgrading kobolds, sending
   expeditions, spending gold in the upgrade shop, choosing when to prestige, spending
   prestige currency on permanent upgrades.
-- **The player does NOT control:** individual goblins' behavior (aggregate passive
+- **The player does NOT control:** individual kobolds' behavior (aggregate passive
   income only), the specific treasure an expedition finds (weighted-random), exact
   achievement timing (milestone-triggered).
-- **Core verb list:** *Collect* (click), *Hire* (goblins), *Explore* (ruins/treasure),
+- **Core verb list:** *Collect* (click), *Hire* (kobolds), *Explore* (ruins/treasure),
   *Upgrade* (shop), *Prestige* (reset for permanent currency), *Unlock* (achievements/
   dragon codex entries).
 
@@ -187,9 +194,9 @@ Sources: `game_apps/dragons_den/` (React/PHP original), `RustGames/migration_can
 | Stat | Meaning | Notes |
 | --- | --- | --- |
 | Gold | Primary spendable resource | Reset on prestige |
-| Goblins | Passive-income count | Reset on prestige |
+| Kobolds | Passive-income count (internal field: `goblins`) | Reset on prestige |
 | Gold/click | Click income | Scales with click-power upgrade |
-| Gold/sec | Passive income | Scales with goblin count *and* the efficiency upgrade (the original never actually wired this multiplier in) |
+| Gold/sec | Passive income | Scales with kobold count *and* the efficiency upgrade (the original never actually wired this multiplier in) |
 | Hoard Points | Permanent prestige currency | Persists across prestige resets |
 
 ```text
@@ -336,8 +343,8 @@ same call as `stellar_legacy`.
 
   | Stage | Trigger | What changes |
   | --- | --- | --- |
-  | Early game | New save | Click + first goblins, first upgrade tier |
-  | Mid game | Goblins scaling, first treasures found | Upgrade shop fully open, achievements start unlocking |
+  | Early game | New save | Click + first kobolds, first upgrade tier |
+  | Mid game | Kobolds scaling, first treasures found | Upgrade shop fully open, achievements start unlocking |
   | Prestige-ready | Threshold reached | Prestige button available |
   | Post-prestige | Any prestige completed | Permanent-multiplier tree available, run resets, next cycle faster |
 
@@ -375,7 +382,7 @@ shipped to players — see §0) rather than the sparse 4-button live screen.
 | --- | --- | --- |
 | Main Menu | New/continue/load slot, settings | `VirtualUi`, `SurfaceStyle`, buttons |
 | Hoard (main view) | Click target, resource counters, gold/sec display, action log | `GridLayout`, meters, badges, `NotificationManager` (floating "+N" click feedback) |
-| Minions / Hire | Goblin count, hire button with live cost, passive-income breakdown | `TextStyle`, buttons |
+| Minions / Hire | Kobold count, hire button with live cost, passive-income breakdown | `TextStyle`, buttons |
 | Upgrade Shop | Converged upgrade list with cost/level/effect preview | `ScrollTabs`, `GridLayout` |
 | Treasure Collection | Discovered/undiscovered grid, rarity badges | `GridLayout`, badges, tooltips |
 | Achievements | Checklist with condition + reward preview | `ScrollTabs` |
