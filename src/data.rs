@@ -194,7 +194,7 @@ mod tests {
         assert!(data.prestige_upgrades.len() >= 8);
         assert!(data.treasures.len() >= 15);
         assert!(data.achievements.len() >= 20);
-        assert_eq!(data.dragons.len(), 8);
+        assert!(data.dragons.len() >= 12);
     }
 
     #[test]

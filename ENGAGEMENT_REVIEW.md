@@ -78,8 +78,16 @@ ways to make it entertaining. All numbers are the ones actually shipping in
 > ladder (clicks 50k, trillion gold, 100/200 kobolds tying into the #11
 > soft-cap wall, 150 upgrades, prestige 3/25/50, a 30-achievement
 > Completionist). `StatKey` + `condition_text` + `stat_value` extended to
-> match. Next content-depth targets: **codex dragons 8 → 12+**, a 5th/6th
-> minion tier for deep prestige, more prestige-tree tiers per branch.
+> match.
+>
+> **Content depth — codex dragons 8 → 13:** five new dragons spanning the new
+> mechanics and deep stats — Tempest Roc (5 Golden Hoards, #9), Ruin Serpent
+> (25 expeditions, #8), Molten Colossus (50 kobolds, the first
+> `minion_efficiency` dragon), Astral Leviathan (prestige 5) and Worldeater
+> Wyrm (trillion gold) — the last two the first `all_gold` codex bonuses.
+> Dragons unlock via `check_unlocks`, which the balance sim never runs, so
+> guards are untouched. Next content-depth targets: a 5th/6th minion tier for
+> deep prestige, more prestige-tree tiers per branch, more run-upgrade lines.
 
 ---
 

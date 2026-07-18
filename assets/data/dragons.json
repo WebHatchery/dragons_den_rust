@@ -70,5 +70,50 @@
     "flavor": "An energetic striker whose fortunes arrive in bursts.",
     "unlock": { "stat": "prestige_count", "gte": 3 },
     "effect": { "stat": "gold_per_click", "percent": 5 }
+  },
+  {
+    "id": "molten_colossus",
+    "name": "Molten Colossus",
+    "element": "magma",
+    "color": "#B22222",
+    "flavor": "A mountain that learned to hoard; the whole brood toils in its shadow.",
+    "unlock": { "stat": "goblins", "gte": 50 },
+    "effect": { "stat": "minion_efficiency", "percent": 5 }
+  },
+  {
+    "id": "tempest_roc",
+    "name": "Tempest Roc",
+    "element": "gale",
+    "color": "#40E0D0",
+    "flavor": "It rides the golden updrafts, snatching every glint before it fades.",
+    "unlock": { "stat": "golden_hoards_collected", "gte": 5 },
+    "effect": { "stat": "gold_per_click", "percent": 6 }
+  },
+  {
+    "id": "ruin_serpent",
+    "name": "Ruin Serpent",
+    "element": "ancient",
+    "color": "#556B2F",
+    "flavor": "Coiled through a hundred plundered tombs, it smells treasure through stone.",
+    "unlock": { "stat": "expeditions_launched", "gte": 25 },
+    "effect": { "stat": "discovery_chance", "percent": 6 }
+  },
+  {
+    "id": "astral_leviathan",
+    "name": "Astral Leviathan",
+    "element": "cosmic",
+    "color": "#4B0082",
+    "flavor": "It swam between prestiges before the first coin was ever struck.",
+    "unlock": { "stat": "prestige_count", "gte": 5 },
+    "effect": { "stat": "all_gold", "percent": 4 }
+  },
+  {
+    "id": "worldeater_wyrm",
+    "name": "Worldeater Wyrm",
+    "element": "void",
+    "color": "#8B0000",
+    "flavor": "The apex hoarder. Kingdoms, oceans, stars — all of it is simply inventory.",
+    "unlock": { "stat": "gold_total_earned", "gte": 1000000000000 },
+    "effect": { "stat": "all_gold", "percent": 6 }
   }
 ]
