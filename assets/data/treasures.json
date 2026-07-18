@@ -294,5 +294,21 @@
     "prestige_required": 5,
     "description": "A splinter of the first morning. Hold it and every coin remembers how to multiply.",
     "effect": { "stat": "all_gold", "percent": 50 }
+  },
+  {
+    "id": "kobold_kings_signet",
+    "name": "Kobold King's Signet",
+    "rarity": "rare",
+    "drop_weight": 21,
+    "description": "The seal of a long-dead warren-king; the brood still snaps to when it glints.",
+    "effect": { "stat": "minion_efficiency", "percent": 4 }
+  },
+  {
+    "id": "cartographers_lens",
+    "name": "Cartographer's Lens",
+    "rarity": "epic",
+    "drop_weight": 6,
+    "description": "A ground-crystal monocle that maps the ruins' every hidden vault at a glance.",
+    "effect": { "stat": "discovery_chance", "percent": 7 }
   }
 ]

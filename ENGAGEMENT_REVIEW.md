@@ -135,9 +135,13 @@ ways to make it entertaining. All numbers are the ones actually shipping in
 >
 > **Content depth — codex dragons 13 → 15:** two deep-unlock dragons matching
 > the new long-tail goals — Solar Monarch (50 Golden Hoards, +8% gold/sec) and
-> Nightmother (prestige 8, +8% minion efficiency). Remaining content-depth idea:
-> deeper wall cliffs (a second prestige-threshold band) — the last speculative
-> item.
+> Nightmother (prestige 8, +8% minion efficiency).
+>
+> **Content depth — treasures 36 → 38:** two ungated mid-tier finds rounding out
+> the rarity spread — Kobold King's Signet (rare, +4% minion efficiency) and
+> Cartographer's Lens (epic, +7% discovery). "Treasure Hoarder" retuned 36 → 38.
+> Remaining content-depth idea: deeper wall cliffs (a second prestige-threshold
+> band) — the last speculative item.
 
 ---
 
