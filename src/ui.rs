@@ -7,6 +7,7 @@ pub mod bottom_bar;
 pub mod dragons;
 pub mod frame;
 pub mod hoard;
+pub mod icons;
 pub mod left_rail;
 pub mod menu;
 pub mod minions;

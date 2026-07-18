@@ -6,6 +6,7 @@
 //! strip are drawn by their own modules (`left_rail.rs`, `bottom_bar.rs`).
 
 use crate::simulation::idle_number::{format_amount, format_rate};
+use crate::ui::icons::{self, Icon};
 use crate::ui::theme;
 use crate::ui::{self, GameplayCtx, UiAction, LOGICAL_HEIGHT, LOGICAL_WIDTH};
 use macroquad::prelude::*;
@@ -99,8 +100,7 @@ pub fn draw_header(ctx: &GameplayCtx<'_>, rect: Rect, actions: &mut Vec<UiAction
 
     resource_card(
         Rect::new(x, card_y, card_w, card_h),
-        Color::new(0.85, 0.62, 0.22, 1.0),
-        "$",
+        Icon::Coin,
         "Gold",
         &format_amount(ctx.state.run.gold),
         Some(&rate),
@@ -108,8 +108,7 @@ pub fn draw_header(ctx: &GameplayCtx<'_>, rect: Rect, actions: &mut Vec<UiAction
     x += card_w + GAP;
     resource_card(
         Rect::new(x, card_y, card_w, card_h),
-        Color::new(0.36, 0.60, 0.30, 1.0),
-        "M",
+        Icon::Minion,
         &ctx.data.config.minion_name_plural,
         &ctx.state.total_minions().to_string(),
         Some(&rate),
@@ -117,51 +116,25 @@ pub fn draw_header(ctx: &GameplayCtx<'_>, rect: Rect, actions: &mut Vec<UiAction
     x += card_w + GAP;
     resource_card(
         Rect::new(x, card_y, card_w, card_h),
-        Color::new(0.55, 0.42, 0.78, 1.0),
-        "HP",
+        Icon::Gem,
         "Hoard Points",
         &format_amount(ctx.state.persistent.hoard_points),
         None,
     );
 }
 
-/// A single header resource card: icon chip + title + big value + rate line.
-/// The chip is a flat color placeholder until the icon set lands (P6).
-fn resource_card(
-    rect: Rect,
-    chip: Color,
-    glyph: &str,
-    title: &str,
-    value: &str,
-    rate: Option<&str>,
-) {
+/// A single header resource card: procedural icon + title + big value + rate.
+fn resource_card(rect: Rect, icon: Icon, title: &str, value: &str, rate: Option<&str>) {
     draw_surface(
         rect,
         &SurfaceStyle::new(theme::PANEL).with_border(1.0, theme::BORDER_DIM),
     );
 
-    let chip_size = 40.0;
-    let chip_rect = Rect::new(
-        rect.x + 12.0,
-        rect.y + (rect.h - chip_size) / 2.0,
-        chip_size,
-        chip_size,
-    );
-    draw_surface(
-        chip_rect,
-        &SurfaceStyle::new(chip).with_border(1.0, Color::new(0.0, 0.0, 0.0, 0.4)),
-    );
-    draw_text_centered_in_box(
-        glyph,
-        chip_rect.x,
-        chip_rect.y + 4.0,
-        chip_rect.w,
-        chip_rect.h,
-        20.0,
-        Color::new(0.05, 0.05, 0.06, 1.0),
-    );
+    let chip_cx = rect.x + 32.0;
+    let chip_cy = rect.y + rect.h / 2.0;
+    icons::draw(icon, chip_cx, chip_cy, 18.0);
 
-    let text_x = chip_rect.right() + 12.0;
+    let text_x = chip_cx + 32.0;
     draw_ui_text_ex(
         title,
         text_x,

@@ -13,21 +13,13 @@ use macroquad_toolkit::ui::draw_ui_text_ex;
 pub fn draw(ctx: &GameplayCtx<'_>, rect: Rect, actions: &mut Vec<UiAction>) {
     let content = ui::panel(rect, "The Hoard");
 
-    // Hoard art placeholder — real art lands in P6.
+    // Hoard art: a procedural coin-pile-and-crown vignette.
     let art = Rect::new(content.x, content.y, content.w, 108.0);
     draw_surface(
         art,
         &SurfaceStyle::new(theme::PANEL_DARK).with_border(1.0, Color::new(0.95, 0.72, 0.35, 0.55)),
     );
-    draw_text_centered_in_box(
-        "hoard art (P6)",
-        art.x,
-        art.y + art.h / 2.0 - 10.0,
-        art.w,
-        20.0,
-        13.0,
-        theme::TEXT_DIM,
-    );
+    crate::ui::icons::hoard_pile(art);
 
     draw_click_button(ctx, content, art.bottom() + 18.0, actions);
     draw_footer(ctx, content);

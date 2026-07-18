@@ -135,8 +135,10 @@ New modules (each < 400 lines):
       shows the tree + Burn-the-Hoard card + a derived **Prestige Multipliers** panel. Also fixed the prestige
       `MinionEfficiency` percent to actually apply to minion income (balance-safe) so the Legion branch matters.
       Verified via prestige capture.
-- [ ] **P6 — Icons.** PNG/procedural icon set + manifest; wire into resource cards, minion cards, treasure/branch
-      glyphs. (Theme colors already landed in PT.) *Verify: full-screen capture vs. `image.png`.*
+- [x] **P6 — Icons (procedural).** `ui/icons.rs` draws vector glyphs from primitives (no art assets, per GDD §0):
+      coin, minion face, prestige gem, and a crowned coin-pile. Wired into the header resource cards and the left
+      rail's hoard-art well. Branch-node / treasure glyphs left as colored discs for now (diminishing returns).
+      Verified via hoard capture.
 - [ ] **P7 — Polish.** Hover/press states, tooltips, `+N` float feedback, balance retune, docs (`gdd.md` §9,
       `IMPLEMENTATION_PLAN.md`).
 
