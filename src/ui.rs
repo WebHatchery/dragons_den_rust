@@ -23,7 +23,7 @@ use macroquad_toolkit::ui::{draw_ui_text_ex, RectExt, VirtualUi};
 pub const LOGICAL_WIDTH: f32 = 1280.0;
 pub const LOGICAL_HEIGHT: f32 = 720.0;
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum UiAction {
     // Menu
     NewGame,
@@ -44,6 +44,8 @@ pub enum UiAction {
     OpenSettings,
     CloseSettings,
     ChangeSetting(SettingChange),
+    /// New clamped vertical scroll offset for the active list screen.
+    SetScroll(f32),
 }
 
 /// Which audio group a volume change targets.
@@ -294,6 +296,37 @@ pub(crate) fn bulk_quote(
             }
         }
     }
+}
+
+/// Reads the mouse wheel and returns the clamped scroll offset to render a list
+/// of `content_height` inside `view`. Emits `SetScroll` only when it changes so
+/// the value persists across frames. macroquad has no scissor, so callers cull
+/// items whose card isn't fully inside `view` (see [`item_fully_visible`]).
+pub(crate) fn apply_scroll(
+    current: f32,
+    content_height: f32,
+    view: Rect,
+    mouse: Vec2,
+    actions: &mut Vec<UiAction>,
+) -> f32 {
+    const SCROLL_SPEED: f32 = 48.0;
+    let max = (content_height - view.h).max(0.0);
+    let (_, wheel) = mouse_wheel();
+    let mut scroll = current;
+    if wheel != 0.0 && view.contains_point(mouse) {
+        scroll -= wheel * SCROLL_SPEED;
+    }
+    scroll = scroll.clamp(0.0, max);
+    if (scroll - current).abs() > f32::EPSILON {
+        actions.push(UiAction::SetScroll(scroll));
+    }
+    scroll
+}
+
+/// True when a scrolled card sits fully within the view (used to cull the
+/// partially-clipped rows at the top/bottom, keeping panel edges clean).
+pub(crate) fn item_fully_visible(card: Rect, view: Rect) -> bool {
+    card.y >= view.y - 0.5 && card.bottom() <= view.bottom() + 0.5
 }
 
 /// A small `x1 / x10 / Max` segmented selector; pushes `SetBuyMode` on change.

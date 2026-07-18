@@ -126,10 +126,12 @@ mod tests {
         let data = GameData::load().unwrap();
 
         assert_eq!(data.config.game_name, "dragons_den");
-        assert_eq!(data.upgrades.len(), 4);
-        assert_eq!(data.prestige_upgrades.len(), 3);
-        assert_eq!(data.treasures.len(), 5);
-        assert_eq!(data.achievements.len(), 10);
+        // Lower bounds track the GDD §8 content targets; content may grow past
+        // them without breaking this loader smoke test.
+        assert!(data.upgrades.len() >= 4);
+        assert!(data.prestige_upgrades.len() >= 8);
+        assert!(data.treasures.len() >= 15);
+        assert!(data.achievements.len() >= 20);
         assert_eq!(data.dragons.len(), 8);
     }
 

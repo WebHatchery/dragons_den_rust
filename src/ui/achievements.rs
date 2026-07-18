@@ -7,14 +7,19 @@ use macroquad_toolkit::prelude::*;
 use macroquad_toolkit::ui::draw_ui_text_ex;
 
 pub fn draw(ctx: &GameplayCtx<'_>, rect: Rect, actions: &mut Vec<UiAction>) {
-    let _ = actions; // display-only screen
     let (unlocked, total) = ctx.state.persistent.achievements.progress();
     let content = ui::panel(rect, &format!("Achievements ({unlocked}/{total})"));
 
+    let view = Rect::new(content.x, content.y, content.w, content.h);
     let layout = GridLayout::new(content.x, content.y, content.w, 10.0, 2, 88.0);
+    let total_h = layout.content_height(ctx.data.achievements.len());
+    let scroll = ui::apply_scroll(ctx.state.scroll_y, total_h, view, ctx.mouse, actions);
     for (index, def) in ctx.data.achievements.iter().enumerate() {
-        let (x, y, w, h) = layout.get_item_rect(index, 0.0);
+        let (x, y, w, h) = layout.get_item_rect(index, scroll);
         let card = Rect::new(x, y, w, h);
+        if !ui::item_fully_visible(card, view) {
+            continue;
+        }
         let done = ctx.state.persistent.achievements.is_unlocked(&def.id);
         let accent = if done { dark::POSITIVE } else { dark::TEXT_DIM };
 

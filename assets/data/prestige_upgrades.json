@@ -25,5 +25,59 @@
     "cost_growth": 2.5,
     "max_level": 5,
     "effect": { "stat": "discovery_chance", "percent": 10 }
+  },
+  {
+    "id": "razor_talons",
+    "name": "Razor Talons",
+    "description": "A steadier permanent boost to gold per click.",
+    "base_cost": 8,
+    "cost_growth": 2.2,
+    "max_level": 8,
+    "effect": { "stat": "gold_per_click", "percent": 15 }
+  },
+  {
+    "id": "wyrm_hunger",
+    "name": "Wyrm Hunger",
+    "description": "A steadier permanent boost to passive income.",
+    "base_cost": 8,
+    "cost_growth": 2.2,
+    "max_level": 8,
+    "effect": { "stat": "gold_per_second", "percent": 15 }
+  },
+  {
+    "id": "efficient_brood",
+    "name": "Efficient Brood",
+    "description": "Every goblin permanently works harder.",
+    "base_cost": 10,
+    "cost_growth": 2.3,
+    "max_level": 6,
+    "effect": { "stat": "minion_efficiency", "percent": 20 }
+  },
+  {
+    "id": "treasure_magnet",
+    "name": "Treasure Magnet",
+    "description": "Expeditions permanently find treasure more often.",
+    "base_cost": 6,
+    "cost_growth": 2.2,
+    "max_level": 5,
+    "effect": { "stat": "discovery_chance", "percent": 8 }
+  },
+  {
+    "id": "greed_incarnate",
+    "name": "Greed Incarnate",
+    "description": "Every prestige yields permanently more Hoard Points.",
+    "base_cost": 12,
+    "cost_growth": 2.5,
+    "max_level": 6,
+    "effect": { "stat": "hoard_point_gain", "percent": 15 }
+  },
+  {
+    "id": "primal_avarice",
+    "name": "Primal Avarice",
+    "description": "The apex hoard-node: a massive permanent passive multiplier.",
+    "base_cost": 25,
+    "cost_growth": 3.0,
+    "max_level": 3,
+    "effect": { "stat": "gold_per_second", "percent": 30 }
   }
 ]

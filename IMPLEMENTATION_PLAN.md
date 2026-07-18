@@ -9,9 +9,10 @@ remains, milestone by milestone (GDD §13).*
 ## 1. What is already built (the framework)
 
 The template has been fully converted; nothing of the template's grid/fog/camera
-demo remains. `cargo test` (31 tests, incl. a balance-regression sim),
-`cargo clippy -D warnings`, and `cargo fmt --check` all pass. Verified screenshots: `docs/verification/ui_menu.png`,
-`docs/verification/ui_hoard.png`, `docs/verification/ui_settings.png`.
+demo remains. `cargo test` (30 tests, incl. a balance-regression sim),
+`cargo clippy -D warnings`, and `cargo fmt --check` all pass. Verified
+screenshots in `docs/verification/`: `ui_menu`, `ui_hoard`, `ui_settings`,
+`ui_treasures`, `ui_achievements`, `ui_prestige`.
 
 ### Data (all content is JSON — never hardcode balance in Rust)
 
@@ -19,9 +20,9 @@ demo remains. `cargo test` (31 tests, incl. a balance-regression sim),
 | --- | --- | --- |
 | `assets/data/game_config.json` | Base rates, cost growths, prestige gate/divisor, autosave interval | Prototype values per GDD §5.1 |
 | `assets/data/upgrades.json` | The 4 converged upgrade lines (GDD §8 prototype target) | Done |
-| `assets/data/prestige_upgrades.json` | 3 permanent-tree nodes | Done |
-| `assets/data/treasures.json` | 5 treasures, rarity-weighted, all with real effects | Done |
-| `assets/data/achievements.json` | 10 achievements, **all** with wired conditions + rewards | Done |
+| `assets/data/prestige_upgrades.json` | 9 permanent-tree nodes across all 5 effect stats | Done (M3) |
+| `assets/data/treasures.json` | 16 treasures, rarity-weighted, all with real effects | Done (M3) |
+| `assets/data/achievements.json` | 22 achievements, **all** with wired conditions + rewards | Done (M3) |
 | `assets/data/dragons.json` | 8-element codex with original hex swatches, unlock conditions, small bonuses | Done |
 
 Shared condition/effect vocabulary (in `src/data.rs`): `StatKey` (7 stats),
@@ -66,8 +67,15 @@ expedition + prestige progress), minions, upgrades, treasures, achievements,
 prestige (burn + permanent tree), dragon codex. Header shows gold / rate /
 Hoard Points; tab bar switches screens; Esc saves and exits to menu.
 
-Capture harness: `DRAGONS_DEN_CAPTURE_SCENE` = `menu` | `hoard` | `settings`
-(anything else boots a fresh gameplay session, seed 42).
+List screens (upgrades, treasures, achievements, prestige tree) scroll via the
+mouse wheel: `ui::apply_scroll` reads the wheel and emits `SetScroll`; the
+transient `GameplayState::scroll_y` (reset on tab switch) offsets
+`GridLayout::get_item_rect`, and `ui::item_fully_visible` culls the partial
+edge rows (macroquad has no scissor).
+
+Capture harness: `DRAGONS_DEN_CAPTURE_SCENE` = `menu` | `settings` | any tab
+label (`hoard`, `treasures`, `achievements`, `prestige`, …); an unknown name
+boots a fresh gameplay session (seed 42) on the Hoard screen.
 
 ---
 
@@ -139,8 +147,16 @@ Capture harness: `DRAGONS_DEN_CAPTURE_SCENE` = `menu` | `hoard` | `settings`
 
 ### Toward M3 (content-complete, GDD §8 full targets)
 
-- [ ] Upgrade lines 4 → 6–8; treasures 5 → 15–20; achievements 10 → 20–25;
-  prestige tree 3 → 8–10 nodes. (Dragons stay at 8 — fixed by the element set.)
+- [~] Content expansion (GDD §8 targets):
+  - [x] treasures 5 → **16**, achievements 10 → **22**, prestige tree 3 → **9**.
+    All are pure JSON; `treasure_hoarder`'s "discover every" gate moved 5 → 16.
+    Required scroll support first — added generic mouse-wheel scrolling +
+    edge-cull to all four list screens (see §UI note). Loader smoke test now
+    asserts content lower bounds instead of exact counts. Verified renders:
+    `ui_treasures`, `ui_achievements`, `ui_prestige`.
+  - [ ] Upgrade lines 4 → 6–8 — deferred to its own iteration: new gold-relevant
+    lines feed the balance sim, so this needs a re-tune + re-check of the
+    10–40 min window. (Dragons stay at 8 — fixed by the element set.)
 - [ ] **Multi-tier prestige** (GDD §12 Q2): rising thresholds per prestige
   count instead of the single 1M gate. Extend `game_config.json` with a
   threshold curve and `prestige.rs` accordingly.

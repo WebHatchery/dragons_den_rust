@@ -8,12 +8,60 @@
     "effect": { "stat": "gold_per_second", "percent": 1 }
   },
   {
+    "id": "tarnished_coin",
+    "name": "Tarnished Coin",
+    "rarity": "common",
+    "drop_weight": 55,
+    "description": "Old currency of a forgotten kingdom, still warm to the touch.",
+    "effect": { "stat": "gold_per_click", "percent": 1 }
+  },
+  {
+    "id": "cracked_gemstone",
+    "name": "Cracked Gemstone",
+    "rarity": "common",
+    "drop_weight": 45,
+    "description": "Flawed, but it still catches the firelight nicely.",
+    "effect": { "stat": "gold_per_second", "percent": 2 }
+  },
+  {
+    "id": "rusted_pauldron",
+    "name": "Rusted Pauldron",
+    "rarity": "common",
+    "drop_weight": 40,
+    "description": "A knight's shoulder-guard. The goblins find it inspiring.",
+    "effect": { "stat": "minion_efficiency", "percent": 1 }
+  },
+  {
     "id": "rare_ruby",
     "name": "Rare Ruby",
     "rarity": "rare",
     "drop_weight": 25,
     "description": "A ruby that glimmers with a fiery glow.",
     "effect": { "stat": "discovery_chance", "percent": 2 }
+  },
+  {
+    "id": "silver_chalice",
+    "name": "Silver Chalice",
+    "rarity": "rare",
+    "drop_weight": 22,
+    "description": "A ceremonial cup worth a small fortune.",
+    "effect": { "stat": "gold_per_second", "percent": 5 }
+  },
+  {
+    "id": "jade_idol",
+    "name": "Jade Idol",
+    "rarity": "rare",
+    "drop_weight": 20,
+    "description": "A carved figure the goblins revere; they work harder near it.",
+    "effect": { "stat": "minion_efficiency", "percent": 3 }
+  },
+  {
+    "id": "moonstone_ring",
+    "name": "Moonstone Ring",
+    "rarity": "rare",
+    "drop_weight": 18,
+    "description": "It sharpens the senses — and the claws.",
+    "effect": { "stat": "gold_per_click", "percent": 3 }
   },
   {
     "id": "mystic_sapphire",
@@ -32,11 +80,51 @@
     "effect": { "stat": "discovery_chance", "percent": 5 }
   },
   {
+    "id": "obsidian_crown",
+    "name": "Obsidian Crown",
+    "rarity": "epic",
+    "drop_weight": 7,
+    "description": "A crown of volcanic glass, heavy with old authority.",
+    "effect": { "stat": "gold_per_click", "percent": 6 }
+  },
+  {
+    "id": "dragonbone_relic",
+    "name": "Dragonbone Relic",
+    "rarity": "epic",
+    "drop_weight": 5,
+    "description": "A shard of an ancestor's wing. The brood snaps to attention.",
+    "effect": { "stat": "minion_efficiency", "percent": 8 }
+  },
+  {
+    "id": "starlit_orb",
+    "name": "Starlit Orb",
+    "rarity": "epic",
+    "drop_weight": 5,
+    "description": "Captured starlight that whispers of greater hoards to come.",
+    "effect": { "stat": "hoard_point_gain", "percent": 5 }
+  },
+  {
     "id": "golden_goblet",
     "name": "Ancient Golden Goblet",
     "rarity": "legendary",
-    "drop_weight": 1,
+    "drop_weight": 2,
     "description": "A goblet that shines with the light of a thousand suns.",
     "effect": { "stat": "gold_per_click", "percent": 5 }
+  },
+  {
+    "id": "philosophers_hoard",
+    "name": "Philosopher's Hoard",
+    "rarity": "legendary",
+    "drop_weight": 2,
+    "description": "A vault-in-a-box that quietly multiplies whatever it touches.",
+    "effect": { "stat": "gold_per_second", "percent": 15 }
+  },
+  {
+    "id": "worldheart_diamond",
+    "name": "Worldheart Diamond",
+    "rarity": "legendary",
+    "drop_weight": 1,
+    "description": "The single greatest gem ever unearthed. Kingdoms would burn for it.",
+    "effect": { "stat": "hoard_point_gain", "percent": 10 }
   }
 ]

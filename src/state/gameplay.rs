@@ -198,6 +198,9 @@ pub struct GameplayState {
     pub screen: Screen,
     pub buy_mode: BuyMode,
     pub action_log: ActionLog,
+    /// Vertical scroll offset for the current screen's list; reset to 0 on every
+    /// screen switch (only one screen is visible at a time). Transient.
+    pub scroll_y: f32,
     autosave_accum: f32,
 }
 
@@ -209,6 +212,7 @@ impl GameplayState {
             screen: Screen::Hoard,
             buy_mode: BuyMode::One,
             action_log: ActionLog::default(),
+            scroll_y: 0.0,
             autosave_accum: 0.0,
         }
     }
@@ -222,6 +226,7 @@ impl GameplayState {
             screen: Screen::Hoard,
             buy_mode: BuyMode::One,
             action_log: ActionLog::default(),
+            scroll_y: 0.0,
             autosave_accum: 0.0,
         };
         state

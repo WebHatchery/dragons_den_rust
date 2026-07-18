@@ -35,11 +35,25 @@
     "reward": { "hoard_points": 1 }
   },
   {
-    "id": "achievement_unlocked",
-    "name": "Achievement Unlocked",
-    "description": "Unlock 9 other achievements.",
-    "condition": { "stat": "achievements_unlocked", "gte": 9 },
-    "reward": { "gold": 1000 }
+    "id": "clicker",
+    "name": "Getting the Hang of It",
+    "description": "Click the hoard 100 times.",
+    "condition": { "stat": "clicks_total", "gte": 100 },
+    "reward": { "gold": 300 }
+  },
+  {
+    "id": "relentless_clicker",
+    "name": "Relentless",
+    "description": "Click the hoard 1,000 times.",
+    "condition": { "stat": "clicks_total", "gte": 1000 },
+    "reward": { "gold": 1500 }
+  },
+  {
+    "id": "claw_machine",
+    "name": "Claw Machine",
+    "description": "Click the hoard 10,000 times.",
+    "condition": { "stat": "clicks_total", "gte": 10000 },
+    "reward": { "hoard_points": 2 }
   },
   {
     "id": "golden_collector",
@@ -49,11 +63,25 @@
     "reward": { "gold": 500 }
   },
   {
-    "id": "treasure_hoarder",
-    "name": "Treasure Hoarder",
-    "description": "Discover every type of treasure.",
-    "condition": { "stat": "treasures_discovered", "gte": 5 },
+    "id": "gold_baron",
+    "name": "Gold Baron",
+    "description": "Earn a total of 100,000 gold.",
+    "condition": { "stat": "gold_total_earned", "gte": 100000 },
     "reward": { "gold": 2000 }
+  },
+  {
+    "id": "millionaire_wyrm",
+    "name": "Millionaire Wyrm",
+    "description": "Earn a total of 1,000,000 gold.",
+    "condition": { "stat": "gold_total_earned", "gte": 1000000 },
+    "reward": { "hoard_points": 3 }
+  },
+  {
+    "id": "billionaire_wyrm",
+    "name": "Billionaire Wyrm",
+    "description": "Earn a total of 1,000,000,000 gold.",
+    "condition": { "stat": "gold_total_earned", "gte": 1000000000 },
+    "reward": { "hoard_points": 10 }
   },
   {
     "id": "minion_master",
@@ -63,10 +91,66 @@
     "reward": { "gold": 500 }
   },
   {
+    "id": "goblin_warlord",
+    "name": "Goblin Warlord",
+    "description": "Command 25 goblins at once.",
+    "condition": { "stat": "goblins", "gte": 25 },
+    "reward": { "gold": 2500 }
+  },
+  {
+    "id": "goblin_legion",
+    "name": "Goblin Legion",
+    "description": "Command 50 goblins at once.",
+    "condition": { "stat": "goblins", "gte": 50 },
+    "reward": { "hoard_points": 3 }
+  },
+  {
+    "id": "tinkerer",
+    "name": "Tinkerer",
+    "description": "Purchase 10 upgrades.",
+    "condition": { "stat": "upgrades_purchased", "gte": 10 },
+    "reward": { "gold": 600 }
+  },
+  {
+    "id": "master_artificer",
+    "name": "Master Artificer",
+    "description": "Purchase 50 upgrades.",
+    "condition": { "stat": "upgrades_purchased", "gte": 50 },
+    "reward": { "hoard_points": 3 }
+  },
+  {
+    "id": "curator",
+    "name": "Curator",
+    "description": "Discover 10 different treasures.",
+    "condition": { "stat": "treasures_discovered", "gte": 10 },
+    "reward": { "gold": 3000 }
+  },
+  {
+    "id": "treasure_hoarder",
+    "name": "Treasure Hoarder",
+    "description": "Discover every type of treasure.",
+    "condition": { "stat": "treasures_discovered", "gte": 16 },
+    "reward": { "hoard_points": 5 }
+  },
+  {
     "id": "prestige_pro",
     "name": "Prestige Pro",
     "description": "Prestige 5 times.",
     "condition": { "stat": "prestige_count", "gte": 5 },
     "reward": { "hoard_points": 3 }
+  },
+  {
+    "id": "eternal_flame",
+    "name": "Eternal Flame",
+    "description": "Prestige 10 times.",
+    "condition": { "stat": "prestige_count", "gte": 10 },
+    "reward": { "hoard_points": 8 }
+  },
+  {
+    "id": "achievement_unlocked",
+    "name": "Achievement Unlocked",
+    "description": "Unlock 15 other achievements.",
+    "condition": { "stat": "achievements_unlocked", "gte": 15 },
+    "reward": { "gold": 5000 }
   }
 ]

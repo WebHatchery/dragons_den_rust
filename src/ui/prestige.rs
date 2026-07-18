@@ -71,10 +71,16 @@ fn draw_tree_panel(ctx: &GameplayCtx<'_>, rect: Rect, actions: &mut Vec<UiAction
         ),
     );
 
+    let view = Rect::new(content.x, content.y, content.w, content.h);
     let layout = GridLayout::new(content.x, content.y, content.w, 12.0, 3, 130.0);
+    let total = layout.content_height(ctx.data.prestige_upgrades.len());
+    let scroll = ui::apply_scroll(ctx.state.scroll_y, total, view, ctx.mouse, actions);
     for (index, def) in ctx.data.prestige_upgrades.iter().enumerate() {
-        let (x, y, w, h) = layout.get_item_rect(index, 0.0);
+        let (x, y, w, h) = layout.get_item_rect(index, scroll);
         let card = Rect::new(x, y, w, h);
+        if !ui::item_fully_visible(card, view) {
+            continue;
+        }
         let level = ctx
             .state
             .persistent

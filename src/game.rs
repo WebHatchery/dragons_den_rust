@@ -72,7 +72,17 @@ impl Game {
                 menu.screen = MenuScreen::Settings;
                 GameState::Menu(menu)
             }
-            _ => GameState::Gameplay(Box::new(GameplayState::new_game(&self.data, 42))),
+            other => {
+                let mut gameplay = GameplayState::new_game(&self.data, 42);
+                // A scene name matching a tab boots straight onto that screen.
+                if let Some(screen) = crate::state::gameplay::Screen::ALL
+                    .into_iter()
+                    .find(|s| s.label().eq_ignore_ascii_case(other))
+                {
+                    gameplay.screen = screen;
+                }
+                GameState::Gameplay(Box::new(gameplay))
+            }
         };
     }
 
@@ -152,6 +162,7 @@ impl Game {
             UiAction::SwitchScreen(screen) => {
                 if let GameState::Gameplay(gameplay) = &mut self.state {
                     gameplay.screen = screen;
+                    gameplay.scroll_y = 0.0;
                 }
             }
             UiAction::ClickHoard => {
@@ -185,6 +196,11 @@ impl Game {
                 }
             }
             UiAction::ChangeSetting(change) => self.change_setting(change),
+            UiAction::SetScroll(offset) => {
+                if let GameState::Gameplay(gameplay) = &mut self.state {
+                    gameplay.scroll_y = offset;
+                }
+            }
         }
     }
 
