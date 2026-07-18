@@ -93,8 +93,15 @@ ways to make it entertaining. All numbers are the ones actually shipping in
 > continues the ~6.7× geometric rate curve. One tier (not two) to keep the
 > 3-col Minions grid at two rows and the compact bottom-bar strip legible —
 > both verified. Extra minion tiers aren't in the balance sim, so guards are
-> untouched. Next content-depth targets: more prestige-tree tiers per branch,
-> more run-upgrade lines, deeper wall cliffs.
+> untouched.
+>
+> **Content depth — prestige tree now uniform at 3 tiers:** Power and Discovery
+> were shallow (only tiers 0–1); added their tier-2 capstones **Apex Predator**
+> (+30% gold/click) and **Ruinseeker's Crown** (+18% discovery) so all five
+> branches match Greed/Legion/Eternity at three tiers (13 → 15 nodes). Held at
+> three tiers deliberately — a fourth would overflow the tree panel. Guards
+> unchanged (19.7 min / 30%). Next content-depth targets: more run-upgrade
+> lines, deeper wall cliffs / a second prestige-threshold band.
 
 ---
 

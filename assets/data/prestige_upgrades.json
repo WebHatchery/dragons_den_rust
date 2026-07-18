@@ -58,6 +58,18 @@
     "prereq": "ancient_claws"
   },
   {
+    "id": "apex_predator",
+    "name": "Apex Predator",
+    "description": "The apex claw-node: a massive permanent multiplier to gold per click.",
+    "base_cost": 25,
+    "cost_growth": 3.0,
+    "max_level": 3,
+    "effect": { "stat": "gold_per_click", "percent": 30 },
+    "branch": "power",
+    "tier": 2,
+    "prereq": "razor_talons"
+  },
+  {
     "id": "dragon_senses",
     "name": "Dragon Senses",
     "description": "Permanently improves treasure discovery chance.",
@@ -79,6 +91,18 @@
     "branch": "discovery",
     "tier": 1,
     "prereq": "dragon_senses"
+  },
+  {
+    "id": "ruinseekers_crown",
+    "name": "Ruinseeker's Crown",
+    "description": "The apex sight-node: a great permanent leap in treasure discovery chance.",
+    "base_cost": 20,
+    "cost_growth": 2.8,
+    "max_level": 3,
+    "effect": { "stat": "discovery_chance", "percent": 18 },
+    "branch": "discovery",
+    "tier": 2,
+    "prereq": "treasure_magnet"
   },
   {
     "id": "efficient_brood",
