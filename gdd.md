@@ -375,20 +375,28 @@ targets exist to keep repeat prestige cycles from feeling identical, same ration
 
 ## 9. UI/UX & Screen Flow
 
-Modeled on the original's orphaned `GameBoard.tsx` layout (richer than what was actually
-shipped to players — see §0) rather than the sparse 4-button live screen.
+The gameplay view is a **persistent ornate frame** (see `UI_REDESIGN_PLAN.md` and `image.png`)
+rather than one panel at a time: a header of three resource cards (Gold / Minions / Hoard
+Points, each icon + value + rate) with Save/Menu/settings; a permanent **left rail** (hoard art,
+the circular CLICK target, live income, run time); a permanent **bottom strip** (minion-tier
+cards, the expedition launcher, recent treasures); and a **tab-swapped center**. Only the center
+changes per tab. The whole UI uses the warm gold-on-brown "hoard" theme (`ui/theme.rs`) with
+etched panels and procedural icons (`ui/icons.rs`) — no art assets.
 
-| Screen | Purpose | Toolkit pieces |
+| Region / Screen | Purpose | Implementation |
 | --- | --- | --- |
 | Main Menu | New/continue/load slot, settings | `VirtualUi`, `SurfaceStyle`, buttons |
-| Hoard (main view) | Click target, resource counters, gold/sec display, action log | `GridLayout`, meters, badges, `NotificationManager` (floating "+N" click feedback) |
-| Minions / Hire | Kobold count, hire button with live cost, passive-income breakdown | `TextStyle`, buttons |
-| Upgrade Shop | Converged upgrade list with cost/level/effect preview | `ScrollTabs`, `GridLayout` |
-| Treasure Collection | Discovered/undiscovered grid, rarity badges | `GridLayout`, badges, tooltips |
-| Achievements | Checklist with condition + reward preview | `ScrollTabs` |
-| Prestige | Threshold progress, hoard-points preview, permanent-upgrade tree | `GridLayout`, meters |
-| Dragon Codex | Flavor entries, unlock conditions, per-entry passive bonus | `GridLayout`, `TextStyle` |
-| Pause/Settings | Autosave interval, audio, save/load | `VirtualUi` |
+| Header (persistent) | Gold / Minions / Hoard-Point resource cards + Save/Menu/settings gear | `ui/frame.rs`, `ui/icons.rs` |
+| Left rail (persistent) | Hoard art, circular CLICK target, income, run time | `ui/left_rail.rs`, `NotificationManager` "+N" feedback |
+| Bottom strip (persistent) | Minion-tier hire cards, expedition launcher, recent treasures | `ui/bottom_bar.rs` |
+| Hoard tab | Chronicle log + prestige progress | `ui/hoard.rs` |
+| Minions tab | Base + extra minion tiers, each a hire card gated by `unlock_at` | `ui/minions.rs` |
+| Upgrade Shop | Converged upgrade list with cost/level/effect preview | `ui/upgrades.rs`, `GridLayout` |
+| Treasure Collection | Discovered/undiscovered grid, rarity badges | `ui/treasures.rs`, `GridLayout` |
+| Achievements | Checklist with condition + reward preview | `ui/achievements.rs` |
+| Prestige tab | Five-branch "Hoard Legacies" node tree, Burn-the-Hoard card, Prestige Multipliers | `ui/prestige.rs`, `ui/prestige_tree.rs` |
+| Dragon Codex | Flavor entries, unlock conditions, per-entry passive bonus | `ui/dragons.rs`, `GridLayout` |
+| Settings (overlay) | Autosave interval, audio, display — opens over gameplay via the gear | `ui/settings.rs` |
 
 Interaction flow:
 

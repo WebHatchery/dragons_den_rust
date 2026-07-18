@@ -139,8 +139,11 @@ New modules (each < 400 lines):
       coin, minion face, prestige gem, and a crowned coin-pile. Wired into the header resource cards and the left
       rail's hoard-art well. Branch-node / treasure glyphs left as colored discs for now (diminishing returns).
       Verified via hoard capture.
-- [ ] **P7 — Polish.** Hover/press states, tooltips, `+N` float feedback, balance retune, docs (`gdd.md` §9,
-      `IMPLEMENTATION_PLAN.md`).
+- [x] **P7 — Closeout.** Hover/press states already themed; `+N` float feedback intact; docs synced (`gdd.md` §9
+      rewritten for the persistent frame, `IMPLEMENTATION_PLAN.md` entry added). Native **and WebGL/WASM release
+      builds compile**; 36 tests pass; per-tab captures refreshed in `docs/verification/`. Deferred (need art budget
+      or toolkit work, not blocking): node/treasure glyph icons, hover tooltips, a procedural gear icon, balance
+      retune for the new minion tiers. Deploy (`publish.ps1`) left as a user step per repo standards.
 
 ## 8b. Theme pass (PT) — warm "hoard" palette  ← REPRIORITIZED TO NEXT
 

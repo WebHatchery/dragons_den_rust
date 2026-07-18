@@ -191,6 +191,19 @@ boots a fresh gameplay session (seed 42) on the Hoard screen.
   Designers can raise the cap toward uncapped in JSON. Unit test covers the
   clamp.
 
+- [x] **UI redesign — "ornate frame" layout** (see `UI_REDESIGN_PLAN.md`, target
+  `image.png`). Replaced the one-panel-at-a-time screens with a persistent frame:
+  header resource cards + Save/Menu/settings-gear (`ui/frame.rs`), a permanent
+  left rail with the circular click target, income, and run time
+  (`ui/left_rail.rs`), and a persistent bottom strip of minion cards, expeditions,
+  and recent treasures (`ui/bottom_bar.rs`), around a tab-swapped center. Added a
+  warm gold-on-brown theme with etched panels and corner marks (`ui/theme.rs`),
+  procedural vector icons (`ui/icons.rs`), data-driven minion tiers
+  (`minions.json` + `RunState::minion_counts`, save-safe), and the five-branch
+  "Hoard Legacies" prestige tree with a Prestige Multipliers panel
+  (`ui/prestige_tree.rs`, branch/tier/prereq schema). Native + WebGL release
+  builds compile; 36 tests pass; per-tab captures in `docs/verification/`.
+
 ### Release checklist (per repo standards)
 
 *All code/content milestones (M1–M3) are complete. The items below are the
