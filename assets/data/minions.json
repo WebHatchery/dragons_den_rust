@@ -22,5 +22,14 @@
     "base_cost": 1500000.0,
     "cost_growth": 1.2,
     "unlock_at": 50
+  },
+  {
+    "id": "drake",
+    "name": "Drake",
+    "base_rate": 6000.0,
+    "base_cost": 25000000.0,
+    "cost_growth": 1.22,
+    "unlock_at": 75,
+    "prestige_required": 2
   }
 ]

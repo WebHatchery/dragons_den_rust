@@ -309,9 +309,11 @@ impl GameplayState {
         self.run.minion_counts.get(id).copied().unwrap_or(0)
     }
 
-    /// An extra tier is available once total minions reach its `unlock_at`.
+    /// An extra tier is available once total minions reach its `unlock_at`
+    /// and enough prestiges have been burned (`prestige_required`).
     pub fn minion_unlocked(&self, def: &crate::data::MinionDef) -> bool {
         self.total_minions() >= def.unlock_at
+            && self.persistent.prestige_count >= def.prestige_required
     }
 
     /// Current purchased level of a prestige tree node.

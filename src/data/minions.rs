@@ -18,4 +18,8 @@ pub struct MinionDef {
     pub cost_growth: f64,
     /// Total minions (all tiers) required before this tier can be hired.
     pub unlock_at: u32,
+    /// Prestiges completed before this tier can be hired — a qualitative
+    /// prestige reward ("burn the hoard to unlock X"), not just a multiplier.
+    #[serde(default)]
+    pub prestige_required: u32,
 }

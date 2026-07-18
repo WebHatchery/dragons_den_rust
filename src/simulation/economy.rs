@@ -20,6 +20,8 @@ pub fn rate_bonuses(defs: &[UpgradeDef], levels: &HashMap<String, u32>) -> Bonus
 /// Aggregates percent bonuses from prestige upgrade levels (percent scales
 /// linearly with level; treasures and dragons contribute via
 /// `state::gameplay`'s collection pass using [`Bonuses::add`] directly).
+/// Compounding nodes feed the multiplicative channel instead:
+/// `(1 + percent/100)^level`.
 pub fn prestige_percent_bonuses(
     defs: &[PrestigeUpgradeDef],
     levels: &HashMap<String, u32>,
@@ -28,16 +30,30 @@ pub fn prestige_percent_bonuses(
     for def in defs {
         let level = levels.get(&def.id).copied().unwrap_or(0);
         if level > 0 {
-            bonuses.add(def.effect.stat, f64::from(level) * def.effect.percent);
+            if def.compounding {
+                bonuses.mul(
+                    def.effect.stat,
+                    (1.0 + def.effect.percent / 100.0).powi(level as i32),
+                );
+            } else {
+                bonuses.add(def.effect.stat, f64::from(level) * def.effect.percent);
+            }
         }
     }
     bonuses
+}
+
+/// The `AllGold` stat's combined factor — both channels — applied to every
+/// gold income source (click, base passive, extra minion tiers).
+pub fn all_gold_multiplier(percents: &Bonuses) -> f64 {
+    percents.product(EffectStat::AllGold) * percents.percent_multiplier(EffectStat::AllGold)
 }
 
 pub fn gold_per_click(config: &GameConfig, rates: &Bonuses, percents: &Bonuses) -> f64 {
     config.base_click
         * rates.factor(EffectStat::GoldPerClick)
         * percents.percent_multiplier(EffectStat::GoldPerClick)
+        * all_gold_multiplier(percents)
 }
 
 pub fn gold_per_second(
@@ -52,6 +68,7 @@ pub fn gold_per_second(
     (config.base_passive + f64::from(goblins) * per_goblin)
         * rates.factor(EffectStat::GoldPerSecond)
         * percents.percent_multiplier(EffectStat::GoldPerSecond)
+        * all_gold_multiplier(percents)
 }
 
 /// Passive income from the extra minion tiers (P4), sharing the same efficiency
@@ -71,6 +88,7 @@ pub fn extra_minion_income(
         * percents.percent_multiplier(EffectStat::MinionEfficiency)
         * rates.factor(EffectStat::GoldPerSecond)
         * percents.percent_multiplier(EffectStat::GoldPerSecond)
+        * all_gold_multiplier(percents)
 }
 
 /// Effective base goblin hire cost after run upgrades: the `HireDiscount` line

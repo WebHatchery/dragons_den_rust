@@ -65,6 +65,11 @@ pub struct PrestigeUpgradeDef {
     pub cost_growth: f64,
     pub max_level: u32,
     pub effect: PercentEffect,
+    /// When true, each level *multiplies* the stat by `1 + percent/100`
+    /// (compounding across levels) instead of pooling additively — the
+    /// geometric permanent bonus that can chase a multiplying prestige wall.
+    #[serde(default)]
+    pub compounding: bool,
     pub branch: PrestigeBranch,
     pub tier: u32,
     #[serde(default)]

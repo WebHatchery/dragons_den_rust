@@ -14,15 +14,16 @@ pub fn can_prestige(config: &GameConfig, gold: f64, prestige_count: u32) -> bool
     gold >= current_threshold(config, prestige_count)
 }
 
-/// `floor(sqrt(gold / divisor))`, scaled by the Hoard Greed upgrade line and
-/// any percent bonuses to hoard-point gain.
+/// `floor((gold / divisor)^exponent)`, scaled by the Hoard Greed upgrade line
+/// and any percent bonuses to hoard-point gain. The exponent sits above sqrt
+/// so overshooting the threshold before burning is rewarded.
 pub fn hoard_points_gained(
     config: &GameConfig,
     gold: f64,
     rates: &Bonuses,
     percents: &Bonuses,
 ) -> f64 {
-    let base = (gold.max(0.0) / config.prestige_divisor).sqrt();
+    let base = (gold.max(0.0) / config.prestige_divisor).powf(config.prestige_exponent);
     (base
         * rates.factor(EffectStat::HoardPointGain)
         * percents.percent_multiplier(EffectStat::HoardPointGain))
@@ -40,9 +41,25 @@ mod tests {
         let none = Bonuses::default();
         assert!(!can_prestige(&data.config, 999_999.0, 0));
         assert!(can_prestige(&data.config, 1_000_000.0, 0));
-        // sqrt(1_000_000 / 10_000) = 10
+        let expected = (1_000_000.0 / data.config.prestige_divisor)
+            .powf(data.config.prestige_exponent)
+            .floor();
         let gained = hoard_points_gained(&data.config, 1_000_000.0, &none, &none);
-        assert!((gained - 10.0).abs() < 1e-9);
+        assert!((gained - expected).abs() < 1e-9);
+        // A first prestige must fund a real opening spree on the tree, not one
+        // token level (the un-fun the engagement review diagnosed).
+        assert!(gained >= 50.0, "first prestige pays only {gained} HP");
+    }
+
+    #[test]
+    fn overshooting_the_threshold_pays_superlinearly_vs_sqrt() {
+        let data = GameData::load().unwrap();
+        let none = Bonuses::default();
+        let at = hoard_points_gained(&data.config, 1_000_000.0, &none, &none);
+        let over = hoard_points_gained(&data.config, 4_000_000.0, &none, &none);
+        // sqrt would pay exactly 2x for 4x gold; the softened exponent pays more,
+        // making "push past the threshold before burning" a real decision.
+        assert!(over > at * 2.0, "4x gold pays {over} vs {at} at threshold");
     }
 
     #[test]
@@ -65,7 +82,11 @@ mod tests {
         let mut rates = Bonuses::default();
         rates.add(EffectStat::HoardPointGain, 0.5);
         let none = Bonuses::default();
+        let expected = ((1_000_000.0 / data.config.prestige_divisor)
+            .powf(data.config.prestige_exponent)
+            * 1.5)
+            .floor();
         let gained = hoard_points_gained(&data.config, 1_000_000.0, &rates, &none);
-        assert!((gained - 15.0).abs() < 1e-9);
+        assert!((gained - expected).abs() < 1e-9);
     }
 }

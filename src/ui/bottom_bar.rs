@@ -68,8 +68,13 @@ fn draw_minion_card(
     );
 
     if !slot.unlocked {
+        let hint = if ctx.state.persistent.prestige_count < slot.prestige_required {
+            format!("Prestige {}", slot.prestige_required)
+        } else {
+            format!("Unlocks at {}", slot.unlock_at)
+        };
         draw_text_centered_in_box(
-            &format!("{}\nUnlocks at {}", slot.name, slot.unlock_at),
+            &format!("{}\n{}", slot.name, hint),
             rect.x,
             rect.y + rect.h / 2.0 - 16.0,
             rect.w,

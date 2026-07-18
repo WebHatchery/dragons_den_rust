@@ -125,5 +125,18 @@
     "branch": "eternity",
     "tier": 1,
     "prereq": "greed_incarnate"
+  },
+  {
+    "id": "dragon_avarice",
+    "name": "Dragon's Avarice",
+    "description": "Every level DOUBLES all gold income, compounding forever.",
+    "base_cost": 25,
+    "cost_growth": 4.0,
+    "max_level": 10,
+    "effect": { "stat": "all_gold", "percent": 100 },
+    "compounding": true,
+    "branch": "eternity",
+    "tier": 2,
+    "prereq": "eternal_avarice"
   }
 ]

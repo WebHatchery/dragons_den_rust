@@ -49,6 +49,10 @@ pub struct GameConfig {
     /// (GDD §12 Q2 multi-tier prestige): `threshold_n = base * growth^n`.
     pub prestige_threshold_growth: f64,
     pub prestige_divisor: f64,
+    /// Exponent on `(gold / divisor)` when converting the hoard to Hoard
+    /// Points. Slightly above sqrt (0.5) so overshooting the threshold before
+    /// burning pays — prestige timing becomes a decision, not a reflex.
+    pub prestige_exponent: f64,
     /// Maximum hours of offline earnings credited on load (GDD §12 Q3). A
     /// generous cap keeps a multi-week absence from trivializing progression
     /// while still rewarding daily check-ins; raise it toward uncapped freely.
@@ -86,6 +90,10 @@ pub enum EffectStat {
     HoardPointGain,
     /// Reduces goblin hire cost as a `1 / (1 + sum)` divisor on the base curve.
     HireDiscount,
+    /// Scales every gold income source (click, passive, extra minion tiers).
+    /// The only stat with a *compounding* prestige node behind it — the
+    /// geometric engine that lets permanent bonuses outrun the prestige wall.
+    AllGold,
 }
 
 /// Additive percent bonus, used by treasures, dragons, and prestige upgrades.

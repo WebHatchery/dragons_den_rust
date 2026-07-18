@@ -85,22 +85,26 @@ fn draw_multipliers(ctx: &GameplayCtx<'_>, rect: Rect) {
         &ctx.state.persistent.prestige_upgrade_levels,
     );
     let rows = [
+        ("All Gold", EffectStat::AllGold),
         ("Gold per Click", EffectStat::GoldPerClick),
         ("Passive Income", EffectStat::GoldPerSecond),
         ("Minion Efficiency", EffectStat::MinionEfficiency),
         ("Discovery Chance", EffectStat::DiscoveryChance),
         ("Hoard Point Gain", EffectStat::HoardPointGain),
     ];
+    let spacing = ((content.h - 8.0) / rows.len() as f32).min(24.0);
     for (i, (label, stat)) in rows.iter().enumerate() {
-        let y = content.y + 8.0 + i as f32 * 24.0;
+        let y = content.y + 4.0 + i as f32 * spacing;
         draw_ui_text_ex(
             label,
             content.x,
             y + 15.0,
             TextStyle::new(15.0, theme::TEXT).params(),
         );
+        // Both channels: additive percents and the compounding product.
+        let factor = bonuses.percent_multiplier(*stat) * bonuses.product(*stat);
         draw_text_centered_in_box(
-            &format!("x{:.2}", bonuses.percent_multiplier(*stat)),
+            &format!("x{factor:.2}"),
             content.right() - 72.0,
             y,
             70.0,

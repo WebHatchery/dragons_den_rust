@@ -1,0 +1,196 @@
+# Dragon's Den — Engagement Review & Fun Plan
+
+*Companion to `gdd.md` (design authority) and `IMPLEMENTATION_PLAN.md` (build
+status). Where those two describe **what was built and why**, this document
+diagnoses **why the built game plays boring** and lays out concrete, prioritized
+ways to make it entertaining. All numbers are the ones actually shipping in
+`assets/data/*.json` as of this review.*
+
+> **Status update:** Tier 1 has landed, combined with the wall/obstacle
+> structure originally parked in Tier 3 (#10): threshold growth 8→3.5, divisor
+> 10,000→150, reward exponent sqrt→0.55, a compounding ×2/level "Dragon's
+> Avarice" all-gold node, a prestige-2-gated Drake minion tier, and a CI
+> regression test asserting cycle 2 ≤ 70% of cycle 1 (currently ~42%).
+> Failures B (exploration dead-end) and the rest of Tiers 2–3 remain open.
+
+---
+
+## 1. What we actually have (the honest state)
+
+The prototype is *mechanically complete and clean* — this is not a "half-built"
+problem. Every system the GDD promised exists and is wired:
+
+- **Click → hire → explore → upgrade → prestige** loop works end-to-end.
+- **6 run upgrades**, **3 extra minion tiers** + base Kobold, **17 treasures**,
+  **22 achievements**, **8 codex dragons**, **12-node / 5-branch prestige tree**.
+- Prestige genuinely grants a permanent currency and permanent multipliers (the
+  headline fix over the original, which granted nothing). That fix is real.
+- Offline earnings, autosave, settings, ornate-frame UI, floating "+N" juice —
+  all present and tested (36 tests, CI-guarded).
+
+So the problem is **not missing features. It's economy tuning and loop shape.**
+The game is a correct machine calibrated to be un-fun. That's good news: most of
+the fix is JSON, and the rest is small, targeted systems — not a rebuild.
+
+---
+
+## 2. Why it's boring — the three failures, with the math
+
+### Failure A — The prestige loop *decelerates* instead of accelerating
+
+This is the big one, and the user's instinct is exactly right.
+
+- **The wall grows ×8 per prestige.**
+  `threshold(n) = 1,000,000 × 8ⁿ` → 1M, 8M, 64M, 512M…
+  (`prestige_threshold_growth: 8.0`)
+- **The reward grows only ×2.83 per prestige.**
+  `HP = floor(sqrt(gold / 10,000))`. At each tier's threshold that's
+  `sqrt(100 × 8ⁿ) = 10 × 2.83ⁿ` → 10, 28, 80, 226 HP.
+- **The permanent tree is additively hard-capped.** All percent bonuses pool
+  into one additive channel per stat (`simulation.rs`,
+  `percent_multiplier = 1 + Σpercent/100`). Even *every* gold/sec node maxed
+  totals +460% → ×5.6, ever. A one-pool additive cap cannot chase a wall that
+  multiplies ×8 each tier.
+
+**Net effect:** each prestige tier takes ~8× longer to reach but pays only
+~2.83× the currency, and that currency buys into a bonus pool that tops out
+around ×6. So **HP earned per minute of play *falls* every tier**, and the
+climb gets slower, not faster. That is the precise opposite of what makes idle
+games compulsive.
+
+**Concrete first-prestige trade:** you spend 20–40 minutes of a run (a run that
+multiplied your income 10–100×) and get **10 HP**. The cheapest useful node,
+Kobold Dynasty (base 5, growth ×2), costs 5 then 10 then 20… so 10 HP buys
+**exactly one level → +25% gold/sec, permanently.** You burned half an hour of
+compounding growth for a flat +25%. Rationally, you should never prestige. The
+player feels this immediately.
+
+> **Root cause the tests missed:** `balance.rs` guards *first-prestige time*
+> (10–40 min) but **nothing guards that prestige is worth doing.** The one
+> metric that defines fun in a prestige game — "is run N+1 meaningfully faster
+> than run N?" — is untested, so it shipped broken.
+
+### Failure B — Exploration is a 5-minute checklist that then dies forever
+
+- Every expedition costs a **flat 100 gold**, forever, for all 17 treasures
+  (`explore_cost: 100.0`). Once income clears ~100/sec — which happens in the
+  first minute or two — you spam the button and collect the set in a few
+  minutes at 30%+ discovery chance.
+- Treasures are tiny one-time bonuses. Total gold/sec across *all* gold/sec
+  treasures is +1+2+5+10+15 = **+33%**. The whole collection is a rounding
+  error next to a single upgrade line.
+- After the last treasure, **Explore does nothing but print "All discovered"**
+  for the rest of the game. A core verb becomes a dead button.
+
+There is no cost curve, no risk/reward variety, no long tail, and no repeatable
+payoff. "Collect treasures" is a two-line story that's over before the game
+starts.
+
+### Failure C — No long runway, no scarcity, no walls worth breaking
+
+- Gold is trivially abundant (base click 2 × ~5 clicks/s = 10/s from turn one),
+  so nothing forces a *choice* between purchases — you buy everything.
+- 6 upgrade lines and 3 minion tiers, most capped at 10–20 levels. Once maxed,
+  active play has nothing left to reach for; the numbers plateau instead of
+  opening a new exponential band.
+- Prestige gives only **+%** — it never *unlocks* anything (a new minion tier,
+  a new mechanic, a faster expedition). So there's no qualitative "I want to
+  prestige to get X," only a bad quantitative trade (Failure A).
+
+---
+
+## 3. The fix, in priority order
+
+Ordered by **fun-per-effort**. Do Tier 1 first — it's mostly JSON and it makes
+the existing machine actually loop. Tiers 2–3 add the durable hooks that keep
+idle players coming back for weeks.
+
+### Tier 1 — Make the loop accelerate (mostly JSON + one small code change)
+
+The goal metric: **run N+1 should reach its threshold in ≤ ~50% of run N's
+time.** If prestige doesn't visibly speed up the next climb, nothing else
+matters.
+
+1. **Slow the wall.** `prestige_threshold_growth: 8.0 → ~3.5`. Tiers should
+   come often enough that re-prestiging stays the obvious best move.
+   *(JSON only.)*
+2. **Make the first prestige generous.** `prestige_divisor: 10,000 → ~250`.
+   First prestige jumps from 10 HP to ~63 HP — enough to buy a *real* opening
+   boost (several node levels), not one. *(JSON only.)*
+3. **Add a multiplicative global-income node to the tree** — e.g. "Dragon's
+   Avarice: ×1.5 to *all* gold per level." This is the classic idle engine:
+   a geometric permanent multiplier that compounds across prestiges and can
+   actually outrun a multiplying wall, which an additive pool never can.
+   *(Needs a new multiplicative bonus channel in `simulation.rs` +
+   `economy.rs`; ~small, well-isolated.)*
+4. **Reward overshoot a little.** Optionally soften the sqrt (e.g.
+   `gold^0.55 / divisor`) so pushing to 3–4× threshold before burning feels
+   worth it — gives players a *decision* about when to prestige instead of
+   burning the instant the button lights. *(One formula line in `prestige.rs`.)*
+5. **Add the missing regression test.** Extend `balance.rs` to assert
+   *loop acceleration* (time-to-threshold for cycle 2 ≤ K × cycle 1), not just
+   first-prestige time. This is what should have caught the un-fun. *(Test.)*
+
+### Tier 2 — Give exploration and the mid-game durable pull (small systems)
+
+6. **Scale the expedition cost.** `explore_cost` should rise with treasures
+   found (`base × growth^discovered`) or be a % of current gold, so late
+   treasures are a real investment instead of button-mash filler. *(Code:
+   currently flat in `try_explore`.)*
+7. **Never let Explore dead-end.** After a duplicate/complete roll, pay out
+   gold, a **temporary "Hoard Rush" buff** (×N income for 30s), or a
+   **treasure-dust** currency spent on rerolls/luck. The button stays alive and
+   the action stays repeatable for the whole game. *(Code + optional new
+   currency.)*
+8. **Extend the treasure long tail.** Add higher-impact, rarer treasures — some
+   gated behind prestige tiers — so collection is an ongoing chase, not a
+   5-minute sweep. *(Mostly JSON; gating needs a small unlock hook.)*
+
+### Tier 3 — The engagement hooks that create sessions (new systems)
+
+9. **Golden Hoard / active-play burst.** A "golden hoard" glint occasionally
+   appears; clicking it grants a **Dragon's Frenzy** (×7 click, or a lump of
+   gold, or a lucky-expedition window) for a few seconds. This is the single
+   most proven retention driver in the clicker genre (Cookie Clicker's golden
+   cookie) and it makes *being present* matter without punishing idlers.
+10. **Prestige unlocks, not just multipliers.** Gate qualitative content behind
+    `prestige_count`: a new minion tier at prestige 2, a second expedition slot
+    at prestige 3, a new upgrade line at prestige 4. Now players *want* to
+    prestige for a reason numbers alone can't give.
+11. **Soft-caps + wall-breakers.** Introduce gentle diminishing returns that a
+    specific prestige/treasure unlock removes — turning "buy everything" into
+    "which wall do I break next?" and creating real choices under scarcity.
+12. **Later, if retention needs it:** a second meta-layer (ascension) and/or
+    optional **challenge runs** (play under a restriction for a permanent
+    reward) for the long-tail audience. Keep these behind "do we still have
+    engaged players at week 3?" — don't build them speculatively.
+
+---
+
+## 4. Recommended sequencing
+
+1. **Tier 1 first, as one balance pass.** It's ~90% JSON plus one multiplicative
+   channel, and it's the difference between "a correct machine" and "a game."
+   Ship it, then *actually play two prestige cycles* and confirm the second is
+   visibly faster.
+2. **Tier 2** to make the mid-game (exploration + treasure chase) hold
+   attention between prestiges.
+3. **Tier 3** for the hooks that turn "I tried it" into "I left it running and
+   came back." Golden Hoard (#9) and prestige-gated unlocks (#10) are the two
+   highest-leverage items here.
+
+Everything in Tier 1 respects the project's rules: balance stays in JSON,
+formulas stay in `simulation/` with tests beside them, UI stays a pure view
+layer. The one structural addition (a multiplicative bonus channel) is a clean,
+additive change to `simulation.rs`/`economy.rs`, not a refactor.
+
+---
+
+## 5. The one-sentence version
+
+The game isn't unfinished — it's **tuned so the wall grows faster than the
+reward and the treasure loop ends in five minutes**; fix the prestige curve so
+each run is visibly faster than the last (Tier 1), give exploration a scaling
+cost and a payoff that never dead-ends (Tier 2), and add a golden-hoard active
+hook plus prestige-gated *unlocks* (Tier 3), and the same machine becomes a
+genuine idle game.

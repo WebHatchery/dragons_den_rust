@@ -18,7 +18,20 @@ pub(crate) struct MinionSlot {
     pub cost_growth: f64,
     pub unlocked: bool,
     pub unlock_at: u32,
+    pub prestige_required: u32,
     pub action: UiAction,
+}
+
+impl MinionSlot {
+    /// What a locked card should tell the player to chase: the prestige gate
+    /// when it's the unmet one, otherwise the minion-count gate.
+    pub(crate) fn locked_hint(&self, prestige_count: u32) -> String {
+        if prestige_count < self.prestige_required {
+            format!("Requires Prestige {}", self.prestige_required)
+        } else {
+            format!("Unlocks at {} minions", self.unlock_at)
+        }
+    }
 }
 
 /// Builds the ordered tier list: base Kobolds first, then each `minions.json`
@@ -32,6 +45,7 @@ pub(crate) fn slots(ctx: &GameplayCtx<'_>) -> Vec<MinionSlot> {
         cost_growth: ctx.data.config.hire_cost_growth,
         unlocked: true,
         unlock_at: 0,
+        prestige_required: 0,
         action: UiAction::HireGoblin,
     }];
     for def in &ctx.data.minions {
@@ -43,6 +57,7 @@ pub(crate) fn slots(ctx: &GameplayCtx<'_>) -> Vec<MinionSlot> {
             cost_growth: def.cost_growth,
             unlocked: ctx.state.minion_unlocked(def),
             unlock_at: def.unlock_at,
+            prestige_required: def.prestige_required,
             action: UiAction::HireMinion(def.id.clone()),
         });
     }
@@ -77,7 +92,7 @@ pub fn draw(ctx: &GameplayCtx<'_>, rect: Rect, actions: &mut Vec<UiAction>) {
         actions,
     );
 
-    let grid = GridLayout::new(content.x, content.y + 40.0, content.w, 12.0, 2, 120.0);
+    let grid = GridLayout::new(content.x, content.y + 40.0, content.w, 12.0, 3, 120.0);
     for (i, slot) in slots(ctx).iter().enumerate() {
         let (x, y, w, h) = grid.get_item_rect(i, 0.0);
         draw_card(ctx, Rect::new(x, y, w, h), slot, actions);
@@ -105,7 +120,7 @@ fn draw_card(ctx: &GameplayCtx<'_>, rect: Rect, slot: &MinionSlot, actions: &mut
             TextStyle::new(18.0, theme::TEXT_DIM).params(),
         );
         draw_text_centered_in_box(
-            &format!("Unlocks at {} minions", slot.unlock_at),
+            &slot.locked_hint(ctx.state.persistent.prestige_count),
             rect.x,
             rect.y + rect.h / 2.0,
             rect.w,
