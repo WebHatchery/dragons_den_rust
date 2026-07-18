@@ -115,8 +115,17 @@ ways to make it entertaining. All numbers are the ones actually shipping in
 > "Treasure Hoarder" achievement 34 → 36 to keep "discover every type" honest.
 > Every headline content ladder now meets its review target: treasures 36,
 > achievements 36, dragons 13, minion tiers 6, prestige tree 15 nodes (3/branch),
-> run-upgrade lines 11. Remaining content-depth idea: deeper wall cliffs (a
-> second prestige-threshold band) — the last speculative item.
+> run-upgrade lines 11.
+>
+> **Depth polish — Golden Hoard reward variety (#9 completion):** every glint
+> used to grant the same Dragon's Frenzy; the review actually called for "×7
+> click, *or* a lump of gold, *or* a lucky window." A collected glint now rolls
+> (state RNG) one of three payouts — `GoldenReward::{Frenzy, Rush, Windfall}`:
+> the click frenzy, a Hoard Rush (×all-gold), or an instant gold Windfall worth
+> `golden_windfall_seconds` (90) of current income (floored so an early grab
+> still pays). Each reward reuses an existing indicator (Frenzy banner / Hoard
+> Rush readout / toast), so no new UI. Remaining content-depth idea: deeper
+> wall cliffs (a second prestige-threshold band) — the last speculative item.
 
 ---
 

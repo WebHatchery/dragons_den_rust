@@ -199,15 +199,11 @@ fn expedition_without_new_treasure_grants_hoard_rush() {
 }
 
 #[test]
-fn golden_hoard_click_grants_dragons_frenzy() {
+fn golden_hoard_click_grants_a_reward() {
     let (data, mut state) = setup();
-    state.run.gold = 1000.0;
-    let base_click = state.gold_per_click(&data);
-    assert!(!state.frenzy_active());
     assert!(state.golden_hoard().is_none());
-
     // Nothing to collect until a glint has spawned.
-    assert!(!state.collect_golden_hoard(&data));
+    assert!(state.collect_golden_hoard(&data).is_none());
 
     // Fast-forward past the initial cooldown so a glint appears.
     state.advance_events(&data, data.config.golden_hoard_min_interval as f32 + 0.1);
@@ -216,17 +212,46 @@ fn golden_hoard_click_grants_dragons_frenzy() {
         "a glint should spawn after the cooldown"
     );
 
-    // Clicking it consumes the glint and starts a Dragon's Frenzy click surge.
-    assert!(state.collect_golden_hoard(&data));
+    // Clicking it consumes the glint and pays out one of the three rewards; the
+    // side effect must match whichever variant was rolled.
+    state.run.goblins = 5;
+    let gold_before = state.run.gold;
+    let reward = state
+        .collect_golden_hoard(&data)
+        .expect("a glint was present to collect");
     assert!(state.golden_hoard().is_none());
-    assert!(state.frenzy_active());
-    let mult = data.config.dragon_frenzy_multiplier;
-    assert!((state.gold_per_click(&data) - base_click * mult).abs() < 1e-6);
+    match reward {
+        GoldenReward::Frenzy => assert!(state.frenzy_active()),
+        GoldenReward::Rush => assert!(state.hoard_rush_active()),
+        GoldenReward::Windfall(gold) => {
+            assert!(gold > 0.0);
+            assert!(state.run.gold >= gold_before + gold - 1e-6);
+        }
+    }
+}
 
-    // The surge drains with time and expires back to the base click.
-    state.advance_events(&data, data.config.dragon_frenzy_seconds as f32 + 0.1);
-    assert!(!state.frenzy_active());
-    assert!((state.gold_per_click(&data) - base_click).abs() < 1e-6);
+#[test]
+fn golden_hoard_rolls_all_three_rewards_over_time() {
+    let (data, mut state) = setup();
+    state.run.goblins = 20; // nonzero income so a Windfall pays out
+    let mut saw_frenzy = false;
+    let mut saw_rush = false;
+    let mut saw_windfall = false;
+    // The clickable window guarantees a spawn each round; the seeded RNG makes
+    // this deterministic, and 60 samples make all three variants a near-certainty.
+    for _ in 0..60 {
+        state.advance_events(&data, data.config.golden_hoard_max_interval as f32 + 0.1);
+        match state.collect_golden_hoard(&data) {
+            Some(GoldenReward::Frenzy) => saw_frenzy = true,
+            Some(GoldenReward::Rush) => saw_rush = true,
+            Some(GoldenReward::Windfall(_)) => saw_windfall = true,
+            None => panic!("a glint should be present each round"),
+        }
+    }
+    assert!(
+        saw_frenzy && saw_rush && saw_windfall,
+        "all three golden rewards should appear: frenzy={saw_frenzy} rush={saw_rush} windfall={saw_windfall}"
+    );
 }
 
 #[test]
@@ -242,7 +267,7 @@ fn lifetime_counters_track_new_mechanics() {
 
     // Collecting a Golden Hoard bumps its counter.
     state.advance_events(&data, data.config.golden_hoard_min_interval as f32 + 0.1);
-    assert!(state.collect_golden_hoard(&data));
+    assert!(state.collect_golden_hoard(&data).is_some());
     assert_eq!(state.stat_value(StatKey::GoldenHoardsCollected), 1.0);
 }
 

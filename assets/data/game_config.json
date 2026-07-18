@@ -19,6 +19,7 @@
   "golden_hoard_lifetime": 13.0,
   "dragon_frenzy_multiplier": 7.0,
   "dragon_frenzy_seconds": 15.0,
+  "golden_windfall_seconds": 90.0,
   "minion_soft_cap": 60.0,
   "minion_soft_cap_falloff": 0.34,
   "base_discovery_chance": 0.3,

@@ -4,7 +4,7 @@
 use crate::data::GameData;
 use crate::save;
 use crate::simulation::idle_number::format_amount;
-use crate::state::gameplay::{BuyError, ExploreResult, UnlockEvent};
+use crate::state::gameplay::{BuyError, ExploreResult, GoldenReward, UnlockEvent};
 use crate::state::{GameState, GameplayState, MenuScreen, MenuState, StateTransition};
 use crate::ui::theme;
 use crate::ui::{self, SettingChange, UiAction, VolumeChannel};
@@ -374,14 +374,31 @@ impl Game {
         let GameState::Gameplay(gameplay) = &mut self.state else {
             return;
         };
-        if gameplay.collect_golden_hoard(&self.data) {
-            let mult = self.data.config.dragon_frenzy_multiplier;
-            gameplay.action_log.push(format!(
-                "Golden Hoard cracked open — Dragon's Frenzy x{mult:.0}!"
-            ));
-            self.notifications
-                .success(format!("Dragon's Frenzy! x{mult:.0} click gold"));
-        }
+        let Some(reward) = gameplay.collect_golden_hoard(&self.data) else {
+            return;
+        };
+        let (log, toast) = match reward {
+            GoldenReward::Frenzy => {
+                let m = self.data.config.dragon_frenzy_multiplier;
+                (
+                    format!("Golden Hoard — Dragon's Frenzy x{m:.0}!"),
+                    format!("Dragon's Frenzy! x{m:.0} click gold"),
+                )
+            }
+            GoldenReward::Rush => {
+                let m = self.data.config.hoard_rush_multiplier;
+                (
+                    format!("Golden Hoard — Hoard Rush x{m:.0}!"),
+                    format!("Hoard Rush! x{m:.0} income"),
+                )
+            }
+            GoldenReward::Windfall(gold) => (
+                format!("Golden Hoard — windfall of {} gold!", format_amount(gold)),
+                format!("Hoard Windfall! +{} gold", format_amount(gold)),
+            ),
+        };
+        gameplay.action_log.push(log);
+        self.notifications.success(toast);
     }
 
     fn buy_upgrade(&mut self, id: &str) {

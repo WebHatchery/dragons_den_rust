@@ -209,8 +209,8 @@ pub enum BuyError {
     CannotAfford,
 }
 
-/// An active Golden Hoard glint (#9): a clickable burst that grants a Dragon's
-/// Frenzy. Transient — never saved; a fresh one is earned by playing.
+/// An active Golden Hoard glint (#9): a clickable burst that grants one of the
+/// [`GoldenReward`] variants. Transient — never saved; earned by playing.
 #[derive(Debug, Clone, Copy)]
 pub struct GoldenHoard {
     /// Position in the play area as normalized `[0,1]` coords. The UI maps this
@@ -219,6 +219,18 @@ pub struct GoldenHoard {
     pub ny: f32,
     /// Seconds the glint stays clickable before it fades away.
     pub remaining: f64,
+}
+
+/// What a collected Golden Hoard pays out (#9). Rolled at random on each click so
+/// every glint is a small surprise, the way the genre's golden cookies vary.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub enum GoldenReward {
+    /// Dragon's Frenzy — a temporary ×click-gold surge.
+    Frenzy,
+    /// Hoard Rush — a temporary ×all-gold surge (the #7 buff).
+    Rush,
+    /// An instant lump of gold worth a burst of current income.
+    Windfall(f64),
 }
 
 pub struct GameplayState {
@@ -437,15 +449,31 @@ impl GameplayState {
     /// Collects the active glint (a player click landed on it): consumes it,
     /// starts a Dragon's Frenzy, and arms the next glint. Returns whether there
     /// was a glint to collect.
-    pub fn collect_golden_hoard(&mut self, data: &GameData) -> bool {
-        if self.golden_hoard.take().is_some() {
-            self.frenzy_secs = data.config.dragon_frenzy_seconds;
-            self.persistent.stats.golden_hoards_collected += 1.0;
-            self.schedule_next_glint(data);
-            true
-        } else {
-            false
-        }
+    pub fn collect_golden_hoard(&mut self, data: &GameData) -> Option<GoldenReward> {
+        self.golden_hoard.take()?;
+        self.persistent.stats.golden_hoards_collected += 1.0;
+        self.schedule_next_glint(data);
+
+        // Roll one of three payouts on the state-owned RNG (deterministic).
+        let reward = match self.persistent.rng.below(3) {
+            0 => {
+                self.frenzy_secs = data.config.dragon_frenzy_seconds;
+                GoldenReward::Frenzy
+            }
+            1 => {
+                self.trigger_hoard_rush(data);
+                GoldenReward::Rush
+            }
+            _ => {
+                // A burst of current income, floored so an early idle grab still
+                // pays out something meaningful rather than nothing.
+                let lump = (self.gold_per_second(data) * data.config.golden_windfall_seconds)
+                    .max(data.config.base_click * 50.0);
+                self.earn(lump);
+                GoldenReward::Windfall(lump)
+            }
+        };
+        Some(reward)
     }
 
     /// The effective base-Kobold soft cap after prestige wall-breakers (#11).

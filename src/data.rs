@@ -66,6 +66,9 @@ pub struct GameConfig {
     /// clicking during the window.
     pub dragon_frenzy_multiplier: f64,
     pub dragon_frenzy_seconds: f64,
+    /// Seconds of current income paid instantly by a Golden Hoard "Windfall"
+    /// reward (#9) — one of the three payouts a collected glint can roll.
+    pub golden_windfall_seconds: f64,
     /// Base-minion soft cap (engagement review #11): base Kobolds earn full
     /// income up to this count, then each additional one is worth only
     /// `minion_soft_cap_falloff` of a full minion — a gentle wall that turns
