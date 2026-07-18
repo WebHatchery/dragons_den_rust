@@ -250,5 +250,33 @@
     "description": "Prestige 50 times.",
     "condition": { "stat": "prestige_count", "gte": 50 },
     "reward": { "hoard_points": 40 }
+  },
+  {
+    "id": "timeless",
+    "name": "Timeless",
+    "description": "Prestige 100 times.",
+    "condition": { "stat": "prestige_count", "gte": 100 },
+    "reward": { "hoard_points": 75 }
+  },
+  {
+    "id": "quadrillionaire_wyrm",
+    "name": "Quadrillionaire Wyrm",
+    "description": "Earn a total of 1,000,000,000,000,000 gold.",
+    "condition": { "stat": "gold_total_earned", "gte": 1000000000000000 },
+    "reward": { "hoard_points": 30 }
+  },
+  {
+    "id": "hoard_whisperer",
+    "name": "Hoard Whisperer",
+    "description": "Collect 100 Golden Hoards.",
+    "condition": { "stat": "golden_hoards_collected", "gte": 100 },
+    "reward": { "hoard_points": 12 }
+  },
+  {
+    "id": "grave_robber",
+    "name": "Grave Robber",
+    "description": "Launch 500 expeditions into the ruins.",
+    "condition": { "stat": "expeditions_launched", "gte": 500 },
+    "reward": { "hoard_points": 10 }
   }
 ]

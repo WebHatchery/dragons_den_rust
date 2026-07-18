@@ -126,8 +126,13 @@ ways to make it entertaining. All numbers are the ones actually shipping in
 > still pays). Each reward reuses an existing indicator (Frenzy banner / Hoard
 > Rush readout / toast), so no new UI. A collected Windfall also spawns the
 > same floating "+N" pop the hoard click uses, giving the instant reward juice
-> parity with the click. Remaining content-depth idea: deeper wall cliffs (a
-> second prestige-threshold band) — the last speculative item.
+> parity with the click.
+>
+> **Content depth — achievement long tail 36 → 40:** four multi-month goals for
+> dedicated players extending the deepest existing tiers — Timeless (prestige
+> 100), Quadrillionaire Wyrm (1e15 gold), Hoard Whisperer (100 Golden Hoards),
+> Grave Robber (500 expeditions). Remaining content-depth idea: deeper wall
+> cliffs (a second prestige-threshold band) — the last speculative item.
 
 ---
 
