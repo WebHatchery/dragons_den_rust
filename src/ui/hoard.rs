@@ -163,15 +163,16 @@ fn draw_side_column(ctx: &GameplayCtx<'_>, rect: Rect, actions: &mut Vec<UiActio
     }
 
     let content = ui::panel(prestige, "Prestige Progress");
+    let threshold = ctx.state.prestige_threshold(ctx.data);
     meter(
         Rect::new(content.x, content.y + 8.0, content.w, 24.0),
-        (ctx.state.run.gold / ctx.data.config.prestige_threshold).min(1.0) as f32,
+        (ctx.state.run.gold / threshold).min(1.0) as f32,
         1.0,
         Color::new(0.95, 0.72, 0.35, 1.0),
         Some(&format!(
             "{} / {}",
             format_amount(ctx.state.run.gold),
-            format_amount(ctx.data.config.prestige_threshold)
+            format_amount(threshold)
         )),
     );
     draw_text_block(

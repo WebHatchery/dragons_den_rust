@@ -9,7 +9,7 @@ remains, milestone by milestone (GDD §13).*
 ## 1. What is already built (the framework)
 
 The template has been fully converted; nothing of the template's grid/fog/camera
-demo remains. `cargo test` (30 tests, incl. a balance-regression sim),
+demo remains. `cargo test` (31 tests, incl. a balance-regression sim),
 `cargo clippy -D warnings`, and `cargo fmt --check` all pass. Verified
 screenshots in `docs/verification/`: `ui_menu`, `ui_hoard`, `ui_settings`,
 `ui_treasures`, `ui_achievements`, `ui_prestige`.
@@ -38,8 +38,9 @@ Adding content = adding JSON entries; new *kinds* of effect need a new
   leaning uncapped; if a cap is ever wanted it goes here).
 - `exploration.rs` — chance gate then **rarity-weighted** roll among
   undiscovered treasures; `SeededRng` from the toolkit, serialized in the save.
-- `prestige.rs` — `floor(sqrt(gold/divisor))` scaled by Hoard Greed + percent
-  bonuses.
+- `prestige.rs` — HP gain `floor(sqrt(gold/divisor))` scaled by Hoard Greed +
+  percent bonuses; `current_threshold` gives the rising multi-tier gate
+  (`base * growth^prestige_count`, GDD §12 Q2).
 - `idle_number.rs` — K/M/B/T…No suffix formatting over `f64`, scientific
   fallback. *Note:* plain `f64`, not the original's significand+exponent pair —
   ample for v1 scales; revisit only if balance pushes past ~1e300.
@@ -157,9 +158,12 @@ boots a fresh gameplay session (seed 42) on the Hoard screen.
   - [ ] Upgrade lines 4 → 6–8 — deferred to its own iteration: new gold-relevant
     lines feed the balance sim, so this needs a re-tune + re-check of the
     10–40 min window. (Dragons stay at 8 — fixed by the element set.)
-- [ ] **Multi-tier prestige** (GDD §12 Q2): rising thresholds per prestige
-  count instead of the single 1M gate. Extend `game_config.json` with a
-  threshold curve and `prestige.rs` accordingly.
+- [x] **Multi-tier prestige** (GDD §12 Q2) — the gate now rises with each
+  prestige: `threshold_n = prestige_threshold * prestige_threshold_growth^n`
+  (new config field, `growth = 8.0`). `prestige::current_threshold` +
+  tier-aware `can_prestige`; `GameplayState::prestige_threshold(data)` drives
+  both prestige meters. Tier 0 is unchanged at 1M, so the balance sim still
+  reports ~29 min to first prestige. New unit test covers the rising curve.
 - [ ] Exercise big numbers at real scale; if `f64` precision ever bites,
   upgrade `idle_number.rs` to significand+exponent (and flag it as a toolkit
   candidate per GDD §10).

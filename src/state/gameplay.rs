@@ -415,8 +415,13 @@ impl GameplayState {
         Ok(level + 1)
     }
 
+    /// Gold needed for the next prestige, rising with each one done (GDD §12 Q2).
+    pub fn prestige_threshold(&self, data: &GameData) -> f64 {
+        prestige::current_threshold(&data.config, self.persistent.prestige_count)
+    }
+
     pub fn can_prestige(&self, data: &GameData) -> bool {
-        prestige::can_prestige(&data.config, self.run.gold)
+        prestige::can_prestige(&data.config, self.run.gold, self.persistent.prestige_count)
     }
 
     /// Hoard Points the current hoard would grant right now.

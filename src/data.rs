@@ -38,6 +38,9 @@ pub struct GameConfig {
     pub explore_cost: f64,
     pub base_discovery_chance: f64,
     pub prestige_threshold: f64,
+    /// Multiplier applied to the prestige threshold per prestige already done
+    /// (GDD §12 Q2 multi-tier prestige): `threshold_n = base * growth^n`.
+    pub prestige_threshold_growth: f64,
     pub prestige_divisor: f64,
 }
 

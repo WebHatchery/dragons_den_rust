@@ -20,16 +20,17 @@ fn draw_burn_panel(ctx: &GameplayCtx<'_>, rect: Rect, actions: &mut Vec<UiAction
     let content = ui::panel(rect, "Burn the Hoard");
     let ready = ctx.state.can_prestige(ctx.data);
     let preview = ctx.state.prestige_preview(ctx.data);
+    let threshold = ctx.state.prestige_threshold(ctx.data);
 
     meter(
         Rect::new(content.x, content.y + 6.0, content.w - 240.0, 26.0),
-        (ctx.state.run.gold / ctx.data.config.prestige_threshold).min(1.0) as f32,
+        (ctx.state.run.gold / threshold).min(1.0) as f32,
         1.0,
         Color::new(0.95, 0.45, 0.25, 1.0),
         Some(&format!(
             "{} / {} gold",
             format_amount(ctx.state.run.gold),
-            format_amount(ctx.data.config.prestige_threshold)
+            format_amount(threshold)
         )),
     );
     draw_ui_text_ex(
