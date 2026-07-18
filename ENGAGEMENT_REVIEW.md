@@ -16,10 +16,18 @@ ways to make it entertaining. All numbers are the ones actually shipping in
 > `base × 1.25^discovered` (new `explore_cost_growth` config + `economy::
 > explore_cost`), so the treasure sweep is an escalating investment rather than
 > free button-mashing; a complete set is no longer charged (guaranteed-empty
-> outcome). Failed rolls don't raise the price. Next: **#7** (never let Explore
-> dead-end — gold / Hoard Rush buff / treasure-dust payout on a
-> duplicate/complete roll), then #8 (treasure long tail). Rest of Tiers 2–3
-> open.
+> outcome). Failed rolls don't raise the price.
+>
+> **Tier 2 #7 (Explore never dead-ends) has landed:** an expedition that finds
+> no new treasure — a miss *or* a completed set — now sparks a **Hoard Rush**,
+> a temporary ×2 all-gold surge for 30s (`hoard_rush_multiplier` /
+> `hoard_rush_seconds` config; transient `hoard_rush_secs` on `GameplayState`).
+> Re-triggering refreshes the timer but never stacks, so the buff is bounded
+> and Explore stays a live, rewarding button for the whole game. The surge is
+> applied in the `GameplayState` income wrappers (not `economy`), keeping the
+> balance sim an honest measure of the core loop. Bottom-bar Expeditions panel
+> shows a live "Hoard Rush x2 · Ns left" readout. Next: **#8** (treasure long
+> tail — rarer, prestige-gated finds), then Tier 3. Rest of Tiers 2–3 open.
 
 ---
 

@@ -48,6 +48,13 @@ pub struct GameConfig {
     /// the mid-game treasure sweep from free button-mashing into an escalating
     /// investment. Only actual discoveries raise it — failed rolls do not.
     pub explore_cost_growth: f64,
+    /// Income multiplier of a Hoard Rush surge (engagement review #7): an
+    /// expedition that finds no new treasure (a miss or a completed set) sparks
+    /// this temporary ×multiplier on all gold, so Explore never dead-ends into a
+    /// useless button. Re-triggering refreshes the timer but never stacks.
+    pub hoard_rush_multiplier: f64,
+    /// How long a Hoard Rush surge lasts, in seconds.
+    pub hoard_rush_seconds: f64,
     pub base_discovery_chance: f64,
     pub prestige_threshold: f64,
     /// Multiplier applied to the prestige threshold per prestige already done

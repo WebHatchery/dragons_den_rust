@@ -117,22 +117,42 @@ fn draw_expeditions(ctx: &GameplayCtx<'_>, rect: Rect, actions: &mut Vec<UiActio
     let chance = ctx.state.discovery_chance(ctx.data);
     let discovered = ctx.state.persistent.discovered_treasures.len();
 
-    draw_text_block(
+    // Line 1: cost + find chance (always shown).
+    draw_ui_text_ex(
         &format!(
-            "Cost {} gold  ·  {:.0}% find\n{} / {} treasures found",
+            "Cost {} gold  ·  {:.0}% find",
             format_amount(cost),
-            chance * 100.0,
-            discovered,
-            ctx.data.treasures.len()
+            chance * 100.0
         ),
         content.x,
-        content.y + 2.0,
-        content.w,
-        34.0,
-        14.0,
-        4.0,
-        theme::TEXT,
+        content.y + 18.0,
+        TextStyle::new(14.0, theme::TEXT).params(),
     );
+    // Line 2 doubles as the Hoard Rush readout while a surge is live (#7), so an
+    // active buff is visible without adding a third line to the short panel.
+    if ctx.state.hoard_rush_active() {
+        draw_ui_text_ex(
+            &format!(
+                "Hoard Rush  x{:.0}  ·  {:.0}s left",
+                ctx.data.config.hoard_rush_multiplier,
+                ctx.state.hoard_rush_remaining().ceil()
+            ),
+            content.x,
+            content.y + 40.0,
+            TextStyle::new(14.0, theme::ACCENT).params(),
+        );
+    } else {
+        draw_ui_text_ex(
+            &format!(
+                "{} / {} treasures found",
+                discovered,
+                ctx.data.treasures.len()
+            ),
+            content.x,
+            content.y + 40.0,
+            TextStyle::new(14.0, theme::TEXT).params(),
+        );
+    }
     if ui::button(
         Rect::new(content.x, content.bottom() - 34.0, content.w, 32.0),
         "Explore Ruins",

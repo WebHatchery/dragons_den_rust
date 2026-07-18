@@ -213,6 +213,9 @@ pub struct GameplayState {
     pub scroll_y: f32,
     /// Whether the settings overlay is open over the gameplay frame. Transient.
     pub settings_open: bool,
+    /// Seconds of Hoard Rush income surge remaining (#7). Transient — a fresh
+    /// surge is earned by exploring, not restored on load.
+    hoard_rush_secs: f64,
     autosave_accum: f32,
 }
 
@@ -226,6 +229,7 @@ impl GameplayState {
             action_log: ActionLog::default(),
             scroll_y: 0.0,
             settings_open: false,
+            hoard_rush_secs: 0.0,
             autosave_accum: 0.0,
         }
     }
@@ -241,6 +245,7 @@ impl GameplayState {
             action_log: ActionLog::default(),
             scroll_y: 0.0,
             settings_open: false,
+            hoard_rush_secs: 0.0,
             autosave_accum: 0.0,
         };
         state
@@ -285,18 +290,48 @@ impl GameplayState {
 
     pub fn gold_per_click(&self, data: &GameData) -> f64 {
         economy::gold_per_click(&data.config, &self.rates(data), &self.percents(data))
+            * self.hoard_rush_factor(data)
     }
 
     pub fn gold_per_second(&self, data: &GameData) -> f64 {
         let rates = self.rates(data);
         let percents = self.percents(data);
-        economy::gold_per_second(&data.config, self.run.goblins, &rates, &percents)
+        let base = economy::gold_per_second(&data.config, self.run.goblins, &rates, &percents)
             + economy::extra_minion_income(
                 &data.minions,
                 &self.run.minion_counts,
                 &rates,
                 &percents,
-            )
+            );
+        base * self.hoard_rush_factor(data)
+    }
+
+    /// Whether a Hoard Rush income surge is currently active (#7).
+    pub fn hoard_rush_active(&self) -> bool {
+        self.hoard_rush_secs > 0.0
+    }
+
+    /// Seconds of Hoard Rush remaining, for the UI countdown.
+    pub fn hoard_rush_remaining(&self) -> f64 {
+        self.hoard_rush_secs.max(0.0)
+    }
+
+    /// Live income multiplier from an active Hoard Rush, else 1.0. Deliberately
+    /// kept out of `economy` so the balance sim — which never explores — stays an
+    /// honest measure of the core loop, unperturbed by this active-play bonus.
+    fn hoard_rush_factor(&self, data: &GameData) -> f64 {
+        if self.hoard_rush_active() {
+            data.config.hoard_rush_multiplier
+        } else {
+            1.0
+        }
+    }
+
+    /// (Re)starts the Hoard Rush surge. Re-triggering refreshes the timer to full
+    /// but never stacks the multiplier, so spamming Explore merely sustains the
+    /// buff instead of compounding it — a bounded active-play reward.
+    fn trigger_hoard_rush(&mut self, data: &GameData) {
+        self.hoard_rush_secs = data.config.hoard_rush_seconds;
     }
 
     /// Total minions across every tier (base Kobolds + extra tiers).
@@ -380,10 +415,12 @@ impl GameplayState {
         self.persistent.stats.gold_total_earned += amount;
     }
 
-    /// Passive income for one frame; also advances the run clock.
+    /// Passive income for one frame; also advances the run clock. Earnings use
+    /// the current Hoard Rush factor, so the surge is drained *after* it pays out.
     pub fn tick(&mut self, data: &GameData, dt: f32) {
         self.earn(self.gold_per_second(data) * f64::from(dt));
         self.run.run_seconds += f64::from(dt);
+        self.hoard_rush_secs = (self.hoard_rush_secs - f64::from(dt)).max(0.0);
     }
 
     /// Counts up toward the player's autosave interval (seconds, from settings);
@@ -449,14 +486,20 @@ impl GameplayState {
             chance,
         );
         // A complete hoard rolls `AllDiscovered` before touching the RNG, so
-        // don't charge for an expedition that can't find anything.
+        // don't charge for an expedition that can't find anything — but it still
+        // sparks a Hoard Rush so the button stays worth pressing (#7).
         if outcome == ExploreOutcome::AllDiscovered {
+            self.trigger_hoard_rush(data);
             return Ok(ExploreResult::AllDiscovered);
         }
         self.run.gold -= cost;
 
         Ok(match outcome {
-            ExploreOutcome::NothingFound => ExploreResult::NothingFound,
+            ExploreOutcome::NothingFound => {
+                // A miss is no longer a dead loss: it stirs a Hoard Rush (#7).
+                self.trigger_hoard_rush(data);
+                ExploreResult::NothingFound
+            }
             ExploreOutcome::AllDiscovered => ExploreResult::AllDiscovered,
             ExploreOutcome::Found(def) => {
                 self.persistent.discovered_treasures.push(def.id.clone());
@@ -752,6 +795,39 @@ mod tests {
         let gold_before = state.run.gold;
         assert_eq!(state.try_explore(&data), Ok(ExploreResult::AllDiscovered));
         assert!((state.run.gold - gold_before).abs() < 1e-9);
+    }
+
+    #[test]
+    fn expedition_without_new_treasure_grants_hoard_rush() {
+        let (data, mut state) = setup();
+        state.run.goblins = 10;
+
+        // Complete the set so the roll is a guaranteed AllDiscovered, then read
+        // the un-rushed rate *with* those treasure bonuses already applied.
+        state.persistent.discovered_treasures =
+            data.treasures.iter().map(|d| d.id.clone()).collect();
+        let rate_no_rush = state.gold_per_second(&data);
+        assert!(!state.hoard_rush_active());
+
+        state.run.gold = 1e9;
+        let gold_before = state.run.gold;
+        assert_eq!(state.try_explore(&data), Ok(ExploreResult::AllDiscovered));
+
+        // The surge is live, income is multiplied, and the salvage run was free.
+        assert!(state.hoard_rush_active());
+        assert!((state.run.gold - gold_before).abs() < 1e-9);
+        let mult = data.config.hoard_rush_multiplier;
+        assert!((state.gold_per_second(&data) - rate_no_rush * mult).abs() < 1e-6);
+
+        // Re-triggering refreshes the timer but never stacks — still ×mult, not
+        // ×mult².
+        state.try_explore(&data).unwrap();
+        assert!((state.gold_per_second(&data) - rate_no_rush * mult).abs() < 1e-6);
+
+        // It drains with time and expires back to the base rate.
+        state.tick(&data, data.config.hoard_rush_seconds as f32 + 0.1);
+        assert!(!state.hoard_rush_active());
+        assert!((state.gold_per_second(&data) - rate_no_rush).abs() < 1e-6);
     }
 
     #[test]

@@ -345,13 +345,23 @@ impl Game {
                     .success(format!("Expedition found: {name} ({rarity})"));
             }
             Ok(ExploreResult::NothingFound) => {
-                gameplay.action_log.push("Expedition returned empty-clawed");
-                self.notifications
-                    .info("The expedition came back empty-clawed");
+                let mult = self.data.config.hoard_rush_multiplier;
+                gameplay
+                    .action_log
+                    .push(format!("Expedition stirred a Hoard Rush! x{mult:.0} gold"));
+                self.notifications.success(format!(
+                    "No treasure — but a Hoard Rush ignites! x{mult:.0} income"
+                ));
             }
-            Ok(ExploreResult::AllDiscovered) => self
-                .notifications
-                .info("Every treasure is already in your hoard"),
+            Ok(ExploreResult::AllDiscovered) => {
+                let mult = self.data.config.hoard_rush_multiplier;
+                gameplay
+                    .action_log
+                    .push(format!("Salvage run sparked a Hoard Rush! x{mult:.0} gold"));
+                self.notifications.success(format!(
+                    "Hoard complete — the salvage run sparks a Hoard Rush! x{mult:.0} income"
+                ));
+            }
             Err(_) => self
                 .notifications
                 .warning("Not enough gold for an expedition"),
