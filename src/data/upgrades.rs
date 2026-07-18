@@ -20,6 +20,12 @@ pub struct UpgradeDef {
     pub cost_growth: f64,
     pub max_level: u32,
     pub effect: RateEffect,
+    /// Prestiges required before this line appears in the shop (engagement
+    /// review #10). Gating whole upgrade lines behind prestige gives players a
+    /// *qualitative* reason to prestige — "unlock a new line" — that a flat
+    /// multiplier can't. `serde(default)` → 0 keeps existing lines ungated.
+    #[serde(default)]
+    pub prestige_required: u32,
 }
 
 /// One of the five "Hoard Legacies" prestige tree columns (P5).

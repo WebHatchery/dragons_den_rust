@@ -28,6 +28,9 @@ struct Sim {
     levels: HashMap<String, u32>,
     /// Permanent percent/multiplier bonuses (prestige tree); empty on run 1.
     percents: Bonuses,
+    /// Prestiges already done — gates which upgrade lines the sim may buy (#10),
+    /// so run 1 can't spend on lines the real player hasn't unlocked yet.
+    prestige: u32,
 }
 
 impl Sim {
@@ -37,6 +40,7 @@ impl Sim {
             goblins: 0,
             levels: HashMap::new(),
             percents: Bonuses::default(),
+            prestige: 0,
         }
     }
 
@@ -133,6 +137,12 @@ fn reinvest(sim: &mut Sim, data: &GameData, target: f64) {
         let (gcost, gmarg) = sim.goblin_marginal(data);
         consider(gcost, gmarg, "goblin", &mut best);
         for def in &data.upgrades {
+            // Prestige-gated lines (#10) are invisible until unlocked — the sim
+            // must respect the same gate the player does, or run 1 would "buy"
+            // lines it can't reach and skew the balance guards.
+            if def.prestige_required > sim.prestige {
+                continue;
+            }
             // Only income-boosting lines move the marginal gain rate. (The
             // hire-discount line lowers goblin cost, not income, so it never
             // clears the payback test here — a conservative omission that keeps
@@ -273,6 +283,8 @@ fn second_prestige_cycle_is_meaningfully_faster() {
 
     let mut run2 = Sim::new();
     run2.percents = economy::prestige_percent_bonuses(&data.prestige_upgrades, &tree);
+    // After one prestige, run 2 may buy the prestige-1-gated upgrade lines (#10).
+    run2.prestige = 1;
     let target2 = prestige::current_threshold(&data.config, 1);
     let cycle2 =
         run_to_target(&mut run2, &data, target2).expect("second threshold should be reachable");

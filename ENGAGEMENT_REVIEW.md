@@ -46,9 +46,20 @@ ways to make it entertaining. All numbers are the ones actually shipping in
 > never offline. UI draws the orb (mapped from normalized coords into the play
 > area, so state stays pixel-ignorant) + a live Frenzy banner. Also **split the
 > gameplay test suite into `state/gameplay/tests.rs`** to bring `gameplay.rs`
-> back under the 800-line limit (was 882). Next: **Tier 3 #10** (prestige-gated
-> qualitative unlocks — a 2nd expedition slot / new upgrade line), then #11
-> (soft-caps + wall-breakers).
+> back under the 800-line limit (was 882).
+>
+> **Tier 3 #10 (prestige-gated qualitative unlocks) has landed:** run-upgrade
+> lines can now be gated behind prestige (`UpgradeDef.prestige_required`,
+> `serde(default)` 0). Three new lines unlock across prestige 1–3 — Molten
+> Veins (+gold/sec), Warband Drums (+minion efficiency), Cataclysm Claws
+> (+gold/click) — so prestiging *opens new shop content*, a reason numbers
+> alone can't give. Purchase is gated + the shop shows sealed cards with the
+> prestige needed. Crucially, `balance.rs` now tracks `Sim.prestige` and
+> respects the same gate, so run 1 can't buy unlocked-later lines: guards stay
+> honest (first prestige 19.7 min; cycle 2 improved to ~30% of cycle 1 as run 2
+> spends the prestige-1 line). Note the minion Drake tier (prestige 2) and the
+> #8 treasure gates already deliver the review's other #10 examples. Next:
+> **Tier 3 #11** (soft-caps + wall-breakers), then content depth.
 
 ---
 

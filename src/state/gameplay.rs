@@ -618,6 +618,11 @@ impl GameplayState {
         })
     }
 
+    /// Whether a run upgrade line is unlocked at the current prestige (#10).
+    pub fn upgrade_unlocked(&self, def: &crate::data::UpgradeDef) -> bool {
+        self.persistent.prestige_count >= def.prestige_required
+    }
+
     /// Buys up to `requested` levels of a run upgrade, capped by its max level
     /// and by affordable gold. Returns `(bought, new_level)`.
     pub fn try_buy_upgrade_bulk(
@@ -627,6 +632,9 @@ impl GameplayState {
         requested: u32,
     ) -> Result<(u32, u32), BuyError> {
         let def = data.upgrade(id).ok_or(BuyError::UnknownId)?;
+        if !self.upgrade_unlocked(def) {
+            return Err(BuyError::CannotAfford);
+        }
         let level = self.run.upgrade_levels.get(id).copied().unwrap_or(0);
         if level >= def.max_level {
             return Err(BuyError::MaxLevel);

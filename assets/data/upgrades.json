@@ -52,5 +52,35 @@
     "cost_growth": 1.5,
     "max_level": 10,
     "effect": { "stat": "hire_discount", "rate": 0.1 }
+  },
+  {
+    "id": "molten_veins",
+    "name": "Molten Veins",
+    "description": "Prestige 1: the mountain's fire runs in your blood, gorging all passive income.",
+    "base_cost": 5000,
+    "cost_growth": 1.7,
+    "max_level": 15,
+    "effect": { "stat": "gold_per_second", "rate": 0.2 },
+    "prestige_required": 1
+  },
+  {
+    "id": "warband_drums",
+    "name": "Warband Drums",
+    "description": "Prestige 2: a relentless beat drives the whole brood to dig far harder.",
+    "base_cost": 8000,
+    "cost_growth": 1.7,
+    "max_level": 15,
+    "effect": { "stat": "minion_efficiency", "rate": 0.25 },
+    "prestige_required": 2
+  },
+  {
+    "id": "cataclysm_claws",
+    "name": "Cataclysm Claws",
+    "description": "Prestige 3: each swipe splits the earth — and doubles what a click can grab.",
+    "base_cost": 15000,
+    "cost_growth": 1.6,
+    "max_level": 15,
+    "effect": { "stat": "gold_per_click", "rate": 1.0 },
+    "prestige_required": 3
   }
 ]

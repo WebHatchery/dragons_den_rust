@@ -31,6 +31,13 @@ pub fn draw(ctx: &GameplayCtx<'_>, rect: Rect, actions: &mut Vec<UiAction>) {
         if !ui::item_fully_visible(card, view) {
             continue;
         }
+        // Prestige-gated lines (#10) show as sealed until unlocked, giving the
+        // shop a visible "prestige to open this" chase.
+        if !ctx.state.upgrade_unlocked(def) {
+            draw_locked_upgrade(card, def);
+            continue;
+        }
+
         let level = ctx
             .state
             .run
@@ -108,4 +115,34 @@ pub fn draw(ctx: &GameplayCtx<'_>, rect: Rect, actions: &mut Vec<UiAction>) {
     }
 
     ui::draw_scroll_indicator(view, total, scroll);
+}
+
+/// A dimmed, locked card for a prestige-gated upgrade line (#10): reveals the
+/// name and the prestige needed, so the shop reads as a chase.
+fn draw_locked_upgrade(card: Rect, def: &crate::data::UpgradeDef) {
+    draw_surface(
+        card,
+        &SurfaceStyle::new(theme::PANEL_DARK)
+            .with_left_accent(4.0, theme::TEXT_DIM)
+            .with_border(1.0, theme::BORDER_DIM),
+    );
+    draw_ui_text_ex(
+        &format!("{}  (Sealed)", def.name),
+        card.x + 16.0,
+        card.y + 28.0,
+        TextStyle::new(18.0, theme::TEXT_DIM).params(),
+    );
+    draw_text_block(
+        &format!(
+            "Reach Prestige {} to unlock this line.",
+            def.prestige_required
+        ),
+        card.x + 16.0,
+        card.y + 44.0,
+        card.w - 32.0,
+        40.0,
+        14.0,
+        4.0,
+        theme::TEXT_DIM,
+    );
 }

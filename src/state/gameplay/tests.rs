@@ -88,6 +88,31 @@ fn bulk_upgrade_respects_max_level_and_budget() {
 }
 
 #[test]
+fn upgrade_lines_gate_behind_prestige() {
+    let (data, mut state) = setup();
+    let gated = data
+        .upgrades
+        .iter()
+        .find(|u| u.prestige_required > 0)
+        .expect("catalog should include a prestige-gated upgrade line");
+    state.run.gold = 1e12;
+
+    // Locked at prestige 0: the line is not unlocked and buying it is refused.
+    assert!(!state.upgrade_unlocked(gated));
+    assert_eq!(
+        state.try_buy_upgrade_bulk(&data, &gated.id, 1),
+        Err(BuyError::CannotAfford)
+    );
+
+    // Reaching the required prestige opens the line for purchase.
+    state.persistent.prestige_count = gated.prestige_required;
+    assert!(state.upgrade_unlocked(gated));
+    let (bought, level) = state.try_buy_upgrade_bulk(&data, &gated.id, 1).unwrap();
+    assert_eq!(bought, 1);
+    assert_eq!(level, 1);
+}
+
+#[test]
 fn prestige_below_threshold_is_refused() {
     let (data, mut state) = setup();
     state.run.gold = 999_999.0;
