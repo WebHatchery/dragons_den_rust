@@ -5,7 +5,7 @@ pub mod gameplay;
 pub mod menu;
 
 pub use gameplay::GameplayState;
-pub use menu::MenuState;
+pub use menu::{MenuScreen, MenuState};
 
 pub enum GameState {
     Menu(MenuState),

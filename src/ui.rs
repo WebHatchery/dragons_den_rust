@@ -8,6 +8,7 @@ pub mod hoard;
 pub mod menu;
 pub mod minions;
 pub mod prestige;
+pub mod settings;
 pub mod treasures;
 pub mod upgrades;
 
@@ -39,6 +40,30 @@ pub enum UiAction {
     BuyPrestigeUpgrade(String),
     Prestige,
     SetBuyMode(BuyMode),
+    // Settings
+    OpenSettings,
+    CloseSettings,
+    ChangeSetting(SettingChange),
+}
+
+/// Which audio group a volume change targets.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum VolumeChannel {
+    Master,
+    Sfx,
+    Music,
+}
+
+/// A single settings edit, resolved to a concrete delta/toggle in `game.rs`
+/// (step sizes live there). Payload-free so `UiAction` stays `Eq`.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum SettingChange {
+    VolumeUp(VolumeChannel),
+    VolumeDown(VolumeChannel),
+    UiScaleUp,
+    UiScaleDown,
+    ToggleFullscreen,
+    ToggleShowFps,
 }
 
 /// Read-only view context handed to every gameplay screen.

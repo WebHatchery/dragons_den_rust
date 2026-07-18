@@ -11,7 +11,7 @@ remains, milestone by milestone (GDD §13).*
 The template has been fully converted; nothing of the template's grid/fog/camera
 demo remains. `cargo test` (25 tests), `cargo clippy -D warnings`, and
 `cargo fmt --check` all pass. Verified screenshots: `docs/verification/ui_menu.png`,
-`docs/verification/ui_hoard.png`.
+`docs/verification/ui_hoard.png`, `docs/verification/ui_settings.png`.
 
 ### Data (all content is JSON — never hardcode balance in Rust)
 
@@ -66,8 +66,8 @@ expedition + prestige progress), minions, upgrades, treasures, achievements,
 prestige (burn + permanent tree), dragon codex. Header shows gold / rate /
 Hoard Points; tab bar switches screens; Esc saves and exits to menu.
 
-Capture harness: `DRAGONS_DEN_CAPTURE_SCENE` = `menu` | `hoard` (anything else
-boots a fresh gameplay session, seed 42).
+Capture harness: `DRAGONS_DEN_CAPTURE_SCENE` = `menu` | `hoard` | `settings`
+(anything else boots a fresh gameplay session, seed 42).
 
 ---
 
@@ -107,9 +107,20 @@ boots a fresh gameplay session, seed 42).
   `bulk_cost` + `affordable_levels` (unit-tested); state gained `try_hire_bulk`
   / `try_buy_upgrade_bulk`. x1/x10 require the full amount affordable; Max buys
   as much as gold allows. Buttons show the resolved count and total cost.
-- [ ] **Settings screen** (GDD §9): audio toggle, autosave interval — toolkit
-  `settings` module. Audio itself (click/purchase/unlock blips) via toolkit
-  `audio`.
+- [x] **Settings screen** (GDD §9) — reached from the main menu (`MenuScreen`
+  sub-view). Edits the toolkit `GameSettings`: master/SFX/music volumes (+/-
+  steppers), UI text scale, Fullscreen and Show-FPS toggles. Every control
+  returns a `ChangeSetting` intent; `game.rs` mutates, `sanitize()`s,
+  `apply_display()`s, and persists under `config.game_name` on each change.
+  Loaded + applied at startup. Show-FPS overlay is live. New capture scene
+  `settings`; verified in `docs/verification/ui_settings.png`.
+  - [ ] **Autosave interval as a setting**: deferred — `GameSettings` has no
+    such field and forking the shared toolkit is out of scope for this loop.
+    Interval still comes from `game_config.json`. Add a toolkit field (or a
+    game-local settings key) when ready.
+  - [ ] **Audio SFX** (click/purchase/unlock blips) via toolkit `audio`:
+    deferred — no sound assets exist yet. Volumes persist and are ready to feed
+    a `SoundManager` once packs ship.
 - [ ] **Balance pass on prototype values** — current numbers are GDD-shaped but
   untested; first prestige should be reachable in a modest first session.
 - [ ] Fix or replace `scripts/capture_ui.ps1` wrapper (the shared script errored

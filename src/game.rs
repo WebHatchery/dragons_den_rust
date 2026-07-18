@@ -5,8 +5,8 @@ use crate::data::GameData;
 use crate::save;
 use crate::simulation::idle_number::format_amount;
 use crate::state::gameplay::{BuyError, ExploreResult, UnlockEvent};
-use crate::state::{GameState, GameplayState, MenuState, StateTransition};
-use crate::ui::{self, UiAction};
+use crate::state::{GameState, GameplayState, MenuScreen, MenuState, StateTransition};
+use crate::ui::{self, SettingChange, UiAction, VolumeChannel};
 use macroquad::prelude::*;
 use macroquad_toolkit::events::EventBus;
 use macroquad_toolkit::fx::FloatingTextLayer;
@@ -14,6 +14,12 @@ use macroquad_toolkit::notifications::{
     NotificationAnchor, NotificationManager, NotificationRenderConfig,
 };
 use macroquad_toolkit::prelude::{begin_virtual_ui_frame, dark, end_virtual_ui_frame};
+use macroquad_toolkit::settings::GameSettings;
+
+/// Step applied per volume +/- press.
+const VOLUME_STEP: f32 = 0.1;
+/// Step applied per UI-scale +/- press.
+const UI_SCALE_STEP: f32 = 0.1;
 
 /// Warm gold used for "+N" click gains.
 const CLICK_GAIN_COLOR: Color = Color::new(0.98, 0.80, 0.35, 1.0);
@@ -30,6 +36,8 @@ pub struct Game {
     /// Last cursor position in logical UI coords, captured each draw so click
     /// intents (applied a frame later in `update`) can anchor their feedback.
     last_mouse_logical: Vec2,
+    /// Global user settings (audio + display), persisted on every change.
+    settings: GameSettings,
 }
 
 impl Game {
@@ -41,6 +49,9 @@ impl Game {
         floating.default_font_size = 24.0;
         floating.default_lifetime = 1.0;
         floating.default_rise_speed = 46.0;
+        let mut settings = GameSettings::load(&data.config.game_name);
+        settings.sanitize();
+        settings.apply_display();
         Self {
             data,
             state,
@@ -48,6 +59,7 @@ impl Game {
             events: EventBus::new(),
             floating,
             last_mouse_logical: Vec2::ZERO,
+            settings,
         }
     }
 
@@ -55,6 +67,11 @@ impl Game {
     pub fn begin_capture_scene(&mut self, scene: &str) {
         self.state = match scene {
             "menu" => GameState::Menu(MenuState::new(&self.data.config)),
+            "settings" => {
+                let mut menu = MenuState::new(&self.data.config);
+                menu.screen = MenuScreen::Settings;
+                GameState::Menu(menu)
+            }
             _ => GameState::Gameplay(Box::new(GameplayState::new_game(&self.data, 42))),
         };
     }
@@ -103,7 +120,7 @@ impl Game {
         let virtual_ui = begin_virtual_ui_frame(ui::LOGICAL_WIDTH, ui::LOGICAL_HEIGHT);
         self.last_mouse_logical = virtual_ui.mouse_position();
         let actions = match &self.state {
-            GameState::Menu(menu) => ui::menu::draw(&self.data, menu, &virtual_ui),
+            GameState::Menu(menu) => ui::menu::draw(&self.data, menu, &self.settings, &virtual_ui),
             GameState::Gameplay(gameplay) => ui::draw_gameplay(&self.data, gameplay, &virtual_ui),
         };
         self.floating.draw();
@@ -118,6 +135,11 @@ impl Game {
                 anchor: NotificationAnchor::BottomRight,
                 ..Default::default()
             });
+
+        if self.settings.show_fps {
+            let fps = format!("FPS {}", get_fps());
+            draw_text(&fps, 8.0, 20.0, 22.0, GREEN);
+        }
     }
 
     fn apply_action(&mut self, action: UiAction) {
@@ -152,6 +174,43 @@ impl Game {
                     gameplay.buy_mode = mode;
                 }
             }
+            UiAction::OpenSettings => {
+                if let GameState::Menu(menu) = &mut self.state {
+                    menu.screen = MenuScreen::Settings;
+                }
+            }
+            UiAction::CloseSettings => {
+                if let GameState::Menu(menu) = &mut self.state {
+                    menu.screen = MenuScreen::Main;
+                }
+            }
+            UiAction::ChangeSetting(change) => self.change_setting(change),
+        }
+    }
+
+    /// Applies a settings edit, then sanitizes, re-applies display, and saves.
+    fn change_setting(&mut self, change: SettingChange) {
+        match change {
+            SettingChange::VolumeUp(channel) => *self.volume_mut(channel) += VOLUME_STEP,
+            SettingChange::VolumeDown(channel) => *self.volume_mut(channel) -= VOLUME_STEP,
+            SettingChange::UiScaleUp => self.settings.ui_text_scale += UI_SCALE_STEP,
+            SettingChange::UiScaleDown => self.settings.ui_text_scale -= UI_SCALE_STEP,
+            SettingChange::ToggleFullscreen => self.settings.fullscreen = !self.settings.fullscreen,
+            SettingChange::ToggleShowFps => self.settings.show_fps = !self.settings.show_fps,
+        }
+        self.settings.sanitize();
+        self.settings.apply_display();
+        if let Err(err) = self.settings.save(&self.data.config.game_name) {
+            self.notifications
+                .danger(format!("Settings save failed: {err}"));
+        }
+    }
+
+    fn volume_mut(&mut self, channel: VolumeChannel) -> &mut f32 {
+        match channel {
+            VolumeChannel::Master => &mut self.settings.master_volume,
+            VolumeChannel::Sfx => &mut self.settings.sfx_volume,
+            VolumeChannel::Music => &mut self.settings.music_volume,
         }
     }
 

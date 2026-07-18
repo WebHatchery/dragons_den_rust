@@ -1,15 +1,25 @@
-//! Main menu: continue, new game, delete save.
+//! Main menu: continue, new game, delete save, and the settings sub-screen.
 
 use crate::data::GameData;
-use crate::state::MenuState;
-use crate::ui::{self, UiAction, LOGICAL_HEIGHT, LOGICAL_WIDTH};
+use crate::state::{MenuScreen, MenuState};
+use crate::ui::{self, settings, UiAction, LOGICAL_HEIGHT, LOGICAL_WIDTH};
 use macroquad::prelude::*;
 use macroquad_toolkit::prelude::*;
+use macroquad_toolkit::settings::GameSettings;
 use macroquad_toolkit::ui::VirtualUi;
 
-pub fn draw(data: &GameData, menu: &MenuState, ui: &VirtualUi) -> Vec<UiAction> {
-    let mut actions = Vec::new();
+pub fn draw(
+    data: &GameData,
+    menu: &MenuState,
+    game_settings: &GameSettings,
+    ui: &VirtualUi,
+) -> Vec<UiAction> {
     let mouse = ui.mouse_position();
+    if menu.screen == MenuScreen::Settings {
+        return settings::draw(game_settings, mouse);
+    }
+
+    let mut actions = Vec::new();
 
     draw_text_centered_in_box(
         &data.config.display_name,
@@ -62,6 +72,16 @@ pub fn draw(data: &GameData, menu: &MenuState, ui: &VirtualUi) -> Vec<UiAction> 
         mouse,
     ) {
         actions.push(UiAction::DeleteSave);
+    }
+    y += 56.0;
+    if ui::button(
+        Rect::new(x, y, button_w, 44.0),
+        "Settings",
+        true,
+        ButtonTone::Secondary,
+        mouse,
+    ) {
+        actions.push(UiAction::OpenSettings);
     }
 
     draw_text_centered_in_box(
