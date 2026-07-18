@@ -11,7 +11,7 @@ use crate::simulation::Bonuses;
 use macroquad_toolkit::achievements::{Achievement, Achievements};
 use macroquad_toolkit::rng::SeededRng;
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
+use std::collections::{HashMap, VecDeque};
 
 /// Gameplay sub-views, matching the GDD §9 tab list.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -52,6 +52,34 @@ impl BuyMode {
             BuyMode::Ten => 10,
             BuyMode::Max => u32::MAX,
         }
+    }
+}
+
+/// A capped ring of recent player-facing events shown on the Hoard screen
+/// (GDD §9) to complement the transient toasts. Newest is pushed last;
+/// transient — not part of the save.
+#[derive(Debug, Clone, Default)]
+pub struct ActionLog {
+    entries: VecDeque<String>,
+}
+
+impl ActionLog {
+    const CAP: usize = 8;
+
+    pub fn push(&mut self, message: impl Into<String>) {
+        self.entries.push_back(message.into());
+        while self.entries.len() > Self::CAP {
+            self.entries.pop_front();
+        }
+    }
+
+    /// Entries oldest-first; callers reverse for newest-first display.
+    pub fn entries(&self) -> impl DoubleEndedIterator<Item = &String> {
+        self.entries.iter()
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.entries.is_empty()
     }
 }
 
@@ -169,6 +197,7 @@ pub struct GameplayState {
     pub persistent: PersistentState,
     pub screen: Screen,
     pub buy_mode: BuyMode,
+    pub action_log: ActionLog,
     autosave_accum: f32,
 }
 
@@ -179,6 +208,7 @@ impl GameplayState {
             persistent: PersistentState::new(data, seed),
             screen: Screen::Hoard,
             buy_mode: BuyMode::One,
+            action_log: ActionLog::default(),
             autosave_accum: 0.0,
         }
     }
@@ -191,6 +221,7 @@ impl GameplayState {
             persistent: save.persistent,
             screen: Screen::Hoard,
             buy_mode: BuyMode::One,
+            action_log: ActionLog::default(),
             autosave_accum: 0.0,
         };
         state

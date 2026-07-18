@@ -68,12 +68,18 @@ impl Game {
 
             for event in gameplay.check_unlocks(&self.data) {
                 match event {
-                    UnlockEvent::Achievement { name } => self
-                        .notifications
-                        .success(format!("Achievement unlocked: {name}")),
-                    UnlockEvent::Dragon { name } => self
-                        .notifications
-                        .success(format!("Dragon revealed: {name}")),
+                    UnlockEvent::Achievement { name } => {
+                        gameplay
+                            .action_log
+                            .push(format!("Achievement unlocked: {name}"));
+                        self.notifications
+                            .success(format!("Achievement unlocked: {name}"));
+                    }
+                    UnlockEvent::Dragon { name } => {
+                        gameplay.action_log.push(format!("Dragon revealed: {name}"));
+                        self.notifications
+                            .success(format!("Dragon revealed: {name}"));
+                    }
                 }
             }
 
@@ -224,12 +230,18 @@ impl Game {
             return;
         };
         match gameplay.try_explore(&self.data) {
-            Ok(ExploreResult::Found { name, rarity }) => self
-                .notifications
-                .success(format!("Expedition found: {name} ({rarity})")),
-            Ok(ExploreResult::NothingFound) => self
-                .notifications
-                .info("The expedition came back empty-clawed"),
+            Ok(ExploreResult::Found { name, rarity }) => {
+                gameplay
+                    .action_log
+                    .push(format!("Expedition found {name} ({rarity})"));
+                self.notifications
+                    .success(format!("Expedition found: {name} ({rarity})"));
+            }
+            Ok(ExploreResult::NothingFound) => {
+                gameplay.action_log.push("Expedition returned empty-clawed");
+                self.notifications
+                    .info("The expedition came back empty-clawed");
+            }
             Ok(ExploreResult::AllDiscovered) => self
                 .notifications
                 .info("Every treasure is already in your hoard"),
@@ -284,6 +296,10 @@ impl Game {
         };
         match gameplay.try_prestige(&self.data) {
             Some(gained) => {
+                gameplay.action_log.push(format!(
+                    "Prestiged — the hoard burned for +{} Hoard Points",
+                    format_amount(gained)
+                ));
                 self.notifications.success(format!(
                     "The hoard burns! +{} Hoard Points",
                     format_amount(gained)

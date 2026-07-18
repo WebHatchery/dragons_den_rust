@@ -96,8 +96,11 @@ boots a fresh gameplay session, seed 42).
   (toolkit `fx::FloatingTextLayer`, GDD §9.1). Prestige "burn" flourish spawns a
   larger central "+N Hoard Points" float. Owned by `Game`, drawn in logical UI
   space; click intents anchor to the cursor pos captured each draw.
-- [ ] **Action log** on the Hoard screen (GDD §9) — a small scrolling list of
-  recent events (expedition results, unlocks) to complement the toasts.
+- [x] **Action log** on the Hoard screen (GDD §9) — the "Chronicle" panel below
+  the click target shows the last 8 events newest-first (expedition results,
+  achievement/dragon unlocks, prestige burns). Backed by a transient
+  `ActionLog` ring on `GameplayState`, fed from the event sites in `game.rs`
+  alongside the toasts. Verified in `docs/verification/ui_hoard.png`.
 - [x] **Buy-max / buy-10 affordances** on hire and upgrades. `BuyMode`
   (x1/x10/Max) is a transient field on `GameplayState`, toggled via a shared
   `buy_mode_selector` on both the Minions and Upgrades screens. Economy gained

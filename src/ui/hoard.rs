@@ -4,9 +4,18 @@ use crate::simulation::idle_number::{format_amount, format_rate};
 use crate::ui::{self, GameplayCtx, UiAction};
 use macroquad::prelude::*;
 use macroquad_toolkit::prelude::*;
+use macroquad_toolkit::ui::draw_ui_text_ex;
 
 pub fn draw(ctx: &GameplayCtx<'_>, rect: Rect, actions: &mut Vec<UiAction>) {
-    let left = Rect::new(rect.x, rect.y, rect.w * 0.6 - 8.0, rect.h);
+    let left_w = rect.w * 0.6 - 8.0;
+    let click_h = rect.h * 0.62 - 6.0;
+    let click_target = Rect::new(rect.x, rect.y, left_w, click_h);
+    let log = Rect::new(
+        rect.x,
+        rect.y + click_h + 12.0,
+        left_w,
+        rect.h - click_h - 12.0,
+    );
     let right = Rect::new(
         rect.x + rect.w * 0.6 + 8.0,
         rect.y,
@@ -14,8 +23,52 @@ pub fn draw(ctx: &GameplayCtx<'_>, rect: Rect, actions: &mut Vec<UiAction>) {
         rect.h,
     );
 
-    draw_click_target(ctx, left, actions);
+    draw_click_target(ctx, click_target, actions);
+    draw_action_log(ctx, log);
     draw_side_column(ctx, right, actions);
+}
+
+/// A rolling list of recent events (GDD §9), newest at the top, complementing
+/// the transient toasts.
+fn draw_action_log(ctx: &GameplayCtx<'_>, rect: Rect) {
+    let content = ui::panel(rect, "Chronicle");
+    if ctx.state.action_log.is_empty() {
+        draw_text_block(
+            "Your deeds will be recorded here — expeditions, discoveries, and\nthe burning of hoards.",
+            content.x,
+            content.y + 6.0,
+            content.w,
+            48.0,
+            15.0,
+            4.0,
+            dark::TEXT_DIM,
+        );
+        return;
+    }
+
+    let line_height = 22.0;
+    let max_lines = (content.h / line_height).floor() as usize;
+    for (index, entry) in ctx
+        .state
+        .action_log
+        .entries()
+        .rev()
+        .take(max_lines)
+        .enumerate()
+    {
+        // Fade older entries toward the dim end of the palette.
+        let color = if index == 0 {
+            dark::TEXT_BRIGHT
+        } else {
+            dark::TEXT
+        };
+        draw_ui_text_ex(
+            entry,
+            content.x + 4.0,
+            content.y + 14.0 + index as f32 * line_height,
+            TextStyle::new(15.0, color).params(),
+        );
+    }
 }
 
 fn draw_click_target(ctx: &GameplayCtx<'_>, rect: Rect, actions: &mut Vec<UiAction>) {
