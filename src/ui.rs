@@ -363,6 +363,42 @@ pub(crate) fn item_fully_visible(card: Rect, view: Rect) -> bool {
     card.y >= view.y - 0.5 && card.bottom() <= view.bottom() + 0.5
 }
 
+/// Draws a thin scrollbar down the right edge of `view` so the player can tell
+/// a wheel-scrollable list has more content below/above. No-op when everything
+/// already fits. Pairs with [`apply_scroll`]: pass the same `content_height`,
+/// `view`, and clamped `scroll`.
+pub(crate) fn draw_scroll_indicator(view: Rect, content_height: f32, scroll: f32) {
+    let overflow = content_height - view.h;
+    if overflow <= 0.5 {
+        return;
+    }
+    const BAR_W: f32 = 5.0;
+    let track_x = view.right() - BAR_W - 2.0;
+    // Track: a faint groove hinting the full scroll range.
+    draw_rectangle(
+        track_x,
+        view.y,
+        BAR_W,
+        view.h,
+        Color::new(
+            theme::BORDER_DIM.r,
+            theme::BORDER_DIM.g,
+            theme::BORDER_DIM.b,
+            0.35,
+        ),
+    );
+    // Handle: proportional to the visible fraction, positioned by scroll.
+    let handle_h = (view.h * (view.h / content_height)).max(28.0).min(view.h);
+    let handle_y = view.y + (scroll / overflow) * (view.h - handle_h);
+    draw_rectangle(
+        track_x,
+        handle_y,
+        BAR_W,
+        handle_h,
+        Color::new(theme::ACCENT.r, theme::ACCENT.g, theme::ACCENT.b, 0.85),
+    );
+}
+
 /// A small `x1 / x10 / Max` segmented selector; pushes `SetBuyMode` on change.
 pub(crate) fn buy_mode_selector(
     rect: Rect,

@@ -93,4 +93,6 @@ pub fn draw(ctx: &GameplayCtx<'_>, rect: Rect, actions: &mut Vec<UiAction>) {
             );
         }
     }
+
+    ui::draw_scroll_indicator(view, total, scroll);
 }

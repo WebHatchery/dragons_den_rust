@@ -1,60 +1,66 @@
 # Dragon's Den
 
-An idle/incremental hoard-building game: click for gold, hire kobold minions for
-passive income, send expeditions into ruins for treasure, and prestige — burning
-the hoard for permanent Hoard Points — over and over, each run richer than the
-last.
+You're a dragon guarding a hoard that never stops growing. Click for gold, put
+kobolds to work while you're away, send expeditions into old ruins for treasure —
+then, when the pile is big enough, **burn it all down** and start again richer,
+wiser, and permanently stronger. An idle/incremental game about honest,
+well-tuned number-go-up progression.
 
-A Rust + Macroquad port of the WebHatchery `game_apps/dragons_den` React/PHP
-game. **`gdd.md` is the design document** and the authority on scope; the
-original's broken/unwired mechanics (prestige that granted nothing, upgrade
-formulas that ignored upgrade levels) are fixed here by design.
+## How you play
 
-**`IMPLEMENTATION_PLAN.md` tracks what is built and what comes next.**
+**Collect.** Click the hoard on the left rail to rake in gold. Each click throws
+up a floating "+N" — early on, clicking is your whole income.
 
-## Status
+**Hire kobolds.** Spend gold on minions for passive gold-per-second that keeps
+earning whether you're watching or not. Higher minion tiers unlock as your den
+grows, each a stronger (and pricier) source of idle income.
 
-Framework complete (pre-M1): the full click → hire → explore → upgrade →
-prestige loop works end-to-end with prototype data, all screens render, saves
-persist with offline progress. See the plan for remaining milestone work.
+**Explore ruins.** Launch an expedition for a rarity-weighted shot at treasure.
+Every treasure you discover grants a small **permanent** passive bonus that
+stacks — commons are a nudge, legendaries are a real boost — and stays with you
+even through prestige.
 
-## Run
+**Upgrade.** Spend gold in the Upgrade Shop across converging lines — claw
+sharpness (click power), minion efficiency, treasure luck, and hoard-point gain.
+Buy in `x1 / x10 / Max` batches.
 
-```powershell
-cargo run                    # native window
-cargo test                   # simulation + state unit tests
-cargo clippy --all-targets --all-features -- -D warnings
-.\publish.ps1                # build Windows + WebGL and deploy to the preview root
-```
+**Chase achievements.** Milestones unlock in the background as you cross them,
+each handing back a one-time reward (gold, Hoard Points, or a codex reveal) —
+never just a badge.
 
-## Screenshot capture (headless UI verification)
+**Prestige.** Once the hoard clears the threshold, **Burn the Hoard**: convert
+it into permanent **Hoard Points**, reset your gold, kobolds, and shop upgrades,
+and spend those points on the five-branch **Hoard Legacies** tree. Those
+multipliers persist across every future run, so each cycle is faster than the
+last. Treasures, achievements, and your dragon codex all carry over.
 
-Preferred — the wrapper builds once and captures every scene, sanity-checking
-each PNG:
+**Come back later.** Offline income accrues honestly from real elapsed time at
+the same rate you'd earn it live — leave the den running or close it and collect
+what your kobolds hauled in while you were gone.
 
-```powershell
-.\scripts\capture_ui.ps1                      # menu, hoard, settings
-.\scripts\capture_ui.ps1 -Scenes hoard -SkipBuild
-```
+## The screen
 
-Manual single-scene capture (scenes: `menu`, `hoard`, `settings`; anything else
-boots a fresh gameplay session):
+A single ornate frame, no page-flipping for the essentials:
 
-```powershell
-$env:DRAGONS_DEN_CAPTURE_PATH="docs\verification\ui_menu.png"
-$env:DRAGONS_DEN_CAPTURE_SCENE="menu"
-cargo run
-```
+- **Header** — Gold, Minions, and Hoard Points, each with its current per-second rate.
+- **Left rail** — the hoard, the big circular **CLICK** target, live income, and run time.
+- **Bottom strip** — minion-tier hire cards, the expedition launcher, and your most recent treasures.
+- **Center tabs** — Hoard (chronicle + prestige progress), Minions, Upgrades,
+  Treasures, Achievements, Prestige, and the Dragon Codex. Only the center swaps
+  as you switch tabs.
 
-## Layout
+## Dragon Codex
 
-```
-assets/data/     game_config, upgrades, prestige_upgrades, treasures,
-                 achievements, dragons — ALL balance/content lives here (JSON)
-src/data*        serde types + embedded loaders for the catalogs
-src/simulation*  pure, tested services: economy, offline, exploration,
-                 prestige, idle_number (big-number formatting)
-src/state*       GameState machine (Menu / Gameplay) — one source of truth
-src/save.rs      save shape + timestamp for offline earnings
-src/ui*          pure view layer: reads state, returns UiAction intents
-```
+A small gallery of themed dragons — one per element (fire, ice, earth, air,
+shadow, light, poison, lightning) — revealed as you hit prestige tiers and
+collection milestones. Each unlock is flavor plus a small permanent bonus. It's
+color and identity for your growing legend, not a second game bolted on: no
+breeding, no combat, no map.
+
+## Design
+
+`gdd.md` is the design document and the authority on scope. This is a Rust +
+Macroquad port of the WebHatchery `game_apps/dragons_den` game, rebuilt so the
+mechanics its original only *implied* — a prestige that actually pays out,
+upgrades that actually feed the formulas — are real. `IMPLEMENTATION_PLAN.md`
+tracks what's built and what's next.

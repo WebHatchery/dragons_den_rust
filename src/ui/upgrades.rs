@@ -106,4 +106,6 @@ pub fn draw(ctx: &GameplayCtx<'_>, rect: Rect, actions: &mut Vec<UiAction>) {
             actions.push(UiAction::BuyUpgrade(def.id.clone()));
         }
     }
+
+    ui::draw_scroll_indicator(view, total, scroll);
 }

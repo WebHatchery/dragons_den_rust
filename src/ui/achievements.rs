@@ -70,4 +70,6 @@ pub fn draw(ctx: &GameplayCtx<'_>, rect: Rect, actions: &mut Vec<UiAction>) {
             theme::TEXT_DIM,
         );
     }
+
+    ui::draw_scroll_indicator(view, total_h, scroll);
 }
