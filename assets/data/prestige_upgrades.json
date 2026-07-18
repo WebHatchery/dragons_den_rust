@@ -104,6 +104,18 @@
     "prereq": "efficient_brood"
   },
   {
+    "id": "endless_horde",
+    "name": "Endless Horde",
+    "description": "Break the warren's walls: raises the Kobold soft cap so far more of them earn full pay.",
+    "base_cost": 18,
+    "cost_growth": 2.6,
+    "max_level": 4,
+    "effect": { "stat": "minion_cap", "percent": 60 },
+    "branch": "legion",
+    "tier": 2,
+    "prereq": "warren_master"
+  },
+  {
     "id": "greed_incarnate",
     "name": "Greed Incarnate",
     "description": "Every prestige yields permanently more Hoard Points.",

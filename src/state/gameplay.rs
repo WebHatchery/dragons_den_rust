@@ -440,6 +440,11 @@ impl GameplayState {
         }
     }
 
+    /// The effective base-Kobold soft cap after prestige wall-breakers (#11).
+    pub fn base_minion_soft_cap(&self, data: &GameData) -> f64 {
+        economy::minion_soft_cap(&data.config, &self.percents(data))
+    }
+
     /// Total minions across every tier (base Kobolds + extra tiers).
     pub fn total_minions(&self) -> u32 {
         self.run.goblins + self.run.minion_counts.values().sum::<u32>()

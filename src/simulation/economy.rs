@@ -56,6 +56,23 @@ pub fn gold_per_click(config: &GameConfig, rates: &Bonuses, percents: &Bonuses) 
         * all_gold_multiplier(percents)
 }
 
+/// Base-minion count past the soft cap suffers diminishing returns (#11): full
+/// value up to `soft_cap`, then each extra minion is worth only `falloff` of
+/// one. Wrapped in a helper so the live tick and the balance sim agree exactly.
+pub fn effective_minions(goblins: f64, soft_cap: f64, falloff: f64) -> f64 {
+    if goblins <= soft_cap {
+        goblins
+    } else {
+        soft_cap + (goblins - soft_cap) * falloff
+    }
+}
+
+/// The effective base-minion soft cap after prestige wall-breakers (#11): the
+/// configured base scaled by the additive `MinionCap` percent channel.
+pub fn minion_soft_cap(config: &GameConfig, percents: &Bonuses) -> f64 {
+    config.minion_soft_cap * percents.percent_multiplier(EffectStat::MinionCap)
+}
+
 pub fn gold_per_second(
     config: &GameConfig,
     goblins: u32,
@@ -65,7 +82,9 @@ pub fn gold_per_second(
     let per_goblin = config.gold_per_goblin
         * rates.factor(EffectStat::MinionEfficiency)
         * percents.percent_multiplier(EffectStat::MinionEfficiency);
-    (config.base_passive + f64::from(goblins) * per_goblin)
+    let cap = minion_soft_cap(config, percents);
+    let effective = effective_minions(f64::from(goblins), cap, config.minion_soft_cap_falloff);
+    (config.base_passive + effective * per_goblin)
         * rates.factor(EffectStat::GoldPerSecond)
         * percents.percent_multiplier(EffectStat::GoldPerSecond)
         * all_gold_multiplier(percents)
@@ -336,6 +355,39 @@ mod tests {
         assert!((explore_cost(&data.config, 3) - (base * growth.powi(3)).floor()).abs() < 1e-9);
         // Strictly increasing, so late treasures cost more than early ones.
         assert!(explore_cost(&data.config, 5) > explore_cost(&data.config, 4));
+    }
+
+    #[test]
+    fn minion_soft_cap_diminishes_past_the_cap() {
+        // Below/at the cap, minions count in full.
+        assert!((effective_minions(40.0, 60.0, 0.34) - 40.0).abs() < 1e-9);
+        assert!((effective_minions(60.0, 60.0, 0.34) - 60.0).abs() < 1e-9);
+        // Past the cap, the excess is worth only `falloff` each.
+        assert!((effective_minions(80.0, 60.0, 0.5) - 70.0).abs() < 1e-9); // 60 + 20*0.5
+                                                                           // The cap itself scales with the MinionCap wall-breaker channel.
+        let (data, _) = setup();
+        let base = minion_soft_cap(&data.config, &Bonuses::default());
+        assert!((base - data.config.minion_soft_cap).abs() < 1e-9);
+        let mut breaker = Bonuses::default();
+        breaker.add(EffectStat::MinionCap, 100.0); // +100% → double the cap
+        assert!((minion_soft_cap(&data.config, &breaker) - base * 2.0).abs() < 1e-9);
+    }
+
+    #[test]
+    fn passive_income_bends_at_the_soft_cap() {
+        let (data, levels) = setup();
+        let rates = rate_bonuses(&data.upgrades, &levels);
+        let percents = Bonuses::default();
+        // Just under the cap: linear in goblins.
+        let cap = data.config.minion_soft_cap as u32;
+        let under = gold_per_second(&data.config, cap, &rates, &percents);
+        // Far past the cap earns less than a naive linear extrapolation would.
+        let over = gold_per_second(&data.config, cap * 3, &rates, &percents);
+        assert!(over > under, "more minions still earn more");
+        assert!(
+            over < under * 3.0,
+            "but past the cap the third-of-the-army earns diminished income"
+        );
     }
 
     #[test]

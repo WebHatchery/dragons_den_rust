@@ -66,6 +66,13 @@ pub struct GameConfig {
     /// clicking during the window.
     pub dragon_frenzy_multiplier: f64,
     pub dragon_frenzy_seconds: f64,
+    /// Base-minion soft cap (engagement review #11): base Kobolds earn full
+    /// income up to this count, then each additional one is worth only
+    /// `minion_soft_cap_falloff` of a full minion — a gentle wall that turns
+    /// "hire endlessly" into "hire, or break the cap?". Prestige wall-breakers
+    /// (the `MinionCap` stat) raise it. Extra typed minion tiers are exempt.
+    pub minion_soft_cap: f64,
+    pub minion_soft_cap_falloff: f64,
     pub base_discovery_chance: f64,
     pub prestige_threshold: f64,
     /// Multiplier applied to the prestige threshold per prestige already done
@@ -117,6 +124,10 @@ pub enum EffectStat {
     /// The only stat with a *compounding* prestige node behind it — the
     /// geometric engine that lets permanent bonuses outrun the prestige wall.
     AllGold,
+    /// Raises the base-minion soft cap (engagement review #11): beyond the cap,
+    /// each extra base Kobold earns diminished income until a wall-breaker
+    /// (a prestige node) lifts the ceiling. A percent bonus on the base cap.
+    MinionCap,
 }
 
 /// Additive percent bonus, used by treasures, dragons, and prestige upgrades.

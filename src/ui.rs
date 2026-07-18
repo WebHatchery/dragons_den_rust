@@ -334,6 +334,7 @@ pub(crate) fn stat_label(stat: EffectStat) -> &'static str {
         EffectStat::HoardPointGain => "Hoard Point gain",
         EffectStat::HireDiscount => "hire discount",
         EffectStat::AllGold => "all gold",
+        EffectStat::MinionCap => "minion soft cap",
     }
 }
 

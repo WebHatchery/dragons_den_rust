@@ -58,8 +58,20 @@ ways to make it entertaining. All numbers are the ones actually shipping in
 > respects the same gate, so run 1 can't buy unlocked-later lines: guards stay
 > honest (first prestige 19.7 min; cycle 2 improved to ~30% of cycle 1 as run 2
 > spends the prestige-1 line). Note the minion Drake tier (prestige 2) and the
-> #8 treasure gates already deliver the review's other #10 examples. Next:
-> **Tier 3 #11** (soft-caps + wall-breakers), then content depth.
+> #8 treasure gates already deliver the review's other #10 examples.
+>
+> **Tier 3 #11 (soft-caps + wall-breakers) has landed — Tier 3 is now
+> complete.** Base Kobolds hit a soft cap (`minion_soft_cap` 60): beyond it,
+> each extra base Kobold earns only `minion_soft_cap_falloff` (34%) until a
+> wall-breaker lifts the ceiling. New `EffectStat::MinionCap` channel + a Legion
+> tier-2 prestige node **Endless Horde** (+60% cap/level) is the breaker;
+> `economy::effective_minions`/`minion_soft_cap` keep the live tick and sim in
+> agreement. The cap (60) sits above the first-prestige goblin count (~44), so
+> it's a *late-game* wall — guards stay green and unchanged (19.7 min / 30%).
+> Minions tab shows a "Kobold soft cap N/60" readout (typed tiers exempt).
+> **All of Tiers 1–3 are done.** Next: **content depth** — extend ladders
+> (more prestige-tree tiers, minion tiers, achievements) per the review's
+> content-depth bullet.
 
 ---
 

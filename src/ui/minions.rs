@@ -79,6 +79,25 @@ pub fn draw(ctx: &GameplayCtx<'_>, rect: Rect, actions: &mut Vec<UiAction>) {
         TextStyle::new(16.0, theme::TEXT_DIM).params(),
     );
 
+    // Base-Kobold soft cap readout (#11): once past the cap, extra base Kobolds
+    // earn diminished income until a Legion prestige wall-breaker raises it.
+    let cap = ctx.state.base_minion_soft_cap(ctx.data).round() as u32;
+    let base = ctx.state.run.goblins;
+    let over = base > cap;
+    draw_ui_text_ex(
+        &if over {
+            format!(
+                "Kobold soft cap {base}/{cap} — extra Kobolds at {:.0}% (raise it in the Legion tree)",
+                ctx.data.config.minion_soft_cap_falloff * 100.0
+            )
+        } else {
+            format!("Kobold soft cap {base}/{cap} before diminishing returns")
+        },
+        content.x,
+        content.y + 36.0,
+        TextStyle::new(13.0, if over { theme::ACCENT } else { theme::TEXT_DIM }).params(),
+    );
+
     let selector_w = 260.0;
     ui::buy_mode_selector(
         Rect::new(
@@ -92,7 +111,7 @@ pub fn draw(ctx: &GameplayCtx<'_>, rect: Rect, actions: &mut Vec<UiAction>) {
         actions,
     );
 
-    let grid = GridLayout::new(content.x, content.y + 40.0, content.w, 12.0, 3, 120.0);
+    let grid = GridLayout::new(content.x, content.y + 58.0, content.w, 12.0, 3, 120.0);
     for (i, slot) in slots(ctx).iter().enumerate() {
         let (x, y, w, h) = grid.get_item_rect(i, 0.0);
         draw_card(ctx, Rect::new(x, y, w, h), slot, actions);
