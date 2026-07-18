@@ -92,9 +92,10 @@ boots a fresh gameplay session, seed 42).
 
 ### Toward M1 → M2 (playable prototype)
 
-- [ ] **Click feedback juice** — floating "+N" at the cursor on hoard clicks
-  (toolkit `fx`/particles, GDD §9.1; deliberately left out of the framework).
-  Same for a prestige "burn" flourish.
+- [x] **Click feedback juice** — floating "+N" at the cursor on hoard clicks
+  (toolkit `fx::FloatingTextLayer`, GDD §9.1). Prestige "burn" flourish spawns a
+  larger central "+N Hoard Points" float. Owned by `Game`, drawn in logical UI
+  space; click intents anchor to the cursor pos captured each draw.
 - [ ] **Action log** on the Hoard screen (GDD §9) — a small scrolling list of
   recent events (expedition results, unlocks) to complement the toasts.
 - [ ] **Buy-max / buy-10 affordances** on hire and upgrades (quality-of-life

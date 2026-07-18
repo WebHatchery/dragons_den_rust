@@ -9,16 +9,27 @@ use crate::state::{GameState, GameplayState, MenuState, StateTransition};
 use crate::ui::{self, UiAction};
 use macroquad::prelude::*;
 use macroquad_toolkit::events::EventBus;
+use macroquad_toolkit::fx::FloatingTextLayer;
 use macroquad_toolkit::notifications::{
     NotificationAnchor, NotificationManager, NotificationRenderConfig,
 };
 use macroquad_toolkit::prelude::{begin_virtual_ui_frame, dark, end_virtual_ui_frame};
+
+/// Warm gold used for "+N" click gains.
+const CLICK_GAIN_COLOR: Color = Color::new(0.98, 0.80, 0.35, 1.0);
+/// Amethyst used for the prestige "burn" flourish.
+const PRESTIGE_FLOURISH_COLOR: Color = Color::new(0.78, 0.63, 0.98, 1.0);
 
 pub struct Game {
     data: GameData,
     state: GameState,
     notifications: NotificationManager,
     events: EventBus<UiAction>,
+    /// Transient "+N" feedback (GDD §9.1); spawned in logical UI space.
+    floating: FloatingTextLayer,
+    /// Last cursor position in logical UI coords, captured each draw so click
+    /// intents (applied a frame later in `update`) can anchor their feedback.
+    last_mouse_logical: Vec2,
 }
 
 impl Game {
@@ -26,11 +37,17 @@ impl Game {
         let data = GameData::load()
             .unwrap_or_else(|err| panic!("Dragon's Den embedded data failed to load: {err}"));
         let state = GameState::Menu(MenuState::new(&data.config));
+        let mut floating = FloatingTextLayer::new();
+        floating.default_font_size = 24.0;
+        floating.default_lifetime = 1.0;
+        floating.default_rise_speed = 46.0;
         Self {
             data,
             state,
             notifications: NotificationManager::new(),
             events: EventBus::new(),
+            floating,
+            last_mouse_logical: Vec2::ZERO,
         }
     }
 
@@ -44,6 +61,7 @@ impl Game {
 
     pub fn update(&mut self, dt: f32) {
         self.notifications.update(dt);
+        self.floating.update(dt);
 
         if let GameState::Gameplay(gameplay) = &mut self.state {
             gameplay.tick(&self.data, dt);
@@ -77,10 +95,12 @@ impl Game {
         clear_background(dark::BACKGROUND);
 
         let virtual_ui = begin_virtual_ui_frame(ui::LOGICAL_WIDTH, ui::LOGICAL_HEIGHT);
+        self.last_mouse_logical = virtual_ui.mouse_position();
         let actions = match &self.state {
             GameState::Menu(menu) => ui::menu::draw(&self.data, menu, &virtual_ui),
             GameState::Gameplay(gameplay) => ui::draw_gameplay(&self.data, gameplay, &virtual_ui),
         };
+        self.floating.draw();
         end_virtual_ui_frame();
 
         for action in actions {
@@ -108,7 +128,12 @@ impl Game {
             }
             UiAction::ClickHoard => {
                 if let GameState::Gameplay(gameplay) = &mut self.state {
-                    gameplay.click(&self.data);
+                    let gained = gameplay.click(&self.data);
+                    self.floating.spawn(
+                        format!("+{}", format_amount(gained)),
+                        self.last_mouse_logical,
+                        CLICK_GAIN_COLOR,
+                    );
                 }
             }
             UiAction::HireGoblin => self.hire_goblin(),
@@ -251,6 +276,14 @@ impl Game {
                 self.notifications.success(format!(
                     "The hoard burns! +{} Hoard Points",
                     format_amount(gained)
+                ));
+                self.floating.push(macroquad_toolkit::fx::FloatingText::new(
+                    format!("+{} Hoard Points", format_amount(gained)),
+                    vec2(ui::LOGICAL_WIDTH * 0.5 - 120.0, ui::LOGICAL_HEIGHT * 0.42),
+                    PRESTIGE_FLOURISH_COLOR,
+                    34.0,
+                    1.8,
+                    38.0,
                 ));
                 self.write_save(false);
             }
