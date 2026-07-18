@@ -187,12 +187,30 @@ boots a fresh gameplay session (seed 42) on the Hoard screen.
 
 ### Release checklist (per repo standards)
 
-- [ ] `.\publish.ps1` from this directory; verify at `http://127.0.0.1/dragons_den/`.
-- [ ] Refresh `catalog_thumbnail.png` (currently the bare menu capture —
-  regenerate once the menu has more visual identity).
-- [ ] Stale `dist/` still contains template-era artifacts (`game_template.*`) —
-  delete before first publish so only `dragons_den` artifacts ship.
-- [ ] Add the game to `standing.md` once past prototype.
+*All code/content milestones (M1–M3) are complete. The items below are the
+remaining release steps; they require a human decision or an outward-facing
+action (deploy), so the autonomous loop leaves them for you.*
+
+- [ ] **(user)** `.\publish.ps1` from this directory; verify at
+  `http://127.0.0.1/dragons_den/`. Outward-facing deploy — run when ready.
+- [ ] **(user)** Refresh `catalog_thumbnail.png` — gated on giving the menu more
+  visual identity first; regenerate the capture afterward.
+- [x] Stale `dist/` — non-issue: `dist/` is gitignored, not present in the repo,
+  and regenerated fresh by `publish.ps1`, so no template-era artifacts persist.
+  The package/exe is `dragons_den`; the only remaining `game_template` mentions
+  are historical notes (this plan + the capture-script docstring) that never
+  reach a build.
+- [ ] **(user)** Add the game to `standing.md` once past prototype — lives in the
+  `RustGames/` workspace root (outside this game's git repo), so it's a separate
+  cross-repo edit.
+
+### Blocked / needs external input (not autonomously actionable)
+
+- **Autosave interval as a setting** — needs a shared-toolkit `GameSettings`
+  field (or a game-local settings key); modifying the shared toolkit was kept
+  out of scope for this loop.
+- **Audio SFX** — no sound-asset pack exists yet; the Settings volumes already
+  persist and are ready to feed a `SoundManager` once packs ship.
 
 ---
 
