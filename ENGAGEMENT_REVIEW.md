@@ -107,8 +107,16 @@ ways to make it entertaining. All numbers are the ones actually shipping in
 > first gated HP line) and **Worldflame** (p5, a stronger +gold/sec than the p1
 > Molten Veins). Both gate past the guarded runs (first prestige is prestige 0;
 > cycle 2 is prestige 1), so the balance sim can't reach them and the guards
-> are unchanged. Verified the sealed cards render. Next content-depth targets:
-> more treasures to clear 35+, deeper wall cliffs.
+> are unchanged. Verified the sealed cards render.
+>
+> **Content depth — treasures 34 → 36 (clears the 35+ aim):** added Embercrown
+> (legendary, +10% gold/click) and Genesis Shard (mythic, prestige-5-gated,
+> +50% all_gold — the new tail capstone past Worldforge Core). Retuned the
+> "Treasure Hoarder" achievement 34 → 36 to keep "discover every type" honest.
+> Every headline content ladder now meets its review target: treasures 36,
+> achievements 36, dragons 13, minion tiers 6, prestige tree 15 nodes (3/branch),
+> run-upgrade lines 11. Remaining content-depth idea: deeper wall cliffs (a
+> second prestige-threshold band) — the last speculative item.
 
 ---
 

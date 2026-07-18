@@ -277,5 +277,22 @@
     "prestige_required": 4,
     "description": "The furnace at the center of creation. Gold is merely what it exhales.",
     "effect": { "stat": "all_gold", "percent": 35 }
+  },
+  {
+    "id": "embercrown",
+    "name": "Embercrown",
+    "rarity": "legendary",
+    "drop_weight": 1,
+    "description": "A circlet of everburning coals, worn only by wyrms who have outlived kingdoms.",
+    "effect": { "stat": "gold_per_click", "percent": 10 }
+  },
+  {
+    "id": "genesis_shard",
+    "name": "Genesis Shard",
+    "rarity": "mythic",
+    "drop_weight": 2,
+    "prestige_required": 5,
+    "description": "A splinter of the first morning. Hold it and every coin remembers how to multiply.",
+    "effect": { "stat": "all_gold", "percent": 50 }
   }
 ]
