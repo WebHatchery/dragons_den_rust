@@ -2,8 +2,8 @@
 //!
 //! Splits the logical screen into four regions — a header of resource cards, a
 //! persistent left hoard rail, a tab-swapped center, and a bottom strip — and
-//! draws the always-on chrome. Only the center changes per tab; the rail and
-//! bottom strip are placeholders here and get filled in P2/P3.
+//! draws the header chrome. Only the center changes per tab; the rail and bottom
+//! strip are drawn by their own modules (`left_rail.rs`, `bottom_bar.rs`).
 
 use crate::simulation::idle_number::{format_amount, format_rate};
 use crate::ui::{self, GameplayCtx, UiAction, LOGICAL_HEIGHT, LOGICAL_WIDTH};
@@ -177,18 +177,4 @@ fn resource_card(
             TextStyle::new(13.0, dark::POSITIVE).params(),
         );
     }
-}
-
-/// Placeholder for the persistent bottom strip (filled in P3).
-pub fn draw_bottom_placeholder(rect: Rect) {
-    let content = ui::panel(rect, "Minions · Expeditions · Treasures");
-    draw_text_centered_in_box(
-        "persistent strip (P3)",
-        content.x,
-        content.y + content.h / 2.0 - 12.0,
-        content.w,
-        24.0,
-        15.0,
-        dark::TEXT_DIM,
-    );
 }

@@ -3,6 +3,7 @@
 //! `Game::apply_action` is the only place state changes.
 
 pub mod achievements;
+pub mod bottom_bar;
 pub mod dragons;
 pub mod frame;
 pub mod hoard;
@@ -94,7 +95,7 @@ pub fn draw_gameplay(
     frame::draw_header(&ctx, regions.header, &mut actions);
     draw_tab_bar(&ctx, regions.tabs, &mut actions);
     left_rail::draw(&ctx, regions.left_rail, &mut actions);
-    frame::draw_bottom_placeholder(regions.bottom);
+    bottom_bar::draw(&ctx, regions.bottom, &mut actions);
 
     let content = regions.center;
     match state.screen {
