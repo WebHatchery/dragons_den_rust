@@ -51,8 +51,3 @@ remains, then deepen content.
   tree to the last commit and note the blocker in `ENGAGEMENT_REVIEW.md`
   instead of committing broken work.
 
-## Stop condition
-
-Stop the loop when Tier 2, Tier 3, and the content-depth targets above are all
-done — or when an iteration finds no remaining item that adds real player
-value. On stopping, leave a final summary in `ENGAGEMENT_REVIEW.md`.
