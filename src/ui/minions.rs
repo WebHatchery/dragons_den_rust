@@ -43,7 +43,7 @@ pub fn draw(ctx: &GameplayCtx<'_>, rect: Rect, actions: &mut Vec<UiAction>) {
     );
 
     let quote = ui::bulk_quote(
-        ctx.data.config.base_hire_cost,
+        ctx.state.hire_base_cost(ctx.data),
         ctx.data.config.hire_cost_growth,
         ctx.state.run.goblins,
         u32::MAX,

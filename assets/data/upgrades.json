@@ -34,5 +34,23 @@
     "cost_growth": 1.8,
     "max_level": 10,
     "effect": { "stat": "hoard_point_gain", "rate": 0.1 }
+  },
+  {
+    "id": "wyrm_appetite",
+    "name": "Wyrm's Appetite",
+    "description": "The dragon's hunger multiplies all passive income.",
+    "base_cost": 1500,
+    "cost_growth": 1.75,
+    "max_level": 12,
+    "effect": { "stat": "gold_per_second", "rate": 0.12 }
+  },
+  {
+    "id": "goblin_recruiters",
+    "name": "Goblin Recruiters",
+    "description": "Silver-tongued recruiters make every new goblin cheaper to hire.",
+    "base_cost": 300,
+    "cost_growth": 1.5,
+    "max_level": 10,
+    "effect": { "stat": "hire_discount", "rate": 0.1 }
   }
 ]

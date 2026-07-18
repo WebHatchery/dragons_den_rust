@@ -77,6 +77,8 @@ pub enum EffectStat {
     MinionEfficiency,
     DiscoveryChance,
     HoardPointGain,
+    /// Reduces goblin hire cost as a `1 / (1 + sum)` divisor on the base curve.
+    HireDiscount,
 }
 
 /// Additive percent bonus, used by treasures, dragons, and prestige upgrades.

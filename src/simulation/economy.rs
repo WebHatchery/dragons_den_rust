@@ -48,7 +48,16 @@ pub fn gold_per_second(
 ) -> f64 {
     let per_goblin = config.gold_per_goblin * rates.factor(EffectStat::MinionEfficiency);
     (config.base_passive + f64::from(goblins) * per_goblin)
+        * rates.factor(EffectStat::GoldPerSecond)
         * percents.percent_multiplier(EffectStat::GoldPerSecond)
+}
+
+/// Effective base goblin hire cost after run upgrades: the `HireDiscount` line
+/// divides the whole curve by `1 + sum(level * rate)`, so hires get steadily
+/// cheaper without ever reaching free. Feeds the same `upgrade_cost` /
+/// `bulk_cost` / `affordable_levels` helpers via a scaled base.
+pub fn hire_base_cost(config: &GameConfig, rates: &Bonuses) -> f64 {
+    config.base_hire_cost / rates.factor(EffectStat::HireDiscount)
 }
 
 pub fn discovery_chance(config: &GameConfig, rates: &Bonuses, percents: &Bonuses) -> f64 {
@@ -206,6 +215,41 @@ mod tests {
         let (count, cost) = affordable_levels(100.0, 1.5, 0, 50.0, 10);
         assert_eq!(count, 0);
         assert!(cost.abs() < 1e-9);
+    }
+
+    #[test]
+    fn wyrm_appetite_multiplies_passive_income() {
+        let (data, mut levels) = setup();
+        let percents = Bonuses::default();
+        let plain = gold_per_second(
+            &data.config,
+            10,
+            &rate_bonuses(&data.upgrades, &levels),
+            &percents,
+        );
+
+        levels.insert("wyrm_appetite".to_owned(), 5);
+        let boosted = gold_per_second(
+            &data.config,
+            10,
+            &rate_bonuses(&data.upgrades, &levels),
+            &percents,
+        );
+        // (1 + 5 * 0.12) = 1.6x the passive rate.
+        assert!((boosted - plain * 1.6).abs() < 1e-9);
+    }
+
+    #[test]
+    fn goblin_recruiters_discount_cheapens_hires() {
+        let (data, mut levels) = setup();
+        let full = hire_base_cost(&data.config, &rate_bonuses(&data.upgrades, &levels));
+        assert!((full - data.config.base_hire_cost).abs() < 1e-9);
+
+        levels.insert("goblin_recruiters".to_owned(), 10);
+        let discounted = hire_base_cost(&data.config, &rate_bonuses(&data.upgrades, &levels));
+        // 1 + 10 * 0.1 = 2x divisor → half price, and never free.
+        assert!((discounted - data.config.base_hire_cost / 2.0).abs() < 1e-9);
+        assert!(discounted > 0.0);
     }
 
     #[test]

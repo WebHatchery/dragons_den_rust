@@ -9,26 +9,28 @@ remains, milestone by milestone (GDD §13).*
 ## 1. What is already built (the framework)
 
 The template has been fully converted; nothing of the template's grid/fog/camera
-demo remains. `cargo test` (34 tests, incl. a balance-regression sim),
+demo remains. `cargo test` (36 tests, incl. a balance-regression sim),
 `cargo clippy -D warnings`, and `cargo fmt --check` all pass. Verified
 screenshots in `docs/verification/`: `ui_menu`, `ui_hoard`, `ui_settings`,
-`ui_treasures`, `ui_achievements`, `ui_prestige`.
+`ui_treasures`, `ui_achievements`, `ui_prestige`, `ui_upgrades`.
 
 ### Data (all content is JSON — never hardcode balance in Rust)
 
 | File | Contents | Status |
 | --- | --- | --- |
 | `assets/data/game_config.json` | Base rates, cost growths, prestige gate/divisor, autosave interval | Prototype values per GDD §5.1 |
-| `assets/data/upgrades.json` | The 4 converged upgrade lines (GDD §8 prototype target) | Done |
+| `assets/data/upgrades.json` | 6 upgrade lines (click, minion eff, discovery, hoard greed, passive mult, hire discount) | Done (M3) |
 | `assets/data/prestige_upgrades.json` | 9 permanent-tree nodes across all 5 effect stats | Done (M3) |
 | `assets/data/treasures.json` | 16 treasures, rarity-weighted, all with real effects | Done (M3) |
 | `assets/data/achievements.json` | 22 achievements, **all** with wired conditions + rewards | Done (M3) |
 | `assets/data/dragons.json` | 8-element codex with original hex swatches, unlock conditions, small bonuses | Done |
 
 Shared condition/effect vocabulary (in `src/data.rs`): `StatKey` (7 stats),
-`StatCondition { stat, gte }`, `EffectStat` (5 stats), `PercentEffect`.
+`StatCondition { stat, gte }`, `EffectStat` (6 stats), `PercentEffect`.
 Adding content = adding JSON entries; new *kinds* of effect need a new
-`EffectStat` variant plus a formula hook in `simulation/economy.rs`.
+`EffectStat` variant plus a formula hook in `simulation/economy.rs`
+(e.g. `HireDiscount` divides the hire curve; `GoldPerSecond` as a *rate*
+multiplies passive income).
 
 ### Simulation (`src/simulation/` — pure functions, all unit-tested)
 
@@ -149,16 +151,22 @@ boots a fresh gameplay session (seed 42) on the Hoard screen.
 
 ### Toward M3 (content-complete, GDD §8 full targets)
 
-- [~] Content expansion (GDD §8 targets):
+- [x] Content expansion (GDD §8 targets):
   - [x] treasures 5 → **16**, achievements 10 → **22**, prestige tree 3 → **9**.
     All are pure JSON; `treasure_hoarder`'s "discover every" gate moved 5 → 16.
     Required scroll support first — added generic mouse-wheel scrolling +
     edge-cull to all four list screens (see §UI note). Loader smoke test now
     asserts content lower bounds instead of exact counts. Verified renders:
     `ui_treasures`, `ui_achievements`, `ui_prestige`.
-  - [ ] Upgrade lines 4 → 6–8 — deferred to its own iteration: new gold-relevant
-    lines feed the balance sim, so this needs a re-tune + re-check of the
-    10–40 min window. (Dragons stay at 8 — fixed by the element set.)
+  - [x] Upgrade lines 4 → **6**: added **Wyrm's Appetite** (`gold_per_second`
+    rate — wired as a passive multiplier via `rates.factor(GoldPerSecond)`) and
+    **Goblin Recruiters** (new `EffectStat::HireDiscount` — divides the hire
+    curve through `economy::hire_base_cost`, threaded into `try_hire_bulk` +
+    minions UI). Balance retuned: the passive multiplier cut first prestige to
+    14 min, so Wyrm's Appetite was made a later-game buy (cost 1.5K, growth
+    1.75) → back to **~20 min** (still in the 10–40 window; the sim
+    conservatively ignores the hire discount). Two new formula-hook unit tests.
+    Verified in `ui_upgrades`. (Dragons stay at 8 — fixed by the element set.)
 - [x] **Multi-tier prestige** (GDD §12 Q2) — the gate now rises with each
   prestige: `threshold_n = prestige_threshold * prestige_threshold_growth^n`
   (new config field, `growth = 8.0`). `prestige::current_threshold` +

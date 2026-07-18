@@ -122,10 +122,13 @@ fn reinvest(sim: &mut Sim, data: &GameData, target: f64) {
         let (gcost, gmarg) = sim.goblin_marginal(data);
         consider(gcost, gmarg, "goblin", &mut best);
         for def in &data.upgrades {
-            // Only gold-relevant lines matter for reaching the threshold.
+            // Only income-boosting lines move the marginal gain rate. (The
+            // hire-discount line lowers goblin cost, not income, so it never
+            // clears the payback test here — a conservative omission that keeps
+            // the reported time an upper bound on optimal play.)
             if !matches!(
                 def.effect.stat,
-                EffectStat::GoldPerClick | EffectStat::MinionEfficiency
+                EffectStat::GoldPerClick | EffectStat::MinionEfficiency | EffectStat::GoldPerSecond
             ) {
                 continue;
             }

@@ -317,6 +317,11 @@ impl GameplayState {
         gained
     }
 
+    /// Effective base goblin hire cost after the Goblin Recruiters discount.
+    pub fn hire_base_cost(&self, data: &GameData) -> f64 {
+        economy::hire_base_cost(&data.config, &self.rates(data))
+    }
+
     /// Hires up to `requested` goblins, buying as many as gold allows.
     /// Returns `(hired, total_cost)`. `requested == u32::MAX` means "buy max".
     pub fn try_hire_bulk(
@@ -325,7 +330,7 @@ impl GameplayState {
         requested: u32,
     ) -> Result<(u32, f64), BuyError> {
         let (count, cost) = economy::affordable_levels(
-            data.config.base_hire_cost,
+            self.hire_base_cost(data),
             data.config.hire_cost_growth,
             self.run.goblins,
             self.run.gold,
