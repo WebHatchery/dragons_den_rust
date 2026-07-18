@@ -36,9 +36,19 @@ ways to make it entertaining. All numbers are the ones actually shipping in
 > `all_gold` treasures: +10/+20/+35%). Treasures tab shows gated cards as
 > "Sealed · Mythic · Reach Prestige N"; "Treasure Hoarder" achievement retuned
 > 16 → 34 (reward 5 → 25 HP) into a real prestige-4 capstone. **Tier 2 is now
-> complete.** Next: **Tier 3 #9** (Golden Hoard active-play burst / Dragon's
-> Frenzy), then #10 (prestige-gated qualitative unlocks) and #11 (soft-caps +
-> wall-breakers).
+> complete.**
+>
+> **Tier 3 #9 (Golden Hoard active-play burst) has landed:** a clickable golden
+> glint spawns every 45–110s and stays clickable for 13s; clicking it grants a
+> **Dragon's Frenzy** — a ×7 click-gold surge for 15s (Cookie-Clicker's golden
+> cookie, the genre's proven retention hook). All config-driven; transient
+> state on `GameplayState` advanced only on live frames (`advance_events`),
+> never offline. UI draws the orb (mapped from normalized coords into the play
+> area, so state stays pixel-ignorant) + a live Frenzy banner. Also **split the
+> gameplay test suite into `state/gameplay/tests.rs`** to bring `gameplay.rs`
+> back under the 800-line limit (was 882). Next: **Tier 3 #10** (prestige-gated
+> qualitative unlocks — a 2nd expedition slot / new upgrade line), then #11
+> (soft-caps + wall-breakers).
 
 ---
 

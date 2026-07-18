@@ -49,6 +49,8 @@ pub enum UiAction {
     BuyPrestigeUpgrade(String),
     Prestige,
     SetBuyMode(BuyMode),
+    /// The player clicked an active Golden Hoard glint (#9).
+    CollectGoldenHoard,
     // Settings
     OpenSettings,
     CloseSettings,
@@ -113,11 +115,76 @@ pub fn draw_gameplay(
         Screen::Dragons => dragons::draw(&ctx, content, &mut actions),
     }
 
+    // Active-play overlays (#9): a Golden Hoard glint and the Frenzy banner sit
+    // above the panels but below the settings modal.
+    draw_frenzy_banner(&ctx, regions.center);
+    if !state.settings_open {
+        draw_golden_hoard(&ctx, regions.center, &mut actions);
+    }
+
     if state.settings_open {
         draw_settings_overlay(settings, mouse, &mut actions);
     }
 
     actions
+}
+
+/// Draws the active Golden Hoard glint (#9) and pushes a collect action when the
+/// player clicks it. `area` is the central play region the glint floats within.
+fn draw_golden_hoard(ctx: &GameplayCtx<'_>, area: Rect, actions: &mut Vec<UiAction>) {
+    let Some(glint) = ctx.state.golden_hoard() else {
+        return;
+    };
+    const R: f32 = 26.0;
+    let pad = R + 8.0;
+    let cx = area.x + pad + glint.nx * (area.w - pad * 2.0);
+    let cy = area.y + pad + glint.ny * (area.h - pad * 2.0);
+    let hovered = vec2(cx, cy).distance(ctx.mouse) <= R;
+
+    // A warm golden orb that fades and shrinks its halo as the window closes.
+    let fade = (glint.remaining / 1.5).clamp(0.35, 1.0) as f32;
+    let scale = if hovered { 1.15 } else { 1.0 };
+    draw_circle(cx, cy, R * 1.7, Color::new(0.98, 0.80, 0.30, 0.14 * fade));
+    draw_circle(cx, cy, R * scale, Color::new(0.99, 0.84, 0.38, fade));
+    draw_circle(
+        cx - R * 0.3,
+        cy - R * 0.3,
+        R * 0.38,
+        Color::new(1.0, 0.97, 0.82, fade),
+    );
+    draw_circle_lines(cx, cy, R * scale, 2.0, Color::new(1.0, 0.93, 0.66, fade));
+
+    if hovered && is_mouse_button_released(MouseButton::Left) {
+        actions.push(UiAction::CollectGoldenHoard);
+    }
+}
+
+/// A prominent banner while Dragon's Frenzy is active (#9), centered at the top
+/// of the play area.
+fn draw_frenzy_banner(ctx: &GameplayCtx<'_>, area: Rect) {
+    if !ctx.state.frenzy_active() {
+        return;
+    }
+    let w = 380.0;
+    let h = 30.0;
+    let rect = Rect::new(area.x + (area.w - w) / 2.0, area.y + 4.0, w, h);
+    draw_surface(
+        rect,
+        &SurfaceStyle::new(Color::new(0.30, 0.16, 0.04, 0.92)).with_border(1.5, theme::ACCENT),
+    );
+    draw_text_centered_in_box(
+        &format!(
+            "DRAGON'S FRENZY!  x{:.0} click  ·  {:.0}s",
+            ctx.data.config.dragon_frenzy_multiplier,
+            ctx.state.frenzy_remaining().ceil()
+        ),
+        rect.x,
+        rect.y,
+        rect.w,
+        rect.h,
+        16.0,
+        theme::ACCENT,
+    );
 }
 
 /// Dims the frame and draws the shared settings panel as a gameplay overlay.

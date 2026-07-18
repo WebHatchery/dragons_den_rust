@@ -55,6 +55,17 @@ pub struct GameConfig {
     pub hoard_rush_multiplier: f64,
     /// How long a Hoard Rush surge lasts, in seconds.
     pub hoard_rush_seconds: f64,
+    /// Golden Hoard glint cadence (engagement review #9): a clickable burst
+    /// appears after a random `[min, max]`-second wait and stays clickable for
+    /// `lifetime` seconds. Clicking it grants a Dragon's Frenzy — the proven
+    /// active-play retention hook (Cookie Clicker's golden cookie).
+    pub golden_hoard_min_interval: f64,
+    pub golden_hoard_max_interval: f64,
+    pub golden_hoard_lifetime: f64,
+    /// Dragon's Frenzy: a temporary ×multiplier on click gold, rewarding active
+    /// clicking during the window.
+    pub dragon_frenzy_multiplier: f64,
+    pub dragon_frenzy_seconds: f64,
     pub base_discovery_chance: f64,
     pub prestige_threshold: f64,
     /// Multiplier applied to the prestige threshold per prestige already done

@@ -95,6 +95,7 @@ impl Game {
 
         if let GameState::Gameplay(gameplay) = &mut self.state {
             gameplay.tick(&self.data, dt);
+            gameplay.advance_events(&self.data, dt);
 
             for event in gameplay.check_unlocks(&self.data) {
                 match event {
@@ -186,6 +187,7 @@ impl Game {
             UiAction::BuyUpgrade(id) => self.buy_upgrade(&id),
             UiAction::BuyPrestigeUpgrade(id) => self.buy_prestige_upgrade(&id),
             UiAction::Prestige => self.prestige(),
+            UiAction::CollectGoldenHoard => self.collect_golden_hoard(),
             UiAction::SetBuyMode(mode) => {
                 if let GameState::Gameplay(gameplay) = &mut self.state {
                     gameplay.buy_mode = mode;
@@ -365,6 +367,20 @@ impl Game {
             Err(_) => self
                 .notifications
                 .warning("Not enough gold for an expedition"),
+        }
+    }
+
+    fn collect_golden_hoard(&mut self) {
+        let GameState::Gameplay(gameplay) = &mut self.state else {
+            return;
+        };
+        if gameplay.collect_golden_hoard(&self.data) {
+            let mult = self.data.config.dragon_frenzy_multiplier;
+            gameplay.action_log.push(format!(
+                "Golden Hoard cracked open — Dragon's Frenzy x{mult:.0}!"
+            ));
+            self.notifications
+                .success(format!("Dragon's Frenzy! x{mult:.0} click gold"));
         }
     }
 
