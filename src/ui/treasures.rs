@@ -1,6 +1,7 @@
 //! Treasure collection: discovered/undiscovered grid with rarity badges.
 
 use crate::data::treasures::Rarity;
+use crate::ui::theme;
 use crate::ui::{self, GameplayCtx, UiAction};
 use macroquad::prelude::*;
 use macroquad_toolkit::prelude::*;
@@ -40,14 +41,14 @@ pub fn draw(ctx: &GameplayCtx<'_>, rect: Rect, actions: &mut Vec<UiAction>) {
         let accent = if found {
             rarity_color(def.rarity)
         } else {
-            dark::TEXT_DIM
+            theme::TEXT_DIM
         };
 
         draw_surface(
             card,
-            &SurfaceStyle::new(Color::new(0.11, 0.125, 0.16, 1.0))
+            &SurfaceStyle::new(theme::PANEL)
                 .with_left_accent(4.0, accent)
-                .with_border(1.0, Color::new(0.5, 0.55, 0.65, 0.35)),
+                .with_border(1.0, theme::BORDER_DIM),
         );
 
         if found {
@@ -55,7 +56,7 @@ pub fn draw(ctx: &GameplayCtx<'_>, rect: Rect, actions: &mut Vec<UiAction>) {
                 &def.name,
                 card.x + 16.0,
                 card.y + 26.0,
-                TextStyle::new(17.0, dark::TEXT_BRIGHT).params(),
+                TextStyle::new(17.0, theme::TEXT_BRIGHT).params(),
             );
             draw_badge(
                 Rect::new(card.x + 16.0, card.y + 38.0, 96.0, 24.0),
@@ -71,14 +72,14 @@ pub fn draw(ctx: &GameplayCtx<'_>, rect: Rect, actions: &mut Vec<UiAction>) {
                 h - 76.0,
                 14.0,
                 4.0,
-                dark::TEXT_DIM,
+                theme::TEXT_DIM,
             );
         } else {
             draw_ui_text_ex(
                 "???",
                 card.x + 16.0,
                 card.y + 26.0,
-                TextStyle::new(17.0, dark::TEXT_DIM).params(),
+                TextStyle::new(17.0, theme::TEXT_DIM).params(),
             );
             draw_text_block(
                 "An undiscovered treasure sleeps in the ruins.",
@@ -88,7 +89,7 @@ pub fn draw(ctx: &GameplayCtx<'_>, rect: Rect, actions: &mut Vec<UiAction>) {
                 h - 52.0,
                 14.0,
                 4.0,
-                dark::TEXT_DIM,
+                theme::TEXT_DIM,
             );
         }
     }

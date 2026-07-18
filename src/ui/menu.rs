@@ -2,6 +2,7 @@
 
 use crate::data::GameData;
 use crate::state::{MenuScreen, MenuState};
+use crate::ui::theme;
 use crate::ui::{self, settings, UiAction, LOGICAL_HEIGHT, LOGICAL_WIDTH};
 use macroquad::prelude::*;
 use macroquad_toolkit::prelude::*;
@@ -28,7 +29,7 @@ pub fn draw(
         LOGICAL_WIDTH,
         60.0,
         56.0,
-        dark::TEXT_BRIGHT,
+        theme::TEXT_BRIGHT,
     );
     draw_text_centered_in_box(
         "Click for gold. Hoard it. Burn it all down for something permanent.",
@@ -37,7 +38,7 @@ pub fn draw(
         LOGICAL_WIDTH,
         30.0,
         19.0,
-        dark::TEXT_DIM,
+        theme::TEXT_DIM,
     );
 
     let button_w = 320.0;
@@ -91,7 +92,7 @@ pub fn draw(
         LOGICAL_WIDTH,
         24.0,
         14.0,
-        dark::TEXT_DIM,
+        theme::TEXT_DIM,
     );
 
     actions

@@ -3,6 +3,7 @@
 //! the run's overview rather than the click surface.
 
 use crate::simulation::idle_number::format_amount;
+use crate::ui::theme;
 use crate::ui::{self, GameplayCtx, UiAction};
 use macroquad::prelude::*;
 use macroquad_toolkit::prelude::*;
@@ -35,7 +36,7 @@ fn draw_action_log(ctx: &GameplayCtx<'_>, rect: Rect) {
             48.0,
             15.0,
             4.0,
-            dark::TEXT_DIM,
+            theme::TEXT_DIM,
         );
         return;
     }
@@ -52,9 +53,9 @@ fn draw_action_log(ctx: &GameplayCtx<'_>, rect: Rect) {
     {
         // Fade older entries toward the dim end of the palette.
         let color = if index == 0 {
-            dark::TEXT_BRIGHT
+            theme::TEXT_BRIGHT
         } else {
-            dark::TEXT
+            theme::TEXT
         };
         draw_ui_text_ex(
             entry,
@@ -93,6 +94,6 @@ fn draw_side_column(ctx: &GameplayCtx<'_>, rect: Rect) {
         60.0,
         16.0,
         4.0,
-        dark::TEXT_DIM,
+        theme::TEXT_DIM,
     );
 }

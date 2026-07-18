@@ -12,6 +12,7 @@ pub mod menu;
 pub mod minions;
 pub mod prestige;
 pub mod settings;
+pub mod theme;
 pub mod treasures;
 pub mod upgrades;
 
@@ -141,7 +142,7 @@ fn draw_tab_bar(ctx: &GameplayCtx<'_>, bar: Rect, actions: &mut Vec<UiAction>) {
             actions.push(UiAction::SwitchScreen(*screen));
         }
         if active {
-            draw_rectangle(rect.x, rect.bottom() - 3.0, rect.w, 3.0, dark::ACCENT);
+            draw_rectangle(rect.x, rect.bottom() - 3.0, rect.w, 3.0, theme::ACCENT);
         }
     }
 }
@@ -150,31 +151,74 @@ fn draw_tab_bar(ctx: &GameplayCtx<'_>, bar: Rect, actions: &mut Vec<UiAction>) {
 
 /// Standard panel chrome; returns the inset content rect.
 pub(crate) fn panel(rect: Rect, title: &str) -> Rect {
-    let style = SurfaceStyle::new(Color::new(0.08, 0.085, 0.105, 0.97))
-        .with_border(1.0, Color::new(0.38, 0.45, 0.58, 0.65))
-        .with_header(42.0, Color::new(0.105, 0.12, 0.15, 1.0))
-        .with_header_divider(1.0, Color::new(0.38, 0.45, 0.58, 0.4));
-    draw_surface_with_title(rect, Some(title), &style, TextStyle::new(18.0, dark::TEXT));
+    let style = SurfaceStyle::new(theme::PANEL)
+        .with_border(1.0, theme::BORDER)
+        .with_header(42.0, theme::PANEL_HEADER)
+        .with_header_divider(1.0, theme::BORDER_DIM);
+    draw_surface_with_title(
+        rect,
+        Some(title),
+        &style,
+        TextStyle::new(18.0, theme::TEXT_BRIGHT),
+    );
+    theme::draw_corner_marks(rect, theme::BORDER);
     Rect::new(rect.x + 18.0, rect.y + 56.0, rect.w - 36.0, rect.h - 74.0)
 }
 
+/// Base (fill, border, text) for a warm-themed button tone.
+fn tone_colors(tone: ButtonTone) -> (Color, Color, Color) {
+    match tone {
+        ButtonTone::Primary => (
+            Color::new(0.62, 0.46, 0.20, 1.0),
+            theme::BORDER,
+            Color::new(0.08, 0.06, 0.03, 1.0),
+        ),
+        ButtonTone::Positive => (
+            Color::new(0.26, 0.34, 0.16, 1.0),
+            theme::POSITIVE,
+            theme::TEXT_BRIGHT,
+        ),
+        ButtonTone::Danger => (
+            Color::new(0.30, 0.20, 0.42, 1.0),
+            theme::HOARD_POINT,
+            theme::TEXT_BRIGHT,
+        ),
+        // Secondary and any future tones: a bronze-outlined dark button.
+        _ => (
+            Color::new(0.16, 0.12, 0.07, 1.0),
+            theme::BORDER_DIM,
+            theme::ACCENT,
+        ),
+    }
+}
+
+/// Multiplies a color's RGB by `f` (for hover-brighten / press-darken).
+fn shade(c: Color, f: f32) -> Color {
+    Color::new(
+        (c.r * f).clamp(0.0, 1.0),
+        (c.g * f).clamp(0.0, 1.0),
+        (c.b * f).clamp(0.0, 1.0),
+        c.a,
+    )
+}
+
 pub(crate) fn button(rect: Rect, text: &str, enabled: bool, tone: ButtonTone, mouse: Vec2) -> bool {
-    let style = ButtonStyle::from_tone(tone);
+    let (base, border, text_color) = tone_colors(tone);
     let hovered = enabled && rect.contains_point(mouse);
     let pressed = hovered && is_mouse_button_down(MouseButton::Left);
     let activated = hovered && is_mouse_button_released(MouseButton::Left);
     let fill = if !enabled {
-        style.disabled
+        theme::PANEL_DARK
     } else if pressed {
-        style.pressed
+        shade(base, 0.82)
     } else if hovered {
-        style.hovered
+        shade(base, 1.18)
     } else {
-        style.normal
+        base
     };
     draw_surface(
         rect,
-        &SurfaceStyle::new(fill).with_border(1.0, style.border),
+        &SurfaceStyle::new(fill).with_border(1.0, if enabled { border } else { theme::BORDER_DIM }),
     );
     draw_text_centered_in_box_ex(
         text,
@@ -182,14 +226,7 @@ pub(crate) fn button(rect: Rect, text: &str, enabled: bool, tone: ButtonTone, mo
         rect.y + if pressed { 2.0 } else { 0.0 },
         rect.w - 16.0,
         rect.h,
-        TextStyle::new(
-            17.0,
-            if enabled {
-                style.text_color
-            } else {
-                dark::TEXT_DIM
-            },
-        ),
+        TextStyle::new(17.0, if enabled { text_color } else { theme::TEXT_DIM }),
     );
     activated
 }

@@ -1,6 +1,7 @@
 //! Achievement checklist — every entry shows its real condition and reward.
 
 use crate::simulation::idle_number::format_amount;
+use crate::ui::theme;
 use crate::ui::{self, GameplayCtx, UiAction};
 use macroquad::prelude::*;
 use macroquad_toolkit::prelude::*;
@@ -21,19 +22,31 @@ pub fn draw(ctx: &GameplayCtx<'_>, rect: Rect, actions: &mut Vec<UiAction>) {
             continue;
         }
         let done = ctx.state.persistent.achievements.is_unlocked(&def.id);
-        let accent = if done { dark::POSITIVE } else { dark::TEXT_DIM };
+        let accent = if done {
+            theme::POSITIVE
+        } else {
+            theme::TEXT_DIM
+        };
 
         draw_surface(
             card,
-            &SurfaceStyle::new(Color::new(0.11, 0.125, 0.16, 1.0))
+            &SurfaceStyle::new(theme::PANEL)
                 .with_left_accent(4.0, accent)
-                .with_border(1.0, Color::new(0.5, 0.55, 0.65, 0.35)),
+                .with_border(1.0, theme::BORDER_DIM),
         );
         draw_ui_text_ex(
             &format!("{} {}", if done { "[X]" } else { "[ ]" }, def.name),
             card.x + 16.0,
             card.y + 26.0,
-            TextStyle::new(17.0, if done { dark::TEXT_BRIGHT } else { dark::TEXT }).params(),
+            TextStyle::new(
+                17.0,
+                if done {
+                    theme::TEXT_BRIGHT
+                } else {
+                    theme::TEXT
+                },
+            )
+            .params(),
         );
 
         let reward = if def.reward.hoard_points > 0.0 {
@@ -54,7 +67,7 @@ pub fn draw(ctx: &GameplayCtx<'_>, rect: Rect, actions: &mut Vec<UiAction>) {
             h - 46.0,
             14.0,
             4.0,
-            dark::TEXT_DIM,
+            theme::TEXT_DIM,
         );
     }
 }

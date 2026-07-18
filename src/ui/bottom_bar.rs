@@ -4,6 +4,7 @@
 //! the expedition launcher, and the most recent treasure finds.
 
 use crate::simulation::idle_number::format_amount;
+use crate::ui::theme;
 use crate::ui::treasures::rarity_color;
 use crate::ui::{self, GameplayCtx, UiAction};
 use macroquad::prelude::*;
@@ -40,7 +41,7 @@ fn draw_minions_placeholder(ctx: &GameplayCtx<'_>, rect: Rect) {
         content.w,
         20.0,
         14.0,
-        dark::TEXT_DIM,
+        theme::TEXT_DIM,
     );
 }
 
@@ -65,7 +66,7 @@ fn draw_expeditions(ctx: &GameplayCtx<'_>, rect: Rect, actions: &mut Vec<UiActio
         34.0,
         14.0,
         4.0,
-        dark::TEXT,
+        theme::TEXT,
     );
     if ui::button(
         Rect::new(content.x, content.bottom() - 34.0, content.w, 32.0),
@@ -91,7 +92,7 @@ fn draw_recent_treasures(ctx: &GameplayCtx<'_>, rect: Rect) {
             48.0,
             14.0,
             4.0,
-            dark::TEXT_DIM,
+            theme::TEXT_DIM,
         );
         return;
     }
@@ -105,7 +106,7 @@ fn draw_recent_treasures(ctx: &GameplayCtx<'_>, rect: Rect) {
             &def.name,
             content.x,
             y + 15.0,
-            TextStyle::new(15.0, dark::TEXT).params(),
+            TextStyle::new(15.0, theme::TEXT).params(),
         );
         draw_text_centered_in_box(
             def.rarity.label(),

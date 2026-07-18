@@ -1,6 +1,7 @@
 //! Minions screen: minion count, hire cost, and the income breakdown.
 
 use crate::simulation::idle_number::{format_amount, format_rate};
+use crate::ui::theme;
 use crate::ui::{self, GameplayCtx, UiAction};
 use macroquad::prelude::*;
 use macroquad_toolkit::prelude::*;
@@ -24,7 +25,7 @@ pub fn draw(ctx: &GameplayCtx<'_>, rect: Rect, actions: &mut Vec<UiAction>) {
         content.w,
         40.0,
         30.0,
-        dark::TEXT_BRIGHT,
+        theme::TEXT_BRIGHT,
     );
     draw_text_centered_in_box(
         &format!("generating {} gold per second", format_rate(gps)),
@@ -33,7 +34,7 @@ pub fn draw(ctx: &GameplayCtx<'_>, rect: Rect, actions: &mut Vec<UiAction>) {
         content.w,
         26.0,
         18.0,
-        dark::TEXT,
+        theme::TEXT,
     );
 
     // Buy-quantity selector: goblins are uncapped, so remaining is u32::MAX.
@@ -91,6 +92,6 @@ pub fn draw(ctx: &GameplayCtx<'_>, rect: Rect, actions: &mut Vec<UiAction>) {
         90.0,
         16.0,
         6.0,
-        dark::TEXT_DIM,
+        theme::TEXT_DIM,
     );
 }

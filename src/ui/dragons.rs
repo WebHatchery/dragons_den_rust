@@ -1,6 +1,7 @@
 //! Dragon Codex: the 8-element flavor gallery (GDD §5.5) — identity and a
 //! small passive bonus, never a simulation.
 
+use crate::ui::theme;
 use crate::ui::{self, GameplayCtx, UiAction};
 use macroquad::prelude::*;
 use macroquad_toolkit::prelude::*;
@@ -32,9 +33,9 @@ pub fn draw(ctx: &GameplayCtx<'_>, rect: Rect, actions: &mut Vec<UiAction>) {
 
         draw_surface(
             card,
-            &SurfaceStyle::new(Color::new(0.11, 0.125, 0.16, 1.0))
+            &SurfaceStyle::new(theme::PANEL)
                 .with_left_accent(5.0, accent)
-                .with_border(1.0, Color::new(0.5, 0.55, 0.65, 0.35)),
+                .with_border(1.0, theme::BORDER_DIM),
         );
         draw_ui_text_ex(
             if unlocked { &def.name } else { "???" },
@@ -43,9 +44,9 @@ pub fn draw(ctx: &GameplayCtx<'_>, rect: Rect, actions: &mut Vec<UiAction>) {
             TextStyle::new(
                 17.0,
                 if unlocked {
-                    dark::TEXT_BRIGHT
+                    theme::TEXT_BRIGHT
                 } else {
-                    dark::TEXT_DIM
+                    theme::TEXT_DIM
                 },
             )
             .params(),
@@ -70,7 +71,7 @@ pub fn draw(ctx: &GameplayCtx<'_>, rect: Rect, actions: &mut Vec<UiAction>) {
             h - 76.0,
             13.0,
             4.0,
-            dark::TEXT_DIM,
+            theme::TEXT_DIM,
         );
     }
 }

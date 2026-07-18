@@ -1,6 +1,7 @@
 //! Upgrade shop: the single converged catalog (GDD §0 — one catalog, wired).
 
 use crate::simulation::idle_number::format_amount;
+use crate::ui::theme;
 use crate::ui::{self, GameplayCtx, UiAction};
 use macroquad::prelude::*;
 use macroquad_toolkit::prelude::*;
@@ -50,15 +51,22 @@ pub fn draw(ctx: &GameplayCtx<'_>, rect: Rect, actions: &mut Vec<UiAction>) {
 
         draw_surface(
             card,
-            &SurfaceStyle::new(Color::new(0.11, 0.125, 0.16, 1.0))
-                .with_left_accent(4.0, if maxed { dark::TEXT_DIM } else { dark::ACCENT })
-                .with_border(1.0, Color::new(0.5, 0.55, 0.65, 0.35)),
+            &SurfaceStyle::new(theme::PANEL)
+                .with_left_accent(
+                    4.0,
+                    if maxed {
+                        theme::TEXT_DIM
+                    } else {
+                        theme::ACCENT
+                    },
+                )
+                .with_border(1.0, theme::BORDER_DIM),
         );
         draw_ui_text_ex(
             &format!("{}  (Lv {}/{})", def.name, level, def.max_level),
             card.x + 16.0,
             card.y + 28.0,
-            TextStyle::new(18.0, dark::TEXT_BRIGHT).params(),
+            TextStyle::new(18.0, theme::TEXT_BRIGHT).params(),
         );
         draw_text_block(
             &def.description,
@@ -68,7 +76,7 @@ pub fn draw(ctx: &GameplayCtx<'_>, rect: Rect, actions: &mut Vec<UiAction>) {
             40.0,
             14.0,
             4.0,
-            dark::TEXT_DIM,
+            theme::TEXT_DIM,
         );
         draw_ui_text_ex(
             &format!(
@@ -78,7 +86,7 @@ pub fn draw(ctx: &GameplayCtx<'_>, rect: Rect, actions: &mut Vec<UiAction>) {
             ),
             card.x + 16.0,
             card.y + h - 14.0,
-            TextStyle::new(14.0, dark::TEXT).params(),
+            TextStyle::new(14.0, theme::TEXT).params(),
         );
 
         let label = if maxed {

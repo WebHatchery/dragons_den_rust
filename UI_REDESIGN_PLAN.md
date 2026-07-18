@@ -128,10 +128,58 @@ New modules (each < 400 lines):
       bottom cards, hire `UiAction` per type. *Verify: hire raises rate; save round-trips.*
 - [ ] **P5 — Prestige tree.** Branch schema, `ui/prestige_tree.rs`, connectors + locks, Burn card, **Multipliers**
       summary. *Verify: buy gated by prereq/HP; capture matches mockup.*
-- [ ] **P6 — Ornate styling + icons.** Toolkit frame/card/icon helpers; icon manifest; apply theme across regions.
-      *Verify: full-screen capture vs. `image.png`.*
+- [ ] **P6 — Icons.** PNG/procedural icon set + manifest; wire into resource cards, minion cards, treasure/branch
+      glyphs. (Theme colors already landed in PT.) *Verify: full-screen capture vs. `image.png`.*
 - [ ] **P7 — Polish.** Hover/press states, tooltips, `+N` float feedback, balance retune, docs (`gdd.md` §9,
       `IMPLEMENTATION_PLAN.md`).
+
+## 8b. Theme pass (PT) — warm "hoard" palette  ← REPRIORITIZED TO NEXT
+
+**Why now:** the mockup's identity is a warm gold-on-dark-brown treasure aesthetic. Correct layout in the toolkit's
+cool blue-grey `dark::*` palette still reads as default Rust UI (user feedback). Theming must come *before* the
+remaining layout phases (P4/P5) so every new panel is born themed.
+
+The palette lives in a project-local `ui/theme.rs` (a game-specific color identity is a legitimate divergence from
+the toolkit's generic `dark` palette; the reusable *ornate-border rendering* is still a candidate toolkit upgrade
+later). Approx. values sampled from `image.png`:
+
+| Role | Value (linear-ish RGB) | Use |
+| --- | --- | --- |
+| `BACKGROUND` | `0.047, 0.035, 0.024` | near-black warm brown behind everything |
+| `PANEL` | `0.090, 0.067, 0.039` | panel/card fill (dark brown) |
+| `PANEL_HEADER` | `0.120, 0.094, 0.063` | panel title band |
+| `PANEL_DARK` | `0.059, 0.043, 0.027` | insets, art wells, disabled |
+| `BORDER` (gold) | `0.847, 0.663, 0.290` | bright etched frame border |
+| `BORDER_DIM` (bronze) | `0.420, 0.325, 0.165` | subtle dividers/card borders |
+| `ACCENT` / `GOLD` | `0.910, 0.710, 0.320` | signature gold accents |
+| `TEXT` | `0.847, 0.800, 0.690` | body (warm cream) |
+| `TEXT_BRIGHT` | `0.950, 0.894, 0.753` | headings (gold-cream) |
+| `TEXT_DIM` | `0.541, 0.490, 0.392` | muted tan |
+| `POSITIVE` | `0.560, 0.720, 0.350` | income / "Common" green |
+| `NEGATIVE` | `0.757, 0.337, 0.259` | warm red |
+| `WARNING` | `0.878, 0.576, 0.180` | amber |
+| `HOARD_POINT` | `0.604, 0.435, 0.769` | purple (Hoard Points / prestige) |
+
+**PT-a — foundation (biggest lever): ✅ DONE.** `ui/theme.rs` palette + `draw_corner_marks`; reskinned
+`ui::panel`/`ui::button`, background, frame chrome, and all card fills; swept 55 `dark::*` → `theme::*` across 14
+files. Whole UI now reads gold-on-brown (verified hoard/prestige captures).
+- `ui/theme.rs`: the palette above + `draw_corner_marks(rect, color)` (small gold L-brackets at each corner → the
+  "ornate frame" read).
+- Rewrite the two shared widgets everything funnels through:
+  - `ui::panel()` → dark-brown fill, gold `BORDER`, header band + gold divider, **corner marks**, gold-cream title.
+  - `ui::button()` → warm tones: Primary = gold fill/dark text, Secondary = brown + gold-dim outline + gold text,
+    Positive = green, Danger/prestige = amethyst (mockup's purple PRESTIGE).
+- `clear_background` → `theme::BACKGROUND`.
+- Reskin the frame chrome (header, resource cards, left rail, bottom strip) hardcoded colors → theme.
+- **Sweep** the 55 `dark::*` references → `theme::*` across the 14 UI files (names line up: BACKGROUND, ACCENT, TEXT,
+  TEXT_BRIGHT, TEXT_DIM, POSITIVE).
+- Reskin the remaining cool blue-grey card fills (`0.11,0.125,0.16` etc. in prestige/treasures/achievements/
+  upgrades) → `theme::PANEL` + `theme::BORDER_DIM`.
+- *Verify: capture hoard/prestige/upgrades — the whole UI reads gold-on-brown.*
+
+**PT-b — ornate depth (after PT-a):** double/insét gold borders, a faint panel gradient or vignette, the
+"DRAGON'S DEN" title in a heavier gold treatment, active-tab gold underline + brighter fill, subtle warm hover
+glows. Corner filigree beyond simple brackets can graduate into a toolkit `FramedPanel` upgrade.
 
 Each phase: `cargo fmt` + `cargo clippy -D warnings` + `cargo test`, then `scripts/capture_ui.ps1` for the touched
 scenes.

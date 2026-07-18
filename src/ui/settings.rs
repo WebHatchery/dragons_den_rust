@@ -3,6 +3,7 @@
 //! every control returns a `ChangeSetting` intent; `game.rs` mutates, applies,
 //! and persists.
 
+use crate::ui::theme;
 use crate::ui::{self, SettingChange, UiAction, VolumeChannel, LOGICAL_HEIGHT, LOGICAL_WIDTH};
 use macroquad::prelude::*;
 use macroquad_toolkit::prelude::*;
@@ -19,7 +20,7 @@ pub fn draw(settings: &GameSettings, mouse: Vec2) -> Vec<UiAction> {
         LOGICAL_WIDTH,
         50.0,
         44.0,
-        dark::TEXT_BRIGHT,
+        theme::TEXT_BRIGHT,
     );
 
     let panel_w = 620.0;
@@ -96,7 +97,7 @@ pub fn draw(settings: &GameSettings, mouse: Vec2) -> Vec<UiAction> {
         "Sound effects will play once audio packs ship; volumes are saved now.",
         content.x,
         content.bottom() - 6.0,
-        TextStyle::new(13.0, dark::TEXT_DIM).params(),
+        TextStyle::new(13.0, theme::TEXT_DIM).params(),
     );
 
     let back = Rect::new(
@@ -121,7 +122,7 @@ fn label_and_value(content: Rect, y: f32, label: &str, value: &str) {
         label,
         content.x + 4.0,
         y + 26.0,
-        TextStyle::new(18.0, dark::TEXT).params(),
+        TextStyle::new(18.0, theme::TEXT).params(),
     );
     // Value sits just left of the +/- controls.
     draw_text_centered_in_box(
@@ -131,7 +132,7 @@ fn label_and_value(content: Rect, y: f32, label: &str, value: &str) {
         88.0,
         36.0,
         18.0,
-        dark::TEXT_BRIGHT,
+        theme::TEXT_BRIGHT,
     );
 }
 
@@ -213,7 +214,7 @@ fn toggle_row(
         label,
         content.x + 4.0,
         y + 26.0,
-        TextStyle::new(18.0, dark::TEXT).params(),
+        TextStyle::new(18.0, theme::TEXT).params(),
     );
     let tone = if on {
         ButtonTone::Positive

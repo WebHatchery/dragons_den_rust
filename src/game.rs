@@ -6,6 +6,7 @@ use crate::save;
 use crate::simulation::idle_number::format_amount;
 use crate::state::gameplay::{BuyError, ExploreResult, UnlockEvent};
 use crate::state::{GameState, GameplayState, MenuScreen, MenuState, StateTransition};
+use crate::ui::theme;
 use crate::ui::{self, SettingChange, UiAction, VolumeChannel};
 use macroquad::prelude::*;
 use macroquad_toolkit::events::EventBus;
@@ -13,7 +14,7 @@ use macroquad_toolkit::fx::FloatingTextLayer;
 use macroquad_toolkit::notifications::{
     NotificationAnchor, NotificationManager, NotificationRenderConfig,
 };
-use macroquad_toolkit::prelude::{begin_virtual_ui_frame, dark, end_virtual_ui_frame};
+use macroquad_toolkit::prelude::{begin_virtual_ui_frame, end_virtual_ui_frame};
 use macroquad_toolkit::settings::GameSettings;
 
 /// Step applied per volume +/- press.
@@ -127,7 +128,7 @@ impl Game {
     }
 
     pub fn draw(&mut self) {
-        clear_background(dark::BACKGROUND);
+        clear_background(theme::BACKGROUND);
 
         let virtual_ui = begin_virtual_ui_frame(ui::LOGICAL_WIDTH, ui::LOGICAL_HEIGHT);
         self.last_mouse_logical = virtual_ui.mouse_position();

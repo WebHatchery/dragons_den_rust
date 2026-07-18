@@ -3,6 +3,7 @@
 
 use crate::simulation::economy;
 use crate::simulation::idle_number::format_amount;
+use crate::ui::theme;
 use crate::ui::{self, GameplayCtx, UiAction};
 use macroquad::prelude::*;
 use macroquad_toolkit::prelude::*;
@@ -44,9 +45,9 @@ fn draw_burn_panel(ctx: &GameplayCtx<'_>, rect: Rect, actions: &mut Vec<UiAction
         TextStyle::new(
             16.0,
             if ready {
-                dark::TEXT_BRIGHT
+                theme::TEXT_BRIGHT
             } else {
-                dark::TEXT_DIM
+                theme::TEXT_DIM
             },
         )
         .params(),
@@ -94,15 +95,15 @@ fn draw_tree_panel(ctx: &GameplayCtx<'_>, rect: Rect, actions: &mut Vec<UiAction
 
         draw_surface(
             card,
-            &SurfaceStyle::new(Color::new(0.13, 0.11, 0.17, 1.0))
-                .with_left_accent(4.0, Color::new(0.75, 0.55, 0.95, 1.0))
-                .with_border(1.0, Color::new(0.5, 0.55, 0.65, 0.35)),
+            &SurfaceStyle::new(theme::PANEL)
+                .with_left_accent(4.0, theme::HOARD_POINT)
+                .with_border(1.0, theme::BORDER_DIM),
         );
         draw_ui_text_ex(
             &format!("{}  (Lv {}/{})", def.name, level, def.max_level),
             card.x + 16.0,
             card.y + 26.0,
-            TextStyle::new(17.0, dark::TEXT_BRIGHT).params(),
+            TextStyle::new(17.0, theme::TEXT_BRIGHT).params(),
         );
         draw_text_block(
             &format!(
@@ -116,7 +117,7 @@ fn draw_tree_panel(ctx: &GameplayCtx<'_>, rect: Rect, actions: &mut Vec<UiAction
             44.0,
             14.0,
             4.0,
-            dark::TEXT_DIM,
+            theme::TEXT_DIM,
         );
 
         let label = if maxed {

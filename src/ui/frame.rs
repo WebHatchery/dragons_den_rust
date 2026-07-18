@@ -6,6 +6,7 @@
 //! strip are drawn by their own modules (`left_rail.rs`, `bottom_bar.rs`).
 
 use crate::simulation::idle_number::{format_amount, format_rate};
+use crate::ui::theme;
 use crate::ui::{self, GameplayCtx, UiAction, LOGICAL_HEIGHT, LOGICAL_WIDTH};
 use macroquad::prelude::*;
 use macroquad_toolkit::prelude::*;
@@ -55,8 +56,8 @@ pub fn regions() -> FrameRegions {
 pub fn draw_header(ctx: &GameplayCtx<'_>, rect: Rect, actions: &mut Vec<UiAction>) {
     draw_surface(
         rect,
-        &SurfaceStyle::new(Color::new(0.08, 0.09, 0.12, 0.96))
-            .with_border(1.0, dark::ACCENT)
+        &SurfaceStyle::new(theme::PANEL)
+            .with_border(1.0, theme::ACCENT)
             .with_top_highlight(2.0, Color::new(0.95, 0.72, 0.35, 0.75)),
     );
 
@@ -64,7 +65,7 @@ pub fn draw_header(ctx: &GameplayCtx<'_>, rect: Rect, actions: &mut Vec<UiAction
         &ctx.data.config.display_name,
         rect.x + 20.0,
         rect.y + rect.h / 2.0 + 10.0,
-        TextStyle::new(30.0, dark::TEXT_BRIGHT).params(),
+        TextStyle::new(30.0, theme::TEXT_BRIGHT).params(),
     );
 
     // Right-aligned controls: gear, then Menu, then Save.
@@ -131,8 +132,7 @@ fn resource_card(
 ) {
     draw_surface(
         rect,
-        &SurfaceStyle::new(Color::new(0.11, 0.12, 0.16, 1.0))
-            .with_border(1.0, Color::new(0.5, 0.55, 0.65, 0.45)),
+        &SurfaceStyle::new(theme::PANEL).with_border(1.0, theme::BORDER_DIM),
     );
 
     let chip_size = 40.0;
@@ -161,20 +161,20 @@ fn resource_card(
         title,
         text_x,
         rect.y + 22.0,
-        TextStyle::new(14.0, dark::TEXT_DIM).params(),
+        TextStyle::new(14.0, theme::TEXT_DIM).params(),
     );
     draw_ui_text_ex(
         value,
         text_x,
         rect.y + 46.0,
-        TextStyle::new(26.0, dark::TEXT_BRIGHT).params(),
+        TextStyle::new(26.0, theme::TEXT_BRIGHT).params(),
     );
     if let Some(rate) = rate {
         draw_ui_text_ex(
             rate,
             text_x,
             rect.y + 62.0,
-            TextStyle::new(13.0, dark::POSITIVE).params(),
+            TextStyle::new(13.0, theme::POSITIVE).params(),
         );
     }
 }
