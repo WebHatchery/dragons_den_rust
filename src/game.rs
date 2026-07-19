@@ -339,12 +339,18 @@ impl Game {
             return;
         };
         match gameplay.try_explore(&self.data) {
-            Ok(ExploreResult::Found { name, rarity }) => {
-                gameplay
-                    .action_log
-                    .push(format!("Expedition found {name} ({rarity})"));
-                self.notifications
-                    .success(format!("Expedition found: {name} ({rarity})"));
+            Ok(ExploreResult::Found {
+                name,
+                rarity,
+                rush_seconds,
+            }) => {
+                let mult = self.data.config.hoard_rush_multiplier;
+                gameplay.action_log.push(format!(
+                    "Expedition found {name} ({rarity}) — Hoard Rush x{mult:.0} for {rush_seconds:.0}s"
+                ));
+                self.notifications.success(format!(
+                    "Found {name} ({rarity})! Hoard Rush x{mult:.0} for {rush_seconds:.0}s"
+                ));
             }
             Ok(ExploreResult::NothingFound) => {
                 let mult = self.data.config.hoard_rush_multiplier;

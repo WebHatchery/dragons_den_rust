@@ -194,11 +194,18 @@ pub enum UnlockEvent {
 }
 
 /// Result of an expedition, with owned strings so the UI/notification layer
-/// never borrows into the treasure catalog.
-#[derive(Debug, Clone, PartialEq, Eq)]
+/// never borrows into the treasure catalog. Not `Eq` — `Found` carries the
+/// rarity-scaled rush duration (an `f64`); `PartialEq` still serves the tests.
+#[derive(Debug, Clone, PartialEq)]
 pub enum ExploreResult {
     NothingFound,
-    Found { name: String, rarity: &'static str },
+    Found {
+        name: String,
+        rarity: &'static str,
+        /// Seconds of the Hoard Rush the find ignited (rarity-scaled), for the
+        /// notification/log to report the surge the player just earned.
+        rush_seconds: f64,
+    },
     AllDiscovered,
 }
 
@@ -371,11 +378,22 @@ impl GameplayState {
         }
     }
 
-    /// (Re)starts the Hoard Rush surge. Re-triggering refreshes the timer to full
-    /// but never stacks the multiplier, so spamming Explore merely sustains the
-    /// buff instead of compounding it — a bounded active-play reward.
-    fn trigger_hoard_rush(&mut self, data: &GameData) {
-        self.hoard_rush_secs = data.config.hoard_rush_seconds;
+    /// (Re)starts the Hoard Rush surge for `seconds`. Re-triggering never stacks
+    /// the multiplier — it takes the *longer* of the current and new timers, so
+    /// spamming Explore sustains the buff (bounded, active-play reward) and a
+    /// short salvage rush can never cut short a long one a rare find ignited.
+    fn trigger_hoard_rush(&mut self, seconds: f64) {
+        self.hoard_rush_secs = self.hoard_rush_secs.max(seconds);
+    }
+
+    /// How long a Hoard Rush a treasure find ignites should last, lengthening
+    /// with rarity (#find-rush): `hoard_rush_seconds * (1 + tier * step)`. A
+    /// Common find matches the base salvage/miss rush; a Mythic haul sustains a
+    /// far longer income window — the rarity ladder felt in the moment of the
+    /// find, not just as a silent passive %.
+    fn treasure_find_rush_seconds(&self, data: &GameData, rarity: crate::data::Rarity) -> f64 {
+        let step = f64::from(rarity.tier_index()) * data.config.treasure_find_rush_rarity_step;
+        data.config.hoard_rush_seconds * (1.0 + step)
     }
 
     // --- Golden Hoard / Dragon's Frenzy (#9) -----------------------------
@@ -461,7 +479,7 @@ impl GameplayState {
                 GoldenReward::Frenzy
             }
             1 => {
-                self.trigger_hoard_rush(data);
+                self.trigger_hoard_rush(data.config.hoard_rush_seconds);
                 GoldenReward::Rush
             }
             _ => {
@@ -638,7 +656,7 @@ impl GameplayState {
         // don't charge for an expedition that can't find anything — but it still
         // sparks a Hoard Rush so the button stays worth pressing (#7).
         if outcome == ExploreOutcome::AllDiscovered {
-            self.trigger_hoard_rush(data);
+            self.trigger_hoard_rush(data.config.hoard_rush_seconds);
             return Ok(ExploreResult::AllDiscovered);
         }
         self.run.gold -= cost;
@@ -646,15 +664,21 @@ impl GameplayState {
         Ok(match outcome {
             ExploreOutcome::NothingFound => {
                 // A miss is no longer a dead loss: it stirs a Hoard Rush (#7).
-                self.trigger_hoard_rush(data);
+                self.trigger_hoard_rush(data.config.hoard_rush_seconds);
                 ExploreResult::NothingFound
             }
             ExploreOutcome::AllDiscovered => ExploreResult::AllDiscovered,
             ExploreOutcome::Found(def) => {
                 self.persistent.discovered_treasures.push(def.id.clone());
+                // A find is a moment worth marking: it ignites a Hoard Rush that
+                // lasts longer the rarer the haul, so exploration's best outcome
+                // is also its most exciting, and rarity is felt right now.
+                let rush = self.treasure_find_rush_seconds(data, def.rarity);
+                self.trigger_hoard_rush(rush);
                 ExploreResult::Found {
                     name: def.name.clone(),
                     rarity: def.rarity.label(),
+                    rush_seconds: rush,
                 }
             }
         })

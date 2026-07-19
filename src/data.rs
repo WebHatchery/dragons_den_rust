@@ -15,7 +15,7 @@ use serde::{Deserialize, Serialize};
 pub use achievements::AchievementDef;
 pub use dragons::DragonDef;
 pub use minions::MinionDef;
-pub use treasures::TreasureDef;
+pub use treasures::{Rarity, TreasureDef};
 pub use upgrades::{PrestigeBranch, PrestigeUpgradeDef, UpgradeDef};
 
 const GAME_CONFIG_JSON: &str = include_str!("../assets/data/game_config.json");
@@ -55,6 +55,13 @@ pub struct GameConfig {
     pub hoard_rush_multiplier: f64,
     /// How long a Hoard Rush surge lasts, in seconds.
     pub hoard_rush_seconds: f64,
+    /// How much a *treasure find* lengthens its Hoard Rush per rarity tier above
+    /// Common (a find now ignites a rush too, not just a miss). The find's surge
+    /// lasts `hoard_rush_seconds * (1 + rarity_index * step)`, so a Mythic haul
+    /// sustains a far longer income window than a Common — tying the rarity tiers
+    /// to the moment of discovery instead of a silent passive %. `0` collapses
+    /// every find to the base duration.
+    pub treasure_find_rush_rarity_step: f64,
     /// Golden Hoard glint cadence (engagement review #9): a clickable burst
     /// appears after a random `[min, max]`-second wait and stays clickable for
     /// `lifetime` seconds. Clicking it grants a Dragon's Frenzy — the proven

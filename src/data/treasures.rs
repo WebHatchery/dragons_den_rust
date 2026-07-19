@@ -25,6 +25,19 @@ impl Rarity {
             Rarity::Mythic => "Mythic",
         }
     }
+
+    /// Position in the rarity ladder, `Common = 0` .. `Mythic = 4`. Used to scale
+    /// rarity-driven rewards (e.g. the length of the Hoard Rush a find ignites)
+    /// without hardcoding a per-tier table at each call site.
+    pub fn tier_index(self) -> u32 {
+        match self {
+            Rarity::Common => 0,
+            Rarity::Rare => 1,
+            Rarity::Epic => 2,
+            Rarity::Legendary => 3,
+            Rarity::Mythic => 4,
+        }
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]

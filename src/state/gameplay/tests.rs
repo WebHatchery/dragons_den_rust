@@ -199,6 +199,66 @@ fn expedition_without_new_treasure_grants_hoard_rush() {
 }
 
 #[test]
+fn treasure_find_rush_lengthens_with_rarity() {
+    let (data, state) = setup();
+
+    // A Common find matches the base salvage/miss rush; each rarer tier lasts
+    // strictly longer, so the rarity ladder is felt in the moment of the find.
+    let base = data.config.hoard_rush_seconds;
+    assert!((state.treasure_find_rush_seconds(&data, Rarity::Common) - base).abs() < 1e-9);
+    use crate::data::Rarity;
+    let durations: Vec<f64> = [
+        Rarity::Common,
+        Rarity::Rare,
+        Rarity::Epic,
+        Rarity::Legendary,
+        Rarity::Mythic,
+    ]
+    .iter()
+    .map(|&r| state.treasure_find_rush_seconds(&data, r))
+    .collect();
+    for pair in durations.windows(2) {
+        assert!(pair[1] > pair[0], "rarer finds must sustain a longer rush");
+    }
+}
+
+#[test]
+fn a_treasure_find_ignites_a_rarity_scaled_hoard_rush() {
+    let (data, mut state) = setup();
+    state.run.gold = 1e9;
+    assert!(!state.hoard_rush_active());
+
+    // Explore until an actual find lands (seeded RNG makes this terminate fast),
+    // then confirm the find both surged the income buff and set its timer to the
+    // duration the found treasure's rarity dictates.
+    let mut found = None;
+    for _ in 0..500 {
+        if let Ok(ExploreResult::Found {
+            name, rush_seconds, ..
+        }) = state.try_explore(&data)
+        {
+            found = Some((name, rush_seconds));
+            break;
+        }
+    }
+    let (name, rush_seconds) = found.expect("an expedition should eventually find a treasure");
+
+    assert!(state.hoard_rush_active(), "a find must ignite a Hoard Rush");
+    let rarity = data
+        .treasures
+        .iter()
+        .find(|t| t.name == name)
+        .expect("found treasure resolves in the catalog")
+        .rarity;
+    let expected = state.treasure_find_rush_seconds(&data, rarity);
+    assert!(
+        (rush_seconds - expected).abs() < 1e-9,
+        "reported rush {rush_seconds} should match the rarity-scaled {expected}"
+    );
+    assert!(state.hoard_rush_remaining() <= expected + 1e-9);
+}
+
+#[test]
 fn golden_hoard_click_grants_a_reward() {
     let (data, mut state) = setup();
     assert!(state.golden_hoard().is_none());

@@ -147,6 +147,20 @@ ways to make it entertaining. All numbers are the ones actually shipping in
 > less). Gated above the guarded runs, so guards unaffected. Remaining
 > content-depth idea: deeper wall cliffs (a second prestige-threshold band) —
 > the last speculative item.
+>
+> **System depth — a treasure find now ignites a rarity-scaled Hoard Rush.**
+> Not new content — a tightened interaction between three systems that already
+> shipped. A *find* (exploration's best outcome) used to grant no momentary
+> buff while misses and salvage runs both sparked a Hoard Rush, so the reward
+> outcome was the flattest in the moment and treasure rarity was felt only as a
+> silent passive %. A find now sparks a Hoard Rush lasting
+> `hoard_rush_seconds * (1 + rarity_tier * treasure_find_rush_rarity_step)` —
+> Common 30s → Mythic 90s (new config knob, `Rarity::tier_index`) — so rarer
+> hauls are felt right now and chasing the long tail (#8) pays an active-play
+> surge on arrival. `trigger_hoard_rush` now takes explicit seconds and refreshes
+> by `max()` rather than overwrite, so a short salvage rush can never truncate a
+> long one a rare find lit. Balance guards untouched (the sim never explores);
+> two new tests cover the rarity ladder and that a find surges the buff.
 
 ---
 
