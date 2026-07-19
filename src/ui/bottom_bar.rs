@@ -117,20 +117,30 @@ fn draw_expeditions(ctx: &GameplayCtx<'_>, rect: Rect, actions: &mut Vec<UiActio
     let chance = ctx.state.discovery_chance(ctx.data);
     let discovered = ctx.state.persistent.discovered_treasures.len();
 
-    // Line 1: cost + find chance (always shown).
+    // Line 1: cost + find chance (always shown). A live Hoard Rush raises the
+    // find chance (the "lucky window"), so flag *why* the number jumped — tying
+    // it to the rush readout on line 2 — and tint it so the boost reads at a
+    // glance and the player learns to explore during a rush.
+    let rush = ctx.state.hoard_rush_active();
+    let (find_suffix, find_color) = if rush {
+        ("  (lucky!)", theme::ACCENT)
+    } else {
+        ("", theme::TEXT)
+    };
     draw_ui_text_ex(
         &format!(
-            "Cost {} gold  ·  {:.0}% find",
+            "Cost {} gold  ·  {:.0}% find{}",
             format_amount(cost),
-            chance * 100.0
+            chance * 100.0,
+            find_suffix
         ),
         content.x,
         content.y + 18.0,
-        TextStyle::new(14.0, theme::TEXT).params(),
+        TextStyle::new(14.0, find_color).params(),
     );
     // Line 2 doubles as the Hoard Rush readout while a surge is live (#7), so an
     // active buff is visible without adding a third line to the short panel.
-    if ctx.state.hoard_rush_active() {
+    if rush {
         draw_ui_text_ex(
             &format!(
                 "Hoard Rush  x{:.0}  ·  {:.0}s left",

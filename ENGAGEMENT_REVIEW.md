@@ -204,6 +204,14 @@ ways to make it entertaining. All numbers are the ones actually shipping in
 > charge. Also confirmed the prestige↔expedition-cost interaction is sound as-is:
 > cost caps at ~385k (38 treasures) while thresholds reach 525M by prestige 5, so
 > the escalating cost is a mid-game gate that correctly fades — no change made.
+>
+> **Legibility — the rush→luck interaction is now visible.** A live Hoard Rush
+> raised the expedition find chance since the #2 lucky-window change, but the
+> Expeditions panel showed only a silently-higher number, so the player couldn't
+> learn to explore *during* a rush. Line 1 now appends a tinted "(lucky!)" while
+> a rush is live, tying the boosted % to the rush readout on line 2 and turning
+> an invisible mechanic into an actionable one. UI-only; the base render is
+> unchanged.
 
 ---
 
