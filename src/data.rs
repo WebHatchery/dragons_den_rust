@@ -62,6 +62,13 @@ pub struct GameConfig {
     /// to the moment of discovery instead of a silent passive %. `0` collapses
     /// every find to the base duration.
     pub treasure_find_rush_rarity_step: f64,
+    /// Flat discovery-chance bonus (additive, pre-clamp) while a Hoard Rush is
+    /// live — the "lucky-expedition window" the review's #7 called for. It closes
+    /// the exploration combo: a miss ignites a rush, and expeditions launched
+    /// *during* that rush are luckier, so the rush is treasure-hunting momentum,
+    /// not just an income multiplier. Kept in the gameplay layer (like the income
+    /// factor) so the balance sim — which never explores — stays honest.
+    pub hoard_rush_discovery_bonus: f64,
     /// Golden Hoard glint cadence (engagement review #9): a clickable burst
     /// appears after a random `[min, max]`-second wait and stays clickable for
     /// `lifetime` seconds. Clicking it grants a Dragon's Frenzy — the proven

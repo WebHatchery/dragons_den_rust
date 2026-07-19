@@ -259,6 +259,37 @@ fn a_treasure_find_ignites_a_rarity_scaled_hoard_rush() {
 }
 
 #[test]
+fn a_live_hoard_rush_makes_expeditions_luckier() {
+    let (data, mut state) = setup();
+    let base = state.discovery_chance(&data);
+    assert!(!state.hoard_rush_active());
+
+    // Ignite a rush directly so only the rush flag changes (discovering treasures
+    // would also shift the percent bonuses and muddy the comparison), then confirm
+    // the find chance rose by exactly the configured lucky-window bonus, still
+    // under the 0.95 ceiling — closing the explore→rush→explore loop.
+    state.trigger_hoard_rush(data.config.hoard_rush_seconds);
+    assert!(state.hoard_rush_active());
+
+    let boosted = state.discovery_chance(&data);
+    let expected = (base + data.config.hoard_rush_discovery_bonus).min(0.95);
+    assert!(
+        boosted > base,
+        "a live Hoard Rush should make expeditions luckier"
+    );
+    assert!((boosted - expected).abs() < 1e-9);
+    assert!(
+        boosted <= 0.95 + 1e-9,
+        "still clamped to the discovery ceiling"
+    );
+
+    // When the surge drains, the chance falls back to the un-rushed base.
+    state.tick(&data, data.config.hoard_rush_seconds as f32 + 0.1);
+    assert!(!state.hoard_rush_active());
+    assert!((state.discovery_chance(&data) - base).abs() < 1e-9);
+}
+
+#[test]
 fn golden_hoard_click_grants_a_reward() {
     let (data, mut state) = setup();
     assert!(state.golden_hoard().is_none());

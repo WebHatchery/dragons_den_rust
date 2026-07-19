@@ -161,6 +161,18 @@ ways to make it entertaining. All numbers are the ones actually shipping in
 > by `max()` rather than overwrite, so a short salvage rush can never truncate a
 > long one a rare find lit. Balance guards untouched (the sim never explores);
 > two new tests cover the rarity ladder and that a find surges the buff.
+>
+> **System depth — a live Hoard Rush now also makes expeditions luckier** (the
+> "lucky-expedition window" #7 named but never built). While a rush is live,
+> discovery chance gains a flat `hoard_rush_discovery_bonus` (+15%, re-clamped to
+> the same 0.95 ceiling). This closes the exploration combo end-to-end: a miss
+> ignites a rush → expeditions launched *during* the rush find more often → a
+> find ignites an even longer rarity-scaled rush (previous note) → repeat. The
+> Hoard Rush is now treasure-hunting *momentum*, not just an income multiplier.
+> The bonus lives in the gameplay `discovery_chance` wrapper (like the income
+> factor), so the balance sim stays an honest core-loop measure and guards are
+> untouched; the bottom-bar "% find" readout reflects the boost live with no UI
+> change. One new test covers the boost, its clamp, and the fall-back on drain.
 
 ---
 

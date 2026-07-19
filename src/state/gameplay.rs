@@ -564,8 +564,18 @@ impl GameplayState {
         Ok((count, cost))
     }
 
+    /// Live expedition find-chance. A live Hoard Rush adds a flat "lucky
+    /// window" bonus on top of the economy base, then re-clamps to the same 0.95
+    /// ceiling — so exploring *during* a rush (which a miss or find ignites) is
+    /// luckier, closing the explore→rush→explore loop. The bonus lives here, not
+    /// in `economy`, so the balance sim stays an honest core-loop measure.
     pub fn discovery_chance(&self, data: &GameData) -> f64 {
-        economy::discovery_chance(&data.config, &self.rates(data), &self.percents(data))
+        let base = economy::discovery_chance(&data.config, &self.rates(data), &self.percents(data));
+        if self.hoard_rush_active() {
+            (base + data.config.hoard_rush_discovery_bonus).clamp(0.0, 0.95)
+        } else {
+            base
+        }
     }
 
     /// Current expedition cost, rising with treasures already discovered (#6).
