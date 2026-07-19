@@ -83,6 +83,20 @@ pub struct GameConfig {
     /// Seconds of current income paid instantly by a Golden Hoard "Windfall"
     /// reward (#9) — one of the three payouts a collected glint can roll.
     pub golden_windfall_seconds: f64,
+    /// State-aware Golden Hoard reward weighting. The three payouts (Frenzy /
+    /// Rush / Windfall) no longer roll a blind 1/3: the roll is weighted by the
+    /// current economy shape so the reward tends to *fit* the state — Frenzy
+    /// (click surge) favored when the economy is click-dominant (early / few
+    /// minions), Rush (passive surge) favored when it is passive-dominant, so a
+    /// Rush is never wasted on a minion-less hoard. `assumed_clicks_per_second`
+    /// converts click gold into a per-second figure comparable to passive income
+    /// (the review's own ~5 cps). `weight_floor` is the minimum weight every
+    /// reward keeps, so all three stay possible and the surprise survives.
+    /// `windfall_bias` is Windfall's constant extra weight — it always pays a
+    /// floored lump, so it stays a dependable middle option in any state.
+    pub golden_reward_assumed_clicks_per_second: f64,
+    pub golden_reward_weight_floor: f64,
+    pub golden_reward_windfall_bias: f64,
     /// Base-minion soft cap (engagement review #11): base Kobolds earn full
     /// income up to this count, then each additional one is worth only
     /// `minion_soft_cap_falloff` of a full minion — a gentle wall that turns

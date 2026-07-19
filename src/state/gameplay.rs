@@ -228,8 +228,10 @@ pub struct GoldenHoard {
     pub remaining: f64,
 }
 
-/// What a collected Golden Hoard pays out (#9). Rolled at random on each click so
-/// every glint is a small surprise, the way the genre's golden cookies vary.
+/// What a collected Golden Hoard pays out (#9). Picked by a state-weighted roll
+/// on each click (see [`GameplayState::golden_reward_weights`]) so the reward
+/// tends to fit the current economy, while every glint stays a small surprise
+/// the way the genre's golden cookies vary.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum GoldenReward {
     /// Dragon's Frenzy — a temporary ×click-gold surge.
@@ -464,32 +466,62 @@ impl GameplayState {
             cfg.golden_hoard_min_interval + f64::from(self.persistent.rng.next_f32()) * span;
     }
 
+    /// State-aware weights for the three Golden Hoard payouts `(frenzy, rush,
+    /// windfall)`. Rather than a blind 1/3, the roll leans toward the reward that
+    /// actually helps the current economy: Frenzy (a click surge) when the
+    /// economy is click-dominant (early game, few minions), Rush (a passive
+    /// surge) when it is passive-dominant — so a Rush is never wasted on a
+    /// minion-less hoard. Click gold is scaled by an assumed clicks/second so it
+    /// compares to passive on a per-second footing. Every weight keeps a floor,
+    /// so all three stay possible and the surprise survives; Windfall carries a
+    /// constant bias since its floored lump always pays *something*.
+    fn golden_reward_weights(&self, data: &GameData) -> (f64, f64, f64) {
+        let rates = self.rates(data);
+        let percents = self.percents(data);
+        let passive = economy::gold_per_second(&data.config, self.run.goblins, &rates, &percents)
+            + economy::extra_minion_income(
+                &data.minions,
+                &self.run.minion_counts,
+                &rates,
+                &percents,
+            );
+        let click = economy::gold_per_click(&data.config, &rates, &percents)
+            * data.config.golden_reward_assumed_clicks_per_second;
+        let total = passive + click;
+        let passive_share = if total > 0.0 { passive / total } else { 0.0 };
+        let floor = data.config.golden_reward_weight_floor;
+        (
+            floor + (1.0 - passive_share),
+            floor + passive_share,
+            floor + data.config.golden_reward_windfall_bias,
+        )
+    }
+
     /// Collects the active glint (a player click landed on it): consumes it,
-    /// starts a Dragon's Frenzy, and arms the next glint. Returns whether there
-    /// was a glint to collect.
+    /// pays out one state-weighted reward, and arms the next glint. Returns the
+    /// reward, or `None` if there was no glint to collect.
     pub fn collect_golden_hoard(&mut self, data: &GameData) -> Option<GoldenReward> {
         self.golden_hoard.take()?;
         self.persistent.stats.golden_hoards_collected += 1.0;
         self.schedule_next_glint(data);
 
-        // Roll one of three payouts on the state-owned RNG (deterministic).
-        let reward = match self.persistent.rng.below(3) {
-            0 => {
-                self.frenzy_secs = data.config.dragon_frenzy_seconds;
-                GoldenReward::Frenzy
-            }
-            1 => {
-                self.trigger_hoard_rush(data.config.hoard_rush_seconds);
-                GoldenReward::Rush
-            }
-            _ => {
-                // A burst of current income, floored so an early idle grab still
-                // pays out something meaningful rather than nothing.
-                let lump = (self.gold_per_second(data) * data.config.golden_windfall_seconds)
-                    .max(data.config.base_click * 50.0);
-                self.earn(lump);
-                GoldenReward::Windfall(lump)
-            }
+        // Weighted pick over the three payouts on the state-owned RNG: one draw,
+        // walked against the state-aware weights (deterministic per save).
+        let (w_frenzy, w_rush, w_windfall) = self.golden_reward_weights(data);
+        let roll = f64::from(self.persistent.rng.next_f32()) * (w_frenzy + w_rush + w_windfall);
+        let reward = if roll < w_frenzy {
+            self.frenzy_secs = data.config.dragon_frenzy_seconds;
+            GoldenReward::Frenzy
+        } else if roll < w_frenzy + w_rush {
+            self.trigger_hoard_rush(data.config.hoard_rush_seconds);
+            GoldenReward::Rush
+        } else {
+            // A burst of current income, floored so an early idle grab still
+            // pays out something meaningful rather than nothing.
+            let lump = (self.gold_per_second(data) * data.config.golden_windfall_seconds)
+                .max(data.config.base_click * 50.0);
+            self.earn(lump);
+            GoldenReward::Windfall(lump)
         };
         Some(reward)
     }

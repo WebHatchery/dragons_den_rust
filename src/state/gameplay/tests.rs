@@ -324,13 +324,15 @@ fn golden_hoard_click_grants_a_reward() {
 #[test]
 fn golden_hoard_rolls_all_three_rewards_over_time() {
     let (data, mut state) = setup();
-    state.run.goblins = 20; // nonzero income so a Windfall pays out
     let mut saw_frenzy = false;
     let mut saw_rush = false;
     let mut saw_windfall = false;
-    // The clickable window guarantees a spawn each round; the seeded RNG makes
-    // this deterministic, and 60 samples make all three variants a near-certainty.
-    for _ in 0..60 {
+    // Reward weighting is state-aware, so alternate between a click-dominant
+    // state (no minions → Frenzy favored) and a passive-dominant one (a large
+    // army → Rush favored); Windfall keeps a constant bias throughout. Sampling
+    // both regimes over many rounds makes all three variants appear.
+    for round in 0..80 {
+        state.run.goblins = if round % 2 == 0 { 0 } else { 5_000 };
         state.advance_events(&data, data.config.golden_hoard_max_interval as f32 + 0.1);
         match state.collect_golden_hoard(&data) {
             Some(GoldenReward::Frenzy) => saw_frenzy = true,
@@ -343,6 +345,33 @@ fn golden_hoard_rolls_all_three_rewards_over_time() {
         saw_frenzy && saw_rush && saw_windfall,
         "all three golden rewards should appear: frenzy={saw_frenzy} rush={saw_rush} windfall={saw_windfall}"
     );
+}
+
+#[test]
+fn golden_reward_weighting_follows_the_economy_shape() {
+    let (data, mut state) = setup();
+
+    // Click-dominant (no minions): Frenzy — the click surge — outweighs Rush,
+    // so a minion-less hoard won't waste its roll on near-zero passive income.
+    state.run.goblins = 0;
+    let (frenzy, rush, _windfall) = state.golden_reward_weights(&data);
+    assert!(
+        frenzy > rush,
+        "with no passive income the click Frenzy should be favored ({frenzy} vs {rush})"
+    );
+
+    // Passive-dominant (a large army): the ordering flips and Rush is favored.
+    state.run.goblins = 5_000;
+    let (frenzy, rush, windfall) = state.golden_reward_weights(&data);
+    assert!(
+        rush > frenzy,
+        "with heavy passive income the Rush should be favored ({rush} vs {frenzy})"
+    );
+
+    // Every reward always keeps at least the configured floor of weight, so the
+    // surprise never collapses to a single guaranteed outcome.
+    let floor = data.config.golden_reward_weight_floor;
+    assert!(frenzy >= floor && rush >= floor && windfall >= floor);
 }
 
 #[test]

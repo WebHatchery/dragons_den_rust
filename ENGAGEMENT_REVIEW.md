@@ -173,6 +173,21 @@ ways to make it entertaining. All numbers are the ones actually shipping in
 > factor), so the balance sim stays an honest core-loop measure and guards are
 > untouched; the bottom-bar "% find" readout reflects the boost live with no UI
 > change. One new test covers the boost, its clamp, and the fall-back on drain.
+>
+> **System depth — Golden Hoard rewards now read the economy** instead of a blind
+> 1/3 roll. A collected glint's payout (Frenzy / Rush / Windfall) is picked by a
+> state-weighted roll: Frenzy (a click surge) is favored when the economy is
+> click-dominant (early game, few minions), Rush (a passive surge) when it is
+> passive-dominant — so a Rush is never wasted on a minion-less hoard and a
+> Frenzy is rarely handed to an idle late-game army. Click gold is put on a
+> per-second footing via `golden_reward_assumed_clicks_per_second` (the review's
+> own ~5 cps) so the two halves of the economy compare fairly; every reward keeps
+> a `golden_reward_weight_floor` so all three stay possible (the surprise
+> survives), and Windfall carries a constant `golden_reward_windfall_bias` since
+> its floored lump always pays *something*. This ties the #9 hook to the same
+> click-vs-passive tension the rest of the game is built on. Transient/earned, so
+> no save-compat or balance-guard impact; two tests cover the weight ordering
+> (both regimes, with the floor) and that all three rewards still appear.
 
 ---
 
