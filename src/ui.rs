@@ -208,7 +208,7 @@ fn draw_tab_bar(ctx: &GameplayCtx<'_>, bar: Rect, actions: &mut Vec<UiAction>) {
             // The active tab reads as a lit, gold-topped panel with an underline.
             draw_surface(
                 rect,
-                &SurfaceStyle::new(shade(theme::PANEL_HEADER, 1.5))
+                &SurfaceStyle::new(scale_rgb(theme::PANEL_HEADER, 1.5))
                     .with_border(1.0, theme::BORDER)
                     .with_top_highlight(2.0, theme::ACCENT),
             );
@@ -286,16 +286,6 @@ fn tone_colors(tone: ButtonTone) -> (Color, Color, Color) {
     }
 }
 
-/// Multiplies a color's RGB by `f` (for hover-brighten / press-darken).
-fn shade(c: Color, f: f32) -> Color {
-    Color::new(
-        (c.r * f).clamp(0.0, 1.0),
-        (c.g * f).clamp(0.0, 1.0),
-        (c.b * f).clamp(0.0, 1.0),
-        c.a,
-    )
-}
-
 pub(crate) fn button(rect: Rect, text: &str, enabled: bool, tone: ButtonTone, mouse: Vec2) -> bool {
     let (base, border, text_color) = tone_colors(tone);
     let hovered = enabled && rect.contains_point(mouse);
@@ -304,9 +294,9 @@ pub(crate) fn button(rect: Rect, text: &str, enabled: bool, tone: ButtonTone, mo
     let fill = if !enabled {
         theme::PANEL_DARK
     } else if pressed {
-        shade(base, 0.82)
+        scale_rgb(base, 0.82)
     } else if hovered {
-        shade(base, 1.18)
+        scale_rgb(base, 1.18)
     } else {
         base
     };
@@ -428,9 +418,8 @@ pub(crate) fn apply_scroll(
 
 /// True when a scrolled card sits fully within the view (used to cull the
 /// partially-clipped rows at the top/bottom, keeping panel edges clean).
-pub(crate) fn item_fully_visible(card: Rect, view: Rect) -> bool {
-    card.y >= view.y - 0.5 && card.bottom() <= view.bottom() + 0.5
-}
+/// Re-exported from the toolkit under the game's local name.
+pub(crate) use macroquad_toolkit::ui::is_fully_visible as item_fully_visible;
 
 /// Draws a thin scrollbar down the right edge of `view` so the player can tell
 /// a wheel-scrollable list has more content below/above. No-op when everything
