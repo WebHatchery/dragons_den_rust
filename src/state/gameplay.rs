@@ -565,6 +565,15 @@ impl GameplayState {
         }
     }
 
+    /// Effective hire-cost base for a typed minion tier after the `HireDiscount`
+    /// channel — the same discount that cheapens base Kobolds now cheapens every
+    /// tier, so the discount upgrade lines pay off across the whole army instead
+    /// of only the base tier. One source of truth for both the charge and the
+    /// Minions-panel cost display.
+    pub fn minion_hire_base_cost(&self, data: &GameData, def: &crate::data::MinionDef) -> f64 {
+        economy::apply_hire_discount(def.base_cost, &self.rates(data))
+    }
+
     /// Hires up to `requested` of an extra minion tier, buying as many as gold
     /// allows. Returns `(hired, total_cost)`.
     pub fn try_hire_minion(
@@ -581,8 +590,9 @@ impl GameplayState {
         if !self.minion_unlocked(def) {
             return Err(BuyError::CannotAfford);
         }
+        let base_cost = self.minion_hire_base_cost(data, def);
         let (count, cost) = economy::affordable_levels(
-            def.base_cost,
+            base_cost,
             def.cost_growth,
             self.minion_count(id),
             self.run.gold,

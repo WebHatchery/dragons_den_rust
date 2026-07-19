@@ -290,6 +290,40 @@ fn a_live_hoard_rush_makes_expeditions_luckier() {
 }
 
 #[test]
+fn hire_discount_cheapens_typed_minion_tiers_too() {
+    let (data, mut state) = setup();
+    // The first typed tier, with its unlock gates satisfied.
+    let def = &data.minions[0];
+    state.run.goblins = def.unlock_at;
+    state.persistent.prestige_count = def.prestige_required;
+    assert!(state.minion_unlocked(def));
+
+    // No discount yet → the tier's own base cost.
+    let full = state.minion_hire_base_cost(&data, def);
+    assert!((full - def.base_cost).abs() < 1e-9);
+
+    // A HireDiscount line — bought to cheapen hiring — now cheapens the typed
+    // tier too, not just base Kobolds, and never reaches free.
+    state
+        .run
+        .upgrade_levels
+        .insert("goblin_recruiters".to_owned(), 10);
+    let discounted = state.minion_hire_base_cost(&data, def);
+    // 1 + 10 * 0.1 = 2x divisor → half price.
+    assert!((discounted - def.base_cost / 2.0).abs() < 1e-9);
+    assert!(discounted > 0.0);
+
+    // And the discount actually reduces what a hire charges.
+    state.run.gold = def.base_cost; // full price would afford exactly one
+    let (hired, cost) = state.try_hire_minion(&data, &def.id, 1).unwrap();
+    assert_eq!(hired, 1);
+    assert!(
+        cost < def.base_cost,
+        "the hire was charged the discounted price"
+    );
+}
+
+#[test]
 fn golden_hoard_click_grants_a_reward() {
     let (data, mut state) = setup();
     assert!(state.golden_hoard().is_none());

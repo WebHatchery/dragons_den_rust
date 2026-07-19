@@ -151,7 +151,8 @@ pub enum EffectStat {
     MinionEfficiency,
     DiscoveryChance,
     HoardPointGain,
-    /// Reduces goblin hire cost as a `1 / (1 + sum)` divisor on the base curve.
+    /// Reduces hire cost as a `1 / (1 + sum)` divisor on the base curve, for
+    /// every minion tier — base Kobolds and the typed tiers alike.
     HireDiscount,
     /// Scales every gold income source (click, passive, extra minion tiers).
     /// The only stat with a *compounding* prestige node behind it — the

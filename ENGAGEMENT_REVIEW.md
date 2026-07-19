@@ -188,6 +188,22 @@ ways to make it entertaining. All numbers are the ones actually shipping in
 > click-vs-passive tension the rest of the game is built on. Transient/earned, so
 > no save-compat or balance-guard impact; two tests cover the weight ordering
 > (both regimes, with the floor) and that all three rewards still appear.
+>
+> **System depth — the hire-discount stat now cheapens every minion tier, not
+> just Kobolds.** The `HireDiscount` channel (Goblin Recruiters, and the p6
+> Warlord's Summons — explicitly sold as cheaper mass-hiring) divided only the
+> *base Kobold* curve; the typed tiers (Worker…Wyvern) charged full `base_cost`,
+> so investing in "cheaper hiring" bought nothing off your Drakes. A find during
+> analysis, not new content: the two minion-purchase paths shared no discount
+> logic. Extracted `economy::apply_hire_discount(base, rates)` (one definition
+> for both), routed `try_hire_minion` and the Minions-panel cost display through
+> a new `minion_hire_base_cost`, so charge and display agree and the discount
+> now pays off across the whole army — strongest exactly in the late game where
+> typed tiers dominate. Balance sim never hires typed tiers (only base goblins),
+> so guards are untouched; a test covers the discounted base and the reduced
+> charge. Also confirmed the prestige↔expedition-cost interaction is sound as-is:
+> cost caps at ~385k (38 treasures) while thresholds reach 525M by prestige 5, so
+> the escalating cost is a mid-game gate that correctly fades — no change made.
 
 ---
 

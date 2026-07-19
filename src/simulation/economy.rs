@@ -110,12 +110,20 @@ pub fn extra_minion_income(
         * all_gold_multiplier(percents)
 }
 
+/// Divides any minion's base hire cost by the `HireDiscount` channel
+/// (`1 / (1 + sum(level * rate))`), so discount upgrades cheapen a hire without
+/// ever reaching free. Shared by the base Kobold curve and the typed minion
+/// tiers so a single stat cheapens the *whole* army, not just Kobolds.
+pub fn apply_hire_discount(base_cost: f64, rates: &Bonuses) -> f64 {
+    base_cost / rates.factor(EffectStat::HireDiscount)
+}
+
 /// Effective base goblin hire cost after run upgrades: the `HireDiscount` line
-/// divides the whole curve by `1 + sum(level * rate)`, so hires get steadily
-/// cheaper without ever reaching free. Feeds the same `upgrade_cost` /
-/// `bulk_cost` / `affordable_levels` helpers via a scaled base.
+/// divides the whole curve, so hires get steadily cheaper without ever reaching
+/// free. Feeds the same `upgrade_cost` / `bulk_cost` / `affordable_levels`
+/// helpers via a scaled base.
 pub fn hire_base_cost(config: &GameConfig, rates: &Bonuses) -> f64 {
-    config.base_hire_cost / rates.factor(EffectStat::HireDiscount)
+    apply_hire_discount(config.base_hire_cost, rates)
 }
 
 pub fn discovery_chance(config: &GameConfig, rates: &Bonuses, percents: &Bonuses) -> f64 {

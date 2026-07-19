@@ -53,7 +53,7 @@ pub(crate) fn slots(ctx: &GameplayCtx<'_>) -> Vec<MinionSlot> {
             name: def.name.clone(),
             count: ctx.state.minion_count(&def.id),
             rate_each: def.base_rate,
-            base_cost: def.base_cost,
+            base_cost: ctx.state.minion_hire_base_cost(ctx.data, def),
             cost_growth: def.cost_growth,
             unlocked: ctx.state.minion_unlocked(def),
             unlock_at: def.unlock_at,
