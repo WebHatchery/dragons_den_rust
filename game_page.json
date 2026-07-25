@@ -1,18 +1,36 @@
 {
   "title": "Dragon's Den",
-  "status": { "text": "Playable", "class": "playable" },
+  "status": {
+    "text": "Playable",
+    "class": "playable"
+  },
   "canvas_rendering": "pixelated",
   "about": [
-    "A dragon-hoarder's idle empire. Click for gold, send kobold minions to work while you're away, send expeditions into ruins for treasure — then burn it all down for a permanent prestige bonus, over and over, each run a little richer than the last."
+    "A dragon’s work is never done. Click for gold, put kobolds to work, raid ancient ruins, then burn it all down for permanent power."
   ],
   "controls": [
-    { "key": "Mouse", "desc": "Click the hoard, buy upgrades, switch tabs" },
-    { "key": "Esc", "desc": "Save and return to menu" }
+    {
+      "key": "Mouse",
+      "desc": "Click the hoard, buy upgrades, switch tabs"
+    },
+    {
+      "key": "Esc",
+      "desc": "Save and return to menu"
+    }
   ],
   "details": [
-    { "label": "Genre", "value": "Idle / Incremental" },
-    { "label": "Engine", "value": "Macroquad + Toolkit" },
-    { "label": "Platform", "value": "Browser, Windows" }
+    {
+      "label": "Genre",
+      "value": "Idle / Incremental"
+    },
+    {
+      "label": "Engine",
+      "value": "Macroquad + Toolkit"
+    },
+    {
+      "label": "Platform",
+      "value": "Browser, Windows"
+    }
   ],
   "repository": "https://github.com/Kalaith/dragons_den_rust"
 }
