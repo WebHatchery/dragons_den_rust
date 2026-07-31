@@ -62,5 +62,5 @@ breeding, no combat, no map.
 `gdd.md` is the design document and the authority on scope. This is a Rust +
 Macroquad port of the WebHatchery `game_apps/dragons_den` game, rebuilt so the
 mechanics its original only *implied* — a prestige that actually pays out,
-upgrades that actually feed the formulas — are real. `IMPLEMENTATION_PLAN.md`
-tracks what's built and what's next.
+upgrades that actually feed the formulas — are real. `TODO.md` lists the work
+that remains.

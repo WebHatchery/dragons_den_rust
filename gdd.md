@@ -375,7 +375,7 @@ targets exist to keep repeat prestige cycles from feeling identical, same ration
 
 ## 9. UI/UX & Screen Flow
 
-The gameplay view is a **persistent ornate frame** (see `UI_REDESIGN_PLAN.md` and `image.png`)
+The gameplay view is a **persistent ornate frame** (reference mockup: `image.png`)
 rather than one panel at a time: a header of three resource cards (Gold / Minions / Hoard
 Points, each icon + value + rate) with Save/Menu/settings; a permanent **left rail** (hoard art,
 the circular CLICK target, live income, run time); a permanent **bottom strip** (minion-tier
