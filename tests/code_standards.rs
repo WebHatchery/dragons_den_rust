@@ -7,6 +7,6 @@ fn source_files_stay_under_the_limit() {
     // entry drops back under 800 so this list can only shrink.
     macroquad_toolkit::source_gate::assert_source_files_within_limit(
         env!("CARGO_MANIFEST_DIR"),
-        &["src/state/gameplay.rs"],
+        &[],
     );
 }
