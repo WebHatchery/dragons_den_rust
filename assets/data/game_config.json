@@ -30,6 +30,9 @@
   "base_discovery_chance": 0.3,
   "prestige_threshold": 1000000.0,
   "prestige_threshold_growth": 3.5,
+  "prestige_threshold_band_start": 10,
+  "prestige_threshold_band_multiplier": 1000.0,
+  "prestige_threshold_late_growth": 1.04,
   "prestige_divisor": 150.0,
   "prestige_exponent": 0.55,
   "offline_cap_hours": 12.0

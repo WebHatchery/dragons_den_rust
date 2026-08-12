@@ -84,9 +84,7 @@ fn weights_bias_toward_common_drops() {
     let mut common = 0;
     let mut legendary = 0;
     for _ in 0..500 {
-        if let ExploreOutcome::Found(def) =
-            roll_treasure(&mut rng, &data.treasures, &[], 0, 1.0)
-        {
+        if let ExploreOutcome::Found(def) = roll_treasure(&mut rng, &data.treasures, &[], 0, 1.0) {
             match def.id.as_str() {
                 "common_stone" => common += 1,
                 "golden_goblet" => legendary += 1,

@@ -17,10 +17,6 @@ plan's Tiers 1–3 have shipped. What's left:
   ideally as a reusable `FramedPanel` in `macroquad-toolkit`.
 - Refresh `catalog_thumbnail.png` once the menu has more visual identity.
 
-## Systems
-
-- Deeper wall cliffs — a second prestige-threshold band, the last unbuilt engagement idea.
-
 ## Persistence
 
 - Real save migrations in `save.rs`; it accepts only the modern shape and fails loudly

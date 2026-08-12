@@ -43,15 +43,39 @@ fn threshold_rises_with_each_prestige() {
 }
 
 #[test]
+fn second_threshold_band_has_a_cliff_and_its_own_growth_rate() {
+    let data = GameData::load().unwrap();
+    let config = &data.config;
+    let start = config.prestige_threshold_band_start;
+    let before = current_threshold(config, start - 1);
+    let at = current_threshold(config, start);
+    let after = current_threshold(config, start + 1);
+
+    assert!(
+        (at / before
+            - config.prestige_threshold_growth * config.prestige_threshold_band_multiplier)
+            .abs()
+            < 1e-6
+    );
+    assert!((after / at - config.prestige_threshold_late_growth).abs() < 1e-9);
+    for prestige_count in 1..=100 {
+        assert!(
+            current_threshold(config, prestige_count)
+                > current_threshold(config, prestige_count - 1),
+            "threshold must rise at P{prestige_count}"
+        );
+    }
+}
+
+#[test]
 fn hoard_greed_scales_gain() {
     let data = GameData::load().unwrap();
     let mut rates = Bonuses::default();
     rates.add(EffectStat::HoardPointGain, 0.5);
     let none = Bonuses::default();
-    let expected = ((1_000_000.0 / data.config.prestige_divisor)
-        .powf(data.config.prestige_exponent)
-        * 1.5)
-        .floor();
+    let expected =
+        ((1_000_000.0 / data.config.prestige_divisor).powf(data.config.prestige_exponent) * 1.5)
+            .floor();
     let gained = hoard_points_gained(&data.config, 1_000_000.0, &rates, &none);
     assert!((gained - expected).abs() < 1e-9);
 }

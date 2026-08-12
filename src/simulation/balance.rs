@@ -1,46 +1,40 @@
-//! Balance regression: a headless greedy-player simulation that estimates how
-//! long an *active* session takes to reach the prestige threshold
-//! (GDD §5.4 target: "modest first session"). Test-only — it exercises the
-//! real `economy` formulas so a balance change to `game_config.json` that
-//! makes the first prestige unreachable (or trivial) fails CI. It also
-//! simulates the full prestige loop — burn the hoard, spend Hoard Points on
-//! the tree, run again — so CI guards the metric that defines fun in a
-//! prestige game: run N+1 must be meaningfully faster than run N.
+//! Headless balance simulation for the prestige career.
+//!
+//! The simulator deliberately stays test-only, but exercises the production
+//! economy, prestige, and offline formulas. It models an engaged greedy player:
+//! run purchases compete by payback time, permanent Hoard Point purchases carry
+//! between cycles, and each run stops at its current prestige threshold.
 
 #![cfg(test)]
 
-use crate::data::{EffectStat, GameData, UpgradeDef};
-use crate::simulation::economy;
-use crate::simulation::prestige;
-use crate::simulation::Bonuses;
+use crate::data::{EffectStat, GameData, MinionDef, UpgradeDef};
+use crate::simulation::{economy, offline, prestige, Bonuses};
 use std::collections::HashMap;
 
-/// Clicks per second an engaged player sustains during active play.
 const CLICK_RATE: f64 = 5.0;
-/// Simulation timestep.
-const DT: f64 = 0.25;
-/// Give up after this much simulated active play.
-const MAX_SIM_SECS: f64 = 6.0 * 3600.0;
+const MAX_SIM_SECS: f64 = 30.0 * 24.0 * 3600.0;
 
+#[derive(Clone)]
 struct Sim {
     gold: f64,
     goblins: u32,
+    minions: HashMap<String, u32>,
     levels: HashMap<String, u32>,
-    /// Permanent percent/multiplier bonuses (prestige tree); empty on run 1.
     percents: Bonuses,
-    /// Prestiges already done — gates which upgrade lines the sim may buy (#10),
-    /// so run 1 can't spend on lines the real player hasn't unlocked yet.
     prestige: u32,
+    purchases: HashMap<String, u32>,
 }
 
 impl Sim {
-    fn new() -> Self {
+    fn new(prestige: u32, percents: Bonuses) -> Self {
         Self {
             gold: 0.0,
             goblins: 0,
+            minions: HashMap::new(),
             levels: HashMap::new(),
-            percents: Bonuses::default(),
-            prestige: 0,
+            percents,
+            prestige,
+            purchases: HashMap::new(),
         }
     }
 
@@ -48,158 +42,229 @@ impl Sim {
         economy::rate_bonuses(&data.upgrades, &self.levels)
     }
 
-    fn gpc(&self, data: &GameData) -> f64 {
-        economy::gold_per_click(&data.config, &self.rates(data), &self.percents)
-    }
-
-    fn gps(&self, data: &GameData) -> f64 {
-        economy::gold_per_second(
-            &data.config,
+    fn passive_rate(&self, data: &GameData) -> f64 {
+        passive_rate_with(
+            data,
             self.goblins,
-            &self.rates(data),
+            &self.minions,
+            &self.levels,
             &self.percents,
         )
     }
 
-    /// Passive-equivalent gold/sec gained by the next level of `def`, valuing
-    /// click upgrades through `CLICK_RATE`. `None` when maxed.
-    fn upgrade_marginal(&self, data: &GameData, def: &UpgradeDef) -> Option<(f64, f64)> {
+    fn gain_rate(&self, data: &GameData) -> f64 {
+        gain_rate_with(
+            data,
+            self.goblins,
+            &self.minions,
+            &self.levels,
+            &self.percents,
+        )
+    }
+
+    fn total_minions(&self) -> u32 {
+        self.goblins + self.minions.values().sum::<u32>()
+    }
+
+    fn upgrade_marginal(
+        &self,
+        data: &GameData,
+        def: &UpgradeDef,
+        before: f64,
+    ) -> Option<(f64, f64)> {
         let level = self.levels.get(&def.id).copied().unwrap_or(0);
         if level >= def.max_level {
             return None;
         }
         let cost = economy::upgrade_cost(def.base_cost, def.cost_growth, level);
-        let before = self.gain_rate(data);
-        let mut probe = self.clone_levels();
-        probe.insert(def.id.clone(), level + 1);
-        let after = gain_rate_with(data, self.goblins, &probe, &self.percents);
-        let marginal = after - before;
-        if marginal <= 0.0 {
-            None
-        } else {
-            Some((cost, marginal))
+        let mut levels = self.levels.clone();
+        levels.insert(def.id.clone(), level + 1);
+        let marginal =
+            gain_rate_with(data, self.goblins, &self.minions, &levels, &self.percents) - before;
+        (marginal > 0.0).then_some((cost, marginal))
+    }
+
+    fn goblin_marginal(&self, data: &GameData, before: f64) -> (f64, f64) {
+        let rates = self.rates(data);
+        let base = economy::hire_base_cost(&data.config, &rates);
+        let cost = economy::upgrade_cost(base, data.config.hire_cost_growth, self.goblins);
+        let marginal = gain_rate_with(
+            data,
+            self.goblins + 1,
+            &self.minions,
+            &self.levels,
+            &self.percents,
+        ) - before;
+        (cost, marginal.max(1e-9))
+    }
+
+    fn minion_marginal(&self, data: &GameData, def: &MinionDef, before: f64) -> Option<(f64, f64)> {
+        if self.prestige < def.prestige_required || self.total_minions() < def.unlock_at {
+            return None;
         }
+        let count = self.minions.get(&def.id).copied().unwrap_or(0);
+        let rates = self.rates(data);
+        let base = economy::apply_hire_discount(def.base_cost, &rates);
+        let cost = economy::upgrade_cost(base, def.cost_growth, count);
+        let mut minions = self.minions.clone();
+        minions.insert(def.id.clone(), count + 1);
+        let marginal =
+            gain_rate_with(data, self.goblins, &minions, &self.levels, &self.percents) - before;
+        Some((cost, marginal.max(1e-9)))
     }
 
-    fn goblin_marginal(&self, data: &GameData) -> (f64, f64) {
-        let cost = economy::upgrade_cost(
-            data.config.base_hire_cost,
-            data.config.hire_cost_growth,
-            self.goblins,
-        );
-        let before = self.gain_rate(data);
-        let after = gain_rate_with(data, self.goblins + 1, &self.levels, &self.percents);
-        (cost, (after - before).max(1e-9))
-    }
-
-    /// Total effective gold/sec: passive plus active clicking.
-    fn gain_rate(&self, data: &GameData) -> f64 {
-        self.gps(data) + self.gpc(data) * CLICK_RATE
-    }
-
-    fn clone_levels(&self) -> HashMap<String, u32> {
-        self.levels.clone()
+    fn record_purchase(&mut self, key: &str) {
+        *self.purchases.entry(key.to_owned()).or_default() += 1;
     }
 }
 
-/// Effective gold/sec for a hypothetical (goblins, levels) — for marginal calc.
-fn gain_rate_with(
+fn passive_rate_with(
     data: &GameData,
     goblins: u32,
+    minions: &HashMap<String, u32>,
     levels: &HashMap<String, u32>,
     percents: &Bonuses,
 ) -> f64 {
     let rates = economy::rate_bonuses(&data.upgrades, levels);
     economy::gold_per_second(&data.config, goblins, &rates, percents)
+        + economy::extra_minion_income(&data.minions, minions, &rates, percents)
+}
+
+fn gain_rate_with(
+    data: &GameData,
+    goblins: u32,
+    minions: &HashMap<String, u32>,
+    levels: &HashMap<String, u32>,
+    percents: &Bonuses,
+) -> f64 {
+    let rates = economy::rate_bonuses(&data.upgrades, levels);
+    economy::gold_per_second(&data.config, goblins, &rates, percents)
+        + economy::extra_minion_income(&data.minions, minions, &rates, percents)
         + economy::gold_per_click(&data.config, &rates, percents) * CLICK_RATE
 }
 
-/// Buys the best-payback affordable purchase repeatedly until none pays back
-/// before the player would otherwise coast to the threshold. Using the coast
-/// time (`target / current_income`) as the horizon models "only invest if it
-/// beats just waiting": aggressive early (income low → long coast), tapering
-/// to pure accumulation as income climbs. Upgrades and goblins compete on the
-/// same payback metric.
-fn reinvest(sim: &mut Sim, data: &GameData, target: f64) {
-    loop {
-        let horizon = target / sim.gain_rate(data).max(1e-9);
-        let mut best: Option<(f64, String)> = None; // (payback, key)
-        let consider = |cost: f64, marginal: f64, key: &str, best: &mut Option<(f64, String)>| {
-            if cost > sim.gold {
-                return;
-            }
-            let payback = cost / marginal;
-            if payback <= horizon && best.as_ref().map(|(p, _)| payback < *p).unwrap_or(true) {
-                *best = Some((payback, key.to_owned()));
-            }
-        };
+#[derive(Clone)]
+enum Purchase {
+    Goblin,
+    Minion(String),
+    Upgrade(String),
+}
 
-        let (gcost, gmarg) = sim.goblin_marginal(data);
-        consider(gcost, gmarg, "goblin", &mut best);
-        for def in &data.upgrades {
-            // Prestige-gated lines (#10) are invisible until unlocked — the sim
-            // must respect the same gate the player does, or run 1 would "buy"
-            // lines it can't reach and skew the balance guards.
-            if def.prestige_required > sim.prestige {
-                continue;
-            }
-            // Only income-boosting lines move the marginal gain rate. (The
-            // hire-discount line lowers goblin cost, not income, so it never
-            // clears the payback test here — a conservative omission that keeps
-            // the reported time an upper bound on optimal play.)
-            if !matches!(
+fn candidates(sim: &Sim, data: &GameData) -> Vec<(Purchase, f64, f64)> {
+    let mut choices = Vec::new();
+    let before = sim.gain_rate(data);
+    let (cost, marginal) = sim.goblin_marginal(data, before);
+    choices.push((Purchase::Goblin, cost, marginal));
+
+    for def in &data.minions {
+        if let Some((cost, marginal)) = sim.minion_marginal(data, def, before) {
+            choices.push((Purchase::Minion(def.id.clone()), cost, marginal));
+        }
+    }
+    for def in &data.upgrades {
+        if def.prestige_required > sim.prestige
+            || !matches!(
                 def.effect.stat,
                 EffectStat::GoldPerClick | EffectStat::MinionEfficiency | EffectStat::GoldPerSecond
-            ) {
+            )
+        {
+            continue;
+        }
+        if let Some((cost, marginal)) = sim.upgrade_marginal(data, def, before) {
+            choices.push((Purchase::Upgrade(def.id.clone()), cost, marginal));
+        }
+    }
+    choices
+}
+
+/// Reinvests in the affordable purchase with the shortest payback, provided it
+/// repays before coasting to the threshold. Returns the cheapest future price,
+/// allowing the outer simulation to jump directly to the next decision.
+fn reinvest(sim: &mut Sim, data: &GameData, target: f64) -> Option<f64> {
+    loop {
+        let rate = sim.gain_rate(data).max(1e-9);
+        let horizon = ((target - sim.gold).max(0.0)) / rate;
+        let choices = candidates(sim, data);
+        let mut best: Option<(f64, Purchase, f64)> = None;
+        let mut next_cost: Option<f64> = None;
+
+        for (purchase, cost, marginal) in choices {
+            if cost > sim.gold {
+                next_cost = Some(next_cost.map_or(cost, |current| current.min(cost)));
                 continue;
             }
-            if let Some((cost, marg)) = sim.upgrade_marginal(data, def) {
-                consider(cost, marg, &def.id, &mut best);
+            let payback = cost / marginal;
+            if payback <= horizon
+                && best
+                    .as_ref()
+                    .map(|(current, _, _)| payback < *current)
+                    .unwrap_or(true)
+            {
+                best = Some((payback, purchase, cost));
             }
         }
 
-        let Some((_, key)) = best else { break };
-        if key == "goblin" {
-            sim.gold -= gcost;
-            sim.goblins += 1;
-        } else {
-            let level = sim.levels.get(&key).copied().unwrap_or(0);
-            let def = data.upgrade(&key).unwrap();
-            let cost = economy::upgrade_cost(def.base_cost, def.cost_growth, level);
-            sim.gold -= cost;
-            sim.levels.insert(key, level + 1);
+        let Some((_, purchase, cost)) = best else {
+            return next_cost;
+        };
+        sim.gold -= cost;
+        match purchase {
+            Purchase::Goblin => {
+                sim.goblins += 1;
+                sim.record_purchase("kobold");
+            }
+            Purchase::Minion(id) => {
+                *sim.minions.entry(id.clone()).or_default() += 1;
+                sim.record_purchase(&id);
+            }
+            Purchase::Upgrade(id) => {
+                *sim.levels.entry(id.clone()).or_default() += 1;
+                sim.record_purchase(&id);
+            }
         }
     }
 }
 
-/// Simulated active seconds for `sim` to reach `target` gold from its current
-/// state, greedily reinvesting along the way.
 fn run_to_target(sim: &mut Sim, data: &GameData, target: f64) -> Option<f64> {
-    let mut t = 0.0;
-    while t < MAX_SIM_SECS {
-        sim.gold += sim.gain_rate(data) * DT;
-        reinvest(sim, data, target);
+    let mut elapsed = 0.0;
+    while elapsed < MAX_SIM_SECS {
+        let next_cost = reinvest(sim, data, target);
         if sim.gold >= target {
-            return Some(t);
+            return Some(elapsed);
         }
-        t += DT;
+        let rate = sim.gain_rate(data).max(1e-9);
+        let to_target = (target - sim.gold) / rate;
+        let to_purchase = next_cost
+            .filter(|cost| *cost > sim.gold)
+            .map(|cost| (cost - sim.gold) / rate)
+            .unwrap_or(to_target);
+        let step = to_target.min(to_purchase).max(1e-9);
+        sim.gold += rate * step;
+        elapsed += step;
     }
     None
 }
 
-/// Greedily spends Hoard Points on the prestige tree, returning the purchased
-/// levels. Each candidate is a *package* — any unbought prerequisite levels
-/// plus one level of the node — scored by marginal gain-rate per point, so a
-/// pure-multiplier node behind utility prereqs (Dragon's Avarice) competes
-/// fairly with cheap standalone income nodes. Marginals are valued against the
-/// end-of-run economy (`valuation`), the run shape the player just experienced.
-fn spend_hoard_points(data: &GameData, mut points: f64, valuation: &Sim) -> HashMap<String, u32> {
-    let mut tree: HashMap<String, u32> = HashMap::new();
+/// Adds income-valued permanent purchases to an existing tree. Prerequisite
+/// packages are bought atomically and unspent points remain banked.
+fn spend_hoard_points(
+    data: &GameData,
+    points: &mut f64,
+    tree: &mut HashMap<String, u32>,
+    valuation: &Sim,
+) -> u32 {
+    let before_levels: u32 = tree.values().sum();
     loop {
-        let base_percents = economy::prestige_percent_bonuses(&data.prestige_upgrades, &tree);
-        let base_rate = gain_rate_with(data, valuation.goblins, &valuation.levels, &base_percents);
+        let base_percents = economy::prestige_percent_bonuses(&data.prestige_upgrades, tree);
+        let base_rate = gain_rate_with(
+            data,
+            valuation.goblins,
+            &valuation.minions,
+            &valuation.levels,
+            &base_percents,
+        );
+        let mut best: Option<(f64, HashMap<String, u32>, f64)> = None;
 
-        let mut best: Option<(f64, HashMap<String, u32>, f64)> = None; // (score, tree', cost)
         for def in &data.prestige_upgrades {
             let level = tree.get(&def.id).copied().unwrap_or(0);
             if level >= def.max_level {
@@ -210,97 +275,84 @@ fn spend_hoard_points(data: &GameData, mut points: f64, valuation: &Sim) -> Hash
             probe.insert(def.id.clone(), level + 1);
             let mut prereq = def.prereq.clone();
             while let Some(id) = prereq {
-                let p = data.prestige_upgrade(&id).unwrap();
+                let prereq_def = data.prestige_upgrade(&id).unwrap();
                 if tree.get(&id).copied().unwrap_or(0) == 0 {
-                    cost += economy::upgrade_cost(p.base_cost, p.cost_growth, 0);
+                    cost += economy::upgrade_cost(prereq_def.base_cost, prereq_def.cost_growth, 0);
                     probe.insert(id.clone(), 1);
                 }
-                prereq = p.prereq.clone();
+                prereq = prereq_def.prereq.clone();
             }
-            if cost > points {
+            if cost > *points {
                 continue;
             }
-            let probe_percents = economy::prestige_percent_bonuses(&data.prestige_upgrades, &probe);
-            let marginal =
-                gain_rate_with(data, valuation.goblins, &valuation.levels, &probe_percents)
-                    - base_rate;
+            let percents = economy::prestige_percent_bonuses(&data.prestige_upgrades, &probe);
+            let marginal = gain_rate_with(
+                data,
+                valuation.goblins,
+                &valuation.minions,
+                &valuation.levels,
+                &percents,
+            ) - base_rate;
             if marginal <= 0.0 {
                 continue;
             }
             let score = marginal / cost;
-            if best.as_ref().map(|(s, _, _)| score > *s).unwrap_or(true) {
+            if best
+                .as_ref()
+                .map(|(current, _, _)| score > *current)
+                .unwrap_or(true)
+            {
                 best = Some((score, probe, cost));
             }
         }
 
         let Some((_, next_tree, cost)) = best else {
-            return tree;
+            break;
         };
-        points -= cost;
-        tree = next_tree;
+        *points -= cost;
+        *tree = next_tree;
     }
+    tree.values().sum::<u32>() - before_levels
 }
 
-#[test]
-fn first_prestige_reachable_in_a_modest_session() {
-    let data = GameData::load().unwrap();
-    let secs = run_to_target(&mut Sim::new(), &data, data.config.prestige_threshold)
-        .expect("threshold should be reachable");
-    let minutes = secs / 60.0;
-    // Print with `cargo test balance -- --nocapture` while tuning.
-    eprintln!("time to first prestige (active play): {minutes:.1} min");
-    // A first prestige should feel earned but not grindy: roughly 10–40 min of
-    // engaged play. These bounds guard against future balance regressions.
-    assert!(
-        (10.0..=40.0).contains(&minutes),
-        "first prestige at {minutes:.1} min is outside the 10–40 min target window"
-    );
+struct CycleReport {
+    prestige: u32,
+    seconds: f64,
+    threshold: f64,
+    hp_gained: f64,
+    tree_levels: u32,
+    offline_share: f64,
+    purchases: HashMap<String, u32>,
 }
 
-/// The metric that defines fun in a prestige game, and the regression the
-/// engagement review found untested: after burning the hoard and spending the
-/// points, the next run must reach *its own (higher) threshold* meaningfully
-/// faster than the first run reached its threshold — otherwise prestiging is
-/// rationally never worth doing and the loop decelerates into a grind.
-#[test]
-fn second_prestige_cycle_is_meaningfully_faster() {
-    let data = GameData::load().unwrap();
+fn simulate_career(data: &GameData, count: u32) -> Vec<CycleReport> {
+    let mut reports = Vec::new();
+    let mut tree = HashMap::new();
+    let mut banked_points = 0.0;
 
-    let mut run1 = Sim::new();
-    let cycle1 = run_to_target(&mut run1, &data, data.config.prestige_threshold)
-        .expect("first threshold should be reachable");
-
-    // Burn the hoard exactly as `try_prestige` would.
-    let points =
-        prestige::hoard_points_gained(&data.config, run1.gold, &run1.rates(&data), &run1.percents);
-    let tree = spend_hoard_points(&data, points, &run1);
-    let spent: u32 = tree.values().sum();
-    eprintln!("first prestige: {points:.0} HP, {spent} tree levels bought");
-    assert!(
-        spent >= 3,
-        "first prestige should fund a real spree on the tree"
-    );
-
-    let mut run2 = Sim::new();
-    run2.percents = economy::prestige_percent_bonuses(&data.prestige_upgrades, &tree);
-    // After one prestige, run 2 may buy the prestige-1-gated upgrade lines (#10).
-    run2.prestige = 1;
-    let target2 = prestige::current_threshold(&data.config, 1);
-    let cycle2 =
-        run_to_target(&mut run2, &data, target2).expect("second threshold should be reachable");
-
-    eprintln!(
-        "cycle 1: {:.1} min to {} | cycle 2: {:.1} min to {} ({:.0}% of cycle 1)",
-        cycle1 / 60.0,
-        data.config.prestige_threshold,
-        cycle2 / 60.0,
-        target2,
-        cycle2 / cycle1 * 100.0
-    );
-    assert!(
-        cycle2 <= cycle1 * 0.7,
-        "cycle 2 took {:.1} min vs cycle 1's {:.1} min — prestige does not accelerate the loop",
-        cycle2 / 60.0,
-        cycle1 / 60.0
-    );
+    for prestige_count in 0..count {
+        let percents = economy::prestige_percent_bonuses(&data.prestige_upgrades, &tree);
+        let mut sim = Sim::new(prestige_count, percents);
+        let threshold = prestige::current_threshold(&data.config, prestige_count);
+        let seconds = run_to_target(&mut sim, data, threshold).unwrap_or(f64::INFINITY);
+        let cap_seconds = data.config.offline_cap_hours * 3600.0;
+        let offline_gold = offline::offline_gold(sim.passive_rate(data), cap_seconds, cap_seconds);
+        let hp_gained =
+            prestige::hoard_points_gained(&data.config, sim.gold, &sim.rates(data), &sim.percents);
+        banked_points += hp_gained;
+        spend_hoard_points(data, &mut banked_points, &mut tree, &sim);
+        reports.push(CycleReport {
+            prestige: prestige_count + 1,
+            seconds,
+            threshold,
+            hp_gained,
+            tree_levels: tree.values().sum(),
+            offline_share: offline_gold / threshold,
+            purchases: sim.purchases,
+        });
+    }
+    reports
 }
+
+#[cfg(test)]
+mod tests;

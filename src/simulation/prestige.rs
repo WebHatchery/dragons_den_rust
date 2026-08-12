@@ -4,10 +4,25 @@
 use crate::data::{EffectStat, GameConfig};
 use crate::simulation::Bonuses;
 
-/// Gold required for the next prestige given how many have already been done
-/// (GDD §12 Q2): `base * growth^prestige_count`. Tier 0 is the configured base.
+/// Gold required for the next prestige given how many have already been done.
+/// The opening band uses the fast growth that makes early permanent purchases
+/// dramatic. At `band_start`, a one-time wall opens the long-tail band, whose
+/// gentler slope remains playable after the finite prestige tree is exhausted.
 pub fn current_threshold(config: &GameConfig, prestige_count: u32) -> f64 {
-    config.prestige_threshold * config.prestige_threshold_growth.powi(prestige_count as i32)
+    if prestige_count < config.prestige_threshold_band_start {
+        return config.prestige_threshold
+            * config.prestige_threshold_growth.powi(prestige_count as i32);
+    }
+
+    let late_steps = prestige_count - config.prestige_threshold_band_start;
+    config.prestige_threshold
+        * config
+            .prestige_threshold_growth
+            .powi(config.prestige_threshold_band_start as i32)
+        * config.prestige_threshold_band_multiplier
+        * config
+            .prestige_threshold_late_growth
+            .powi(late_steps as i32)
 }
 
 pub fn can_prestige(config: &GameConfig, gold: f64, prestige_count: u32) -> bool {

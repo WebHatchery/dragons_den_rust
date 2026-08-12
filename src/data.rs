@@ -18,11 +18,14 @@ pub use minions::MinionDef;
 pub use treasures::{Rarity, TreasureDef};
 pub use upgrades::{PrestigeBranch, PrestigeUpgradeDef, UpgradeDef};
 
-const GAME_CONFIG_JSON: &str = macroquad_toolkit::include_json_str!("../assets/data/game_config.json");
+const GAME_CONFIG_JSON: &str =
+    macroquad_toolkit::include_json_str!("../assets/data/game_config.json");
 const UPGRADES_JSON: &str = macroquad_toolkit::include_json_str!("../assets/data/upgrades.json");
-const PRESTIGE_UPGRADES_JSON: &str = macroquad_toolkit::include_json_str!("../assets/data/prestige_upgrades.json");
+const PRESTIGE_UPGRADES_JSON: &str =
+    macroquad_toolkit::include_json_str!("../assets/data/prestige_upgrades.json");
 const TREASURES_JSON: &str = macroquad_toolkit::include_json_str!("../assets/data/treasures.json");
-const ACHIEVEMENTS_JSON: &str = macroquad_toolkit::include_json_str!("../assets/data/achievements.json");
+const ACHIEVEMENTS_JSON: &str =
+    macroquad_toolkit::include_json_str!("../assets/data/achievements.json");
 const DRAGONS_JSON: &str = macroquad_toolkit::include_json_str!("../assets/data/dragons.json");
 const MINIONS_JSON: &str = macroquad_toolkit::include_json_str!("../assets/data/minions.json");
 
@@ -107,8 +110,14 @@ pub struct GameConfig {
     pub base_discovery_chance: f64,
     pub prestige_threshold: f64,
     /// Multiplier applied to the prestige threshold per prestige already done
-    /// (GDD §12 Q2 multi-tier prestige): `threshold_n = base * growth^n`.
+    /// during the opening band.
     pub prestige_threshold_growth: f64,
+    /// Prestige count where the long-tail threshold band begins.
+    pub prestige_threshold_band_start: u32,
+    /// One-time wall applied at the start of the long-tail band.
+    pub prestige_threshold_band_multiplier: f64,
+    /// Per-prestige growth after the long-tail wall has been crossed.
+    pub prestige_threshold_late_growth: f64,
     pub prestige_divisor: f64,
     /// Exponent on `(gold / divisor)` when converting the hoard to Hoard
     /// Points. Slightly above sqrt (0.5) so overshooting the threshold before
