@@ -3,6 +3,7 @@
 //! every control returns a `ChangeSetting` intent; `game.rs` mutates, applies,
 //! and persists.
 
+use crate::ui::icons::{self, Icon};
 use crate::ui::theme;
 use crate::ui::{self, SettingChange, UiAction, VolumeChannel, LOGICAL_HEIGHT, LOGICAL_WIDTH};
 use macroquad::prelude::*;
@@ -31,6 +32,7 @@ pub fn draw(settings: &GameSettings, mouse: Vec2) -> Vec<UiAction> {
         432.0,
     );
     let content = ui::panel(panel, "Audio, Display & Gameplay");
+    icons::draw(Icon::Settings, panel.x + 30.0, panel.y + 21.0, 10.0);
 
     let mut y = content.y + 8.0;
     let row_h = 46.0;

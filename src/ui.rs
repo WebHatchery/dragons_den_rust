@@ -241,7 +241,19 @@ pub(crate) fn panel(rect: Rect, title: &str) -> Rect {
         &style,
         TextStyle::new(18.0, theme::TEXT_BRIGHT),
     );
-    // Etched depth: a thin inset bronze line plus gold corner brackets.
+    framed_depth(rect);
+    Rect::new(rect.x + 18.0, rect.y + 56.0, rect.w - 36.0, rect.h - 74.0)
+}
+
+/// Reusable inset depth treatment for panels and framed cards.
+pub(crate) fn framed_depth(rect: Rect) {
+    draw_rectangle(
+        rect.x + 3.0,
+        rect.y + 3.0,
+        rect.w - 6.0,
+        2.0,
+        Color::new(1.0, 0.82, 0.42, 0.16),
+    );
     draw_rectangle_lines(
         rect.x + 3.0,
         rect.y + 3.0,
@@ -252,11 +264,52 @@ pub(crate) fn panel(rect: Rect, title: &str) -> Rect {
             theme::BORDER_DIM.r,
             theme::BORDER_DIM.g,
             theme::BORDER_DIM.b,
-            0.6,
+            0.62,
         ),
     );
+    draw_line(
+        rect.x + 8.0,
+        rect.bottom() - 5.0,
+        rect.right() - 8.0,
+        rect.bottom() - 5.0,
+        2.0,
+        Color::new(0.0, 0.0, 0.0, 0.32),
+    );
     theme::draw_corner_marks(rect, theme::BORDER);
-    Rect::new(rect.x + 18.0, rect.y + 56.0, rect.w - 36.0, rect.h - 74.0)
+}
+
+/// Draws a tooltip whenever the pointer rests on a target. Touch browsers keep
+/// the last tap position as the pointer, so the same target is tap-accessible.
+pub(crate) fn tooltip(target: Rect, mouse: Vec2, title: &str, body: &str) {
+    if !target.contains_point(mouse) {
+        return;
+    }
+    let w = 270.0;
+    let h = 62.0;
+    let x = (mouse.x + 16.0).min(LOGICAL_WIDTH - w - 8.0);
+    let y = (mouse.y + 18.0).min(LOGICAL_HEIGHT - h - 8.0);
+    let rect = Rect::new(x, y, w, h);
+    draw_surface(
+        rect,
+        &SurfaceStyle::new(theme::PANEL_HEADER).with_border(1.0, theme::ACCENT),
+    );
+    framed_depth(rect);
+    draw_ui_text_ex(
+        title,
+        rect.x + 10.0,
+        rect.y + 20.0,
+        TextStyle::new(15.0, theme::ACCENT).params(),
+    );
+    draw_text_block(
+        body,
+        rect.x + 10.0,
+        rect.y + 28.0,
+        rect.w - 20.0,
+        28.0,
+        12.0,
+        2.0,
+        theme::TEXT,
+    );
 }
 
 /// Base (fill, border, text) for a warm-themed button tone.

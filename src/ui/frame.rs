@@ -80,6 +80,13 @@ pub fn draw_header(ctx: &GameplayCtx<'_>, rect: Rect, actions: &mut Vec<UiAction
     if ui::button(gear, "*", true, ButtonTone::Secondary, ctx.mouse) {
         actions.push(UiAction::OpenSettings);
     }
+    icons::settings(gear.x + gear.w / 2.0, gear.y + gear.h / 2.0, 11.0);
+    ui::tooltip(
+        gear,
+        ctx.mouse,
+        "Settings",
+        "Adjust audio, display, and autosave options.",
+    );
     let menu = Rect::new(gear.x - 104.0, btn_y, 96.0, 40.0);
     if ui::button(menu, "MENU", true, ButtonTone::Secondary, ctx.mouse) {
         actions.push(UiAction::BackToMenu);

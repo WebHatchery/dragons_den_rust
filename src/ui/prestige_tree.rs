@@ -7,8 +7,9 @@
 use crate::data::{PrestigeBranch, PrestigeUpgradeDef};
 use crate::simulation::economy;
 use crate::simulation::idle_number::format_amount;
+use crate::ui::icons::{self, Icon};
 use crate::ui::theme;
-use crate::ui::{GameplayCtx, UiAction};
+use crate::ui::{self, GameplayCtx, UiAction};
 use macroquad::prelude::*;
 use macroquad_toolkit::prelude::*;
 
@@ -42,6 +43,7 @@ pub fn draw(ctx: &GameplayCtx<'_>, rect: Rect, actions: &mut Vec<UiAction>) {
         nodes.sort_by_key(|d| d.tier);
 
         draw_header(ctx, &nodes, col_x, rect.y, col_w, color);
+        icons::draw(Icon::Prestige(*branch), cx, rect.y + 14.0, 9.0);
 
         let top = rect.y + 50.0;
         // Connectors first, so the node discs sit on top of the lines.
@@ -108,6 +110,7 @@ fn draw_node(
     let border = if unlocked { color } else { theme::BORDER_DIM };
     draw_circle(cx, cy, RADIUS, fill);
     draw_circle_lines(cx, cy, RADIUS, if hovered { 3.5 } else { 2.0 }, border);
+    icons::draw(Icon::Prestige(def.branch), cx, cy - 5.0, 8.0);
 
     let inner = if unlocked {
         theme::TEXT_BRIGHT
@@ -117,7 +120,7 @@ fn draw_node(
     draw_text_centered_in_box(
         &format!("{level}/{}", def.max_level),
         cx - RADIUS,
-        cy - 10.0,
+        cy + 2.0,
         RADIUS * 2.0,
         20.0,
         14.0,
@@ -164,5 +167,13 @@ fn draw_node(
 
     if hovered && is_mouse_button_released(MouseButton::Left) {
         actions.push(UiAction::BuyPrestigeUpgrade(def.id.clone()));
+    }
+    if hovered {
+        ui::tooltip(
+            Rect::new(cx - RADIUS, cy - RADIUS, RADIUS * 2.0, RADIUS * 2.0),
+            ctx.mouse,
+            &def.name,
+            &def.description,
+        );
     }
 }

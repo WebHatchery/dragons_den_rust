@@ -2,6 +2,7 @@
 //! ships no art assets — matching the GDD §0 "lowest-art genre" stance. Each
 //! icon draws centered at `(cx, cy)` within radius `r`.
 
+use crate::data::PrestigeBranch;
 use crate::ui::theme;
 use macroquad::prelude::*;
 
@@ -10,6 +11,9 @@ pub enum Icon {
     Coin,
     Minion,
     Gem,
+    Settings,
+    Treasure,
+    Prestige(PrestigeBranch),
 }
 
 pub fn draw(icon: Icon, cx: f32, cy: f32, r: f32) {
@@ -17,6 +21,9 @@ pub fn draw(icon: Icon, cx: f32, cy: f32, r: f32) {
         Icon::Coin => coin(cx, cy, r),
         Icon::Minion => minion(cx, cy, r),
         Icon::Gem => gem(cx, cy, r),
+        Icon::Settings => settings(cx, cy, r),
+        Icon::Treasure => treasure(cx, cy, r),
+        Icon::Prestige(branch) => prestige(cx, cy, r, branch),
     }
 }
 
@@ -70,6 +77,95 @@ pub fn gem(cx: f32, cy: f32, r: f32) {
         1.0,
         Color::new(0.82, 0.72, 0.95, 0.55),
     );
+}
+
+/// A small settings cog used anywhere a control opens configuration.
+pub fn settings(cx: f32, cy: f32, r: f32) {
+    draw_circle_lines(cx, cy, r * 0.62, 2.5, theme::TEXT_BRIGHT);
+    draw_circle(cx, cy, r * 0.22, theme::PANEL_DARK);
+    for i in 0..8 {
+        let a = i as f32 * std::f32::consts::PI / 4.0;
+        let inner = vec2(cx + a.cos() * r * 0.62, cy + a.sin() * r * 0.62);
+        let outer = vec2(cx + a.cos() * r * 0.92, cy + a.sin() * r * 0.92);
+        draw_line(inner.x, inner.y, outer.x, outer.y, 3.0, theme::TEXT_BRIGHT);
+    }
+}
+
+/// A faceted chest silhouette for collection and discovery screens.
+pub fn treasure(cx: f32, cy: f32, r: f32) {
+    let gold = Color::new(0.82, 0.57, 0.22, 1.0);
+    draw_rectangle(cx - r * 0.72, cy - r * 0.18, r * 1.44, r * 0.72, gold);
+    draw_rectangle_lines(
+        cx - r * 0.72,
+        cy - r * 0.18,
+        r * 1.44,
+        r * 0.72,
+        2.0,
+        theme::BORDER,
+    );
+    draw_arc(
+        cx,
+        cy - r * 0.18,
+        6,
+        r * 0.72,
+        180.0,
+        1.0,
+        180.0,
+        theme::ACCENT,
+    );
+    draw_rectangle(
+        cx - r * 0.08,
+        cy + r * 0.04,
+        r * 0.16,
+        r * 0.25,
+        theme::PANEL_DARK,
+    );
+}
+
+/// Branch-specific sigils keep the prestige tree scannable even without color.
+pub fn prestige(cx: f32, cy: f32, r: f32, branch: PrestigeBranch) {
+    let c = Color::new(1.0, 0.92, 0.68, 0.95);
+    match branch {
+        PrestigeBranch::Greed => draw_poly(cx, cy, 6, r * 0.62, 0.0, c),
+        PrestigeBranch::Power => {
+            draw_triangle(
+                vec2(cx, cy - r * 0.7),
+                vec2(cx - r * 0.45, cy + r * 0.5),
+                vec2(cx + r * 0.1, cy + r * 0.18),
+                c,
+            );
+            draw_triangle(
+                vec2(cx + r * 0.05, cy - r * 0.1),
+                vec2(cx + r * 0.55, cy - r * 0.1),
+                vec2(cx - r * 0.15, cy + r * 0.7),
+                c,
+            );
+        }
+        PrestigeBranch::Discovery => {
+            draw_circle_lines(cx, cy, r * 0.52, 2.5, c);
+            draw_line(
+                cx + r * 0.35,
+                cy + r * 0.35,
+                cx + r * 0.72,
+                cy + r * 0.72,
+                3.0,
+                c,
+            );
+        }
+        PrestigeBranch::Legion => {
+            draw_circle(cx, cy - r * 0.3, r * 0.25, c);
+            draw_line(
+                cx - r * 0.6,
+                cy + r * 0.55,
+                cx + r * 0.6,
+                cy + r * 0.55,
+                3.0,
+                c,
+            );
+            draw_line(cx, cy - r * 0.02, cx, cy + r * 0.55, 3.0, c);
+        }
+        PrestigeBranch::Eternity => draw_circle_lines(cx, cy, r * 0.58, 3.0, c),
+    }
 }
 
 /// A small mound of coins topped with a crown — the left rail's hoard art.

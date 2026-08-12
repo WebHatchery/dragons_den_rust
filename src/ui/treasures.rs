@@ -1,6 +1,7 @@
 //! Treasure collection: discovered/undiscovered grid with rarity badges.
 
 use crate::data::treasures::Rarity;
+use crate::ui::icons::{self, Icon};
 use crate::ui::theme;
 use crate::ui::{self, GameplayCtx, UiAction};
 use macroquad::prelude::*;
@@ -51,6 +52,7 @@ pub fn draw(ctx: &GameplayCtx<'_>, rect: Rect, actions: &mut Vec<UiAction>) {
                 .with_left_accent(4.0, accent)
                 .with_border(1.0, theme::BORDER_DIM),
         );
+        icons::draw(Icon::Treasure, card.right() - 24.0, card.y + 24.0, 13.0);
 
         if found {
             draw_ui_text_ex(
@@ -121,6 +123,7 @@ pub fn draw(ctx: &GameplayCtx<'_>, rect: Rect, actions: &mut Vec<UiAction>) {
                 theme::TEXT_DIM,
             );
         }
+        ui::tooltip(card, ctx.mouse, &def.name, &def.description);
     }
 
     ui::draw_scroll_indicator(view, total, scroll);
