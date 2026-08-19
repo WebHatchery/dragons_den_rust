@@ -1,23 +1,25 @@
 # TODO — Dragon's Den
 
-All design milestones (M1–M3), the ornate-frame UI redesign, and the engagement
-plan's Tiers 1–3 have shipped. What's left:
-
-## Audio
-
-- SFX for click / purchase / unlock via the toolkit `SoundManager` — blocked on a sound
-  asset pack. Settings already persist master/SFX/music volumes, ready to feed it.
-
-## Art and UI polish
-
-- Procedural glyphs for prestige branch nodes, treasures, and the settings gear — these
-  are still plain colored discs.
-- Hover tooltips.
-- Ornate depth left over from the theme pass: panel gradient/vignette and corner filigree,
-  ideally as a reusable `FramedPanel` in `macroquad-toolkit`.
-- Refresh `catalog_thumbnail.png` once the menu has more visual identity.
+Only repository-level implementation work remains here. Shipped UI polish and
+work that depends on an external asset pack are intentionally not tracked in
+this backlog.
 
 ## Persistence
 
-- Real save migrations in `save.rs`; it accepts only the modern shape and fails loudly
-  otherwise, which stops being acceptable after the first public release.
+- Define the save-version history and the legacy shapes that must remain
+  readable in `src/save.rs`.
+  - Record the current schema version and each supported legacy version.
+  - Document fields added, renamed, or removed between supported versions.
+  - Add fixtures for each legacy shape before changing the migration code.
+- Implement a versioned migration dispatcher in `src/save.rs`.
+  - Route each supported version to a dedicated migration step.
+  - Fill defaults for fields introduced after that version.
+  - Preserve run and persistent progression data while normalizing the save
+    to the current `SaveData` shape.
+  - Return source-versioned errors for unknown or malformed payloads.
+- Add focused migration tests in `src/save/tests.rs`.
+  - Verify current-version saves still round-trip unchanged.
+  - Verify every supported legacy fixture migrates to the current shape.
+  - Verify unknown versions and malformed payloads fail clearly.
+- Rewrite a successfully migrated save in the current format and verify that a
+  second load no longer invokes a legacy migration.
