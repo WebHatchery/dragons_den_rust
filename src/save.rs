@@ -6,10 +6,9 @@
 use crate::data::GameConfig;
 use crate::state::gameplay::{PersistentState, RunState};
 use macroquad_toolkit::persistence::{
-    delete_slot, load_from_slot_with_migration, save_to_slot_with_version, slot_exists,
+    delete_slot, load_from_slot, peek_slot_version, save_to_slot_with_version, slot_exists,
 };
 use serde::{Deserialize, Serialize};
-use serde_json::Value;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SaveData {
@@ -48,31 +47,41 @@ pub fn write_save(
 }
 
 pub fn read_save(config: &GameConfig) -> Result<SaveData, String> {
-    load_from_slot_with_migration(
-        &config.game_name,
-        &config.save_slot,
-        &config.version,
-        |version, value| migrate_save_value(version, value, config),
-    )
+    let detected_version = peek_slot_version(&config.game_name, &config.save_slot)?;
+    if detected_version.as_deref() != Some(config.version.as_str()) {
+        return Err(format_save_version_error(
+            detected_version.as_deref(),
+            &config.version,
+        ));
+    }
+
+    let save: SaveData = load_from_slot(&config.game_name, &config.save_slot)
+        .map_err(|err| format!("Current save could not be loaded: {err}"))?;
+    validate_current_save(save, config)
 }
 
-/// Migration hook: currently only re-stamps the version on the modern shape.
-/// Older shapes have no shipped players yet, so anything unrecognized fails
-/// loudly instead of guessing.
-fn migrate_save_value(
-    detected_version: Option<String>,
-    value: Value,
-    config: &GameConfig,
-) -> Result<SaveData, String> {
-    let payload = value.get("data").cloned().unwrap_or(value);
-    match serde_json::from_value::<SaveData>(payload) {
-        Ok(mut save) => {
-            save.version = config.version.clone();
-            Ok(save)
+/// The first release has one save shape and no migration history. Keep the
+/// version check explicit so an old or hand-edited save never gets silently
+/// reinterpreted as current data.
+fn validate_current_save(save: SaveData, config: &GameConfig) -> Result<SaveData, String> {
+    if save.version != config.version {
+        return Err(format_save_version_error(
+            Some(save.version.as_str()),
+            &config.version,
+        ));
+    }
+
+    Ok(save)
+}
+
+fn format_save_version_error(detected: Option<&str>, expected: &str) -> String {
+    match detected {
+        Some(version) => {
+            format!("Unsupported save version '{version}'; expected current version '{expected}'")
         }
-        Err(err) => Err(format!(
-            "Unsupported save format {:?}: {}",
-            detected_version, err
-        )),
+        None => format!("Save has no version metadata; expected current version '{expected}'"),
     }
 }
+
+#[cfg(test)]
+mod tests;

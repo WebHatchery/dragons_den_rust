@@ -85,6 +85,33 @@ pub fn draw(
         actions.push(UiAction::OpenSettings);
     }
 
+    if menu.load_error.is_some() {
+        let notice = Rect::new(x, y + 12.0, button_w, 68.0);
+        draw_surface(
+            notice,
+            &SurfaceStyle::new(theme::PANEL_HEADER).with_border(1.0, theme::HOARD_POINT),
+        );
+        ui::framed_depth(notice);
+        draw_text_centered_in_box(
+            "SAVE COULD NOT BE LOADED",
+            notice.x + 8.0,
+            notice.y + 8.0,
+            notice.w - 16.0,
+            22.0,
+            16.0,
+            theme::HOARD_POINT,
+        );
+        draw_text_centered_in_box(
+            "Tap NEW GAME to start a new hoard.",
+            notice.x + 8.0,
+            notice.y + 34.0,
+            notice.w - 16.0,
+            22.0,
+            14.0,
+            theme::TEXT,
+        );
+    }
+
     draw_text_centered_in_box(
         "v0.1 framework — see IMPLEMENTATION_PLAN.md",
         0.0,

@@ -14,6 +14,9 @@ pub enum MenuScreen {
 pub struct MenuState {
     pub save_exists: bool,
     pub screen: MenuScreen,
+    /// A failed Continue attempt stays visible until the player starts over or
+    /// deletes the damaged save, so recovery is not hidden in a short toast.
+    pub load_error: Option<String>,
 }
 
 impl MenuState {
@@ -21,10 +24,19 @@ impl MenuState {
         Self {
             save_exists: save::save_exists(config),
             screen: MenuScreen::Main,
+            load_error: None,
         }
     }
 
     pub fn refresh(&mut self, config: &GameConfig) {
         self.save_exists = save::save_exists(config);
+        self.load_error = None;
+    }
+
+    pub fn record_load_error(&mut self, error: String) {
+        self.load_error = Some(error);
     }
 }
+
+#[cfg(test)]
+mod tests;

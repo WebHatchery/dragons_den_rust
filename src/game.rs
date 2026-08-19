@@ -259,7 +259,13 @@ impl Game {
                     }
                     self.state = GameState::Gameplay(Box::new(gameplay));
                 }
-                Err(err) => self.notifications.warning(format!("Load failed: {err}")),
+                Err(err) => {
+                    if let GameState::Menu(menu) = &mut self.state {
+                        menu.record_load_error(format!("Save could not be loaded: {err}"));
+                    }
+                    self.notifications
+                        .warning("Save could not be loaded. Tap NEW GAME to start a new hoard.");
+                }
             },
             StateTransition::BackToMenu => {
                 self.write_save(false);
