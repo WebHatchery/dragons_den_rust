@@ -10,12 +10,12 @@
   ],
   "controls": [
     {
-      "key": "Mouse",
-      "desc": "Click the hoard, buy upgrades, switch tabs"
+      "key": "Tap / Click",
+      "desc": "Tap the hoard, buy upgrades, switch tabs, and drag lists to scroll"
     },
     {
-      "key": "Esc",
-      "desc": "Save and return to menu"
+      "key": "MENU",
+      "desc": "Use the visible MENU button to save and return to the main menu"
     }
   ],
   "details": [

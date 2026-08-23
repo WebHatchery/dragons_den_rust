@@ -16,6 +16,7 @@ use macroquad_toolkit::notifications::{
 };
 use macroquad_toolkit::prelude::{begin_virtual_ui_frame, end_virtual_ui_frame};
 use macroquad_toolkit::settings::GameSettings;
+use macroquad_toolkit::ui::ScrollArea;
 
 /// Step applied per volume +/- press.
 const VOLUME_STEP: f32 = 0.1;
@@ -41,6 +42,9 @@ pub struct Game {
     last_mouse_logical: Vec2,
     /// Global user settings (audio + display), persisted on every change.
     settings: GameSettings,
+    /// Transient scroll controller for the active collection screen. It owns
+    /// wheel, drag, and fling input without becoming part of a player save.
+    list_scroll: ScrollArea,
 }
 
 impl Game {
@@ -63,11 +67,13 @@ impl Game {
             floating,
             last_mouse_logical: Vec2::ZERO,
             settings,
+            list_scroll: ScrollArea::new(),
         }
     }
 
     /// Screenshot harness seeding: boots straight into a named scene.
     pub fn begin_capture_scene(&mut self, scene: &str) {
+        self.list_scroll = ScrollArea::new();
         self.state = match scene {
             "menu" => GameState::Menu(MenuState::new(&self.data.config)),
             "settings" => {
@@ -135,9 +141,13 @@ impl Game {
         self.last_mouse_logical = virtual_ui.mouse_position();
         let actions = match &self.state {
             GameState::Menu(menu) => ui::menu::draw(&self.data, menu, &self.settings, &virtual_ui),
-            GameState::Gameplay(gameplay) => {
-                ui::draw_gameplay(&self.data, gameplay, &self.settings, &virtual_ui)
-            }
+            GameState::Gameplay(gameplay) => ui::draw_gameplay(
+                &self.data,
+                gameplay,
+                &self.settings,
+                &virtual_ui,
+                &mut self.list_scroll,
+            ),
         };
         self.floating.draw();
         end_virtual_ui_frame();
@@ -168,7 +178,7 @@ impl Game {
             UiAction::SwitchScreen(screen) => {
                 if let GameState::Gameplay(gameplay) = &mut self.state {
                     gameplay.screen = screen;
-                    gameplay.scroll_y = 0.0;
+                    self.list_scroll = ScrollArea::new();
                 }
             }
             UiAction::ClickHoard => {
@@ -202,11 +212,6 @@ impl Game {
                 GameState::Gameplay(gameplay) => gameplay.settings_open = false,
             },
             UiAction::ChangeSetting(change) => self.change_setting(change),
-            UiAction::SetScroll(offset) => {
-                if let GameState::Gameplay(gameplay) = &mut self.state {
-                    gameplay.scroll_y = offset;
-                }
-            }
         }
     }
 

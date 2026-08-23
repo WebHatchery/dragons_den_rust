@@ -148,7 +148,7 @@ dependencies = [
 
 [[package]]
 name = "dragons_den"
-version = "0.1.0"
+version = "1.0.0"
 dependencies = [
  "macroquad",
  "macroquad-toolkit",

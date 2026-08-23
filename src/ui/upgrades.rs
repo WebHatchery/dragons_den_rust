@@ -5,9 +5,14 @@ use crate::ui::theme;
 use crate::ui::{self, GameplayCtx, UiAction};
 use macroquad::prelude::*;
 use macroquad_toolkit::prelude::*;
-use macroquad_toolkit::ui::draw_ui_text_ex;
+use macroquad_toolkit::ui::{draw_ui_text_ex, ScrollArea};
 
-pub fn draw(ctx: &GameplayCtx<'_>, rect: Rect, actions: &mut Vec<UiAction>) {
+pub fn draw(
+    ctx: &GameplayCtx<'_>,
+    rect: Rect,
+    scroll_area: &mut ScrollArea,
+    actions: &mut Vec<UiAction>,
+) {
     let content = ui::panel(rect, "Upgrade Shop");
 
     // Buy-quantity selector spans the top; the card grid starts below it.
@@ -23,7 +28,9 @@ pub fn draw(ctx: &GameplayCtx<'_>, rect: Rect, actions: &mut Vec<UiAction>) {
     let view = Rect::new(content.x, grid_top, content.w, content.bottom() - grid_top);
     let layout = GridLayout::new(content.x, grid_top, content.w, 12.0, 2, 110.0);
     let total = layout.content_height(ctx.data.upgrades.len());
-    let scroll = ui::apply_scroll(ctx.state.scroll_y, total, view, ctx.mouse, actions);
+    scroll_area.update_at(view, total, ctx.mouse);
+    let scroll = scroll_area.offset();
+    let allow_card_actions = !scroll_area.absorbs_press();
 
     for (index, def) in ctx.data.upgrades.iter().enumerate() {
         let (x, y, w, h) = layout.get_item_rect(index, scroll);
@@ -109,12 +116,13 @@ pub fn draw(ctx: &GameplayCtx<'_>, rect: Rect, actions: &mut Vec<UiAction>) {
             !maxed && quote.affordable,
             ButtonTone::Positive,
             ctx.mouse,
-        ) {
+        ) && allow_card_actions
+        {
             actions.push(UiAction::BuyUpgrade(def.id.clone()));
         }
     }
 
-    ui::draw_scroll_indicator(view, total, scroll);
+    ui::draw_scrollbar(scroll_area, view, total);
 }
 
 /// A dimmed, locked card for a prestige-gated upgrade line (#10): reveals the

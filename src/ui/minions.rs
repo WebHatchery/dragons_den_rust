@@ -6,7 +6,7 @@ use crate::ui::theme;
 use crate::ui::{self, GameplayCtx, UiAction};
 use macroquad::prelude::*;
 use macroquad_toolkit::prelude::*;
-use macroquad_toolkit::ui::draw_ui_text_ex;
+use macroquad_toolkit::ui::{draw_ui_text_ex, ScrollArea};
 
 /// A hireable minion tier resolved for display — the base tier and each extra
 /// tier flatten to this so the tab and the bottom strip render uniformly.
@@ -64,7 +64,12 @@ pub(crate) fn slots(ctx: &GameplayCtx<'_>) -> Vec<MinionSlot> {
     slots
 }
 
-pub fn draw(ctx: &GameplayCtx<'_>, rect: Rect, actions: &mut Vec<UiAction>) {
+pub fn draw(
+    ctx: &GameplayCtx<'_>,
+    rect: Rect,
+    scroll_area: &mut ScrollArea,
+    actions: &mut Vec<UiAction>,
+) {
     let content = ui::panel(
         rect,
         &format!("Minions ({} working)", ctx.state.total_minions()),
@@ -111,14 +116,31 @@ pub fn draw(ctx: &GameplayCtx<'_>, rect: Rect, actions: &mut Vec<UiAction>) {
         actions,
     );
 
-    let grid = GridLayout::new(content.x, content.y + 58.0, content.w, 12.0, 3, 120.0);
-    for (i, slot) in slots(ctx).iter().enumerate() {
-        let (x, y, w, h) = grid.get_item_rect(i, 0.0);
-        draw_card(ctx, Rect::new(x, y, w, h), slot, actions);
+    let grid_top = content.y + 58.0;
+    let view = Rect::new(content.x, grid_top, content.w, content.bottom() - grid_top);
+    let grid = GridLayout::new(content.x, grid_top, content.w, 12.0, 3, 120.0);
+    let slots = slots(ctx);
+    let total = grid.content_height(slots.len());
+    scroll_area.update_at(view, total, ctx.mouse);
+    let allow_card_actions = !scroll_area.absorbs_press();
+    for (i, slot) in slots.iter().enumerate() {
+        let (x, y, w, h) = grid.get_item_rect(i, scroll_area.offset());
+        let card = Rect::new(x, y, w, h);
+        if !ui::item_fully_visible(card, view) {
+            continue;
+        }
+        draw_card(ctx, card, slot, allow_card_actions, actions);
     }
+    ui::draw_scrollbar(scroll_area, view, total);
 }
 
-fn draw_card(ctx: &GameplayCtx<'_>, rect: Rect, slot: &MinionSlot, actions: &mut Vec<UiAction>) {
+fn draw_card(
+    ctx: &GameplayCtx<'_>,
+    rect: Rect,
+    slot: &MinionSlot,
+    allow_action: bool,
+    actions: &mut Vec<UiAction>,
+) {
     let accent = if slot.unlocked {
         theme::ACCENT
     } else {
@@ -182,7 +204,8 @@ fn draw_card(ctx: &GameplayCtx<'_>, rect: Rect, slot: &MinionSlot, actions: &mut
         quote.affordable,
         ButtonTone::Primary,
         ctx.mouse,
-    ) {
+    ) && allow_action
+    {
         actions.push(slot.action.clone());
     }
 }

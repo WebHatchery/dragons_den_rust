@@ -1,6 +1,6 @@
 //! UI root: the action enum, shared widgets, and gameplay screen chrome.
-//! UI is a pure view layer — it reads state and returns `UiAction` intents;
-//! `Game::apply_action` is the only place state changes.
+//! Screens read gameplay state and return `UiAction` intents; `Game::apply_action`
+//! owns gameplay changes. The shared scroll controller only tracks transient input.
 
 pub mod achievements;
 pub mod bottom_bar;
@@ -25,7 +25,7 @@ use crate::state::gameplay::{BuyMode, GameplayState, Screen};
 use macroquad::prelude::*;
 use macroquad_toolkit::prelude::*;
 use macroquad_toolkit::settings::GameSettings;
-use macroquad_toolkit::ui::{RectExt, VirtualUi};
+use macroquad_toolkit::ui::{RectExt, ScrollArea, VirtualUi};
 
 pub const LOGICAL_WIDTH: f32 = 1280.0;
 pub const LOGICAL_HEIGHT: f32 = 720.0;
@@ -55,8 +55,6 @@ pub enum UiAction {
     OpenSettings,
     CloseSettings,
     ChangeSetting(SettingChange),
-    /// New clamped vertical scroll offset for the active list screen.
-    SetScroll(f32),
 }
 
 /// Which audio group a volume change targets.
@@ -93,6 +91,7 @@ pub fn draw_gameplay(
     state: &GameplayState,
     settings: &GameSettings,
     ui: &VirtualUi,
+    list_scroll: &mut ScrollArea,
 ) -> Vec<UiAction> {
     let mut actions = Vec::new();
     let mouse = ui.mouse_position();
@@ -107,12 +106,12 @@ pub fn draw_gameplay(
     let content = regions.center;
     match state.screen {
         Screen::Hoard => hoard::draw(&ctx, content, &mut actions),
-        Screen::Minions => minions::draw(&ctx, content, &mut actions),
-        Screen::Upgrades => upgrades::draw(&ctx, content, &mut actions),
-        Screen::Treasures => treasures::draw(&ctx, content, &mut actions),
-        Screen::Achievements => achievements::draw(&ctx, content, &mut actions),
+        Screen::Minions => minions::draw(&ctx, content, list_scroll, &mut actions),
+        Screen::Upgrades => upgrades::draw(&ctx, content, list_scroll, &mut actions),
+        Screen::Treasures => treasures::draw(&ctx, content, list_scroll, &mut actions),
+        Screen::Achievements => achievements::draw(&ctx, content, list_scroll, &mut actions),
         Screen::Prestige => prestige::draw(&ctx, content, &mut actions),
-        Screen::Dragons => dragons::draw(&ctx, content, &mut actions),
+        Screen::Dragons => dragons::draw(&ctx, content, list_scroll, &mut actions),
     }
 
     // Active-play overlays (#9): a Golden Hoard glint and the Frenzy banner sit
@@ -444,69 +443,24 @@ pub(crate) fn bulk_quote(
     }
 }
 
-/// Reads the mouse wheel and returns the clamped scroll offset to render a list
-/// of `content_height` inside `view`. Emits `SetScroll` only when it changes so
-/// the value persists across frames. macroquad has no scissor, so callers cull
-/// items whose card isn't fully inside `view` (see [`item_fully_visible`]).
-pub(crate) fn apply_scroll(
-    current: f32,
-    content_height: f32,
-    view: Rect,
-    mouse: Vec2,
-    actions: &mut Vec<UiAction>,
-) -> f32 {
-    const SCROLL_SPEED: f32 = 48.0;
-    let max = (content_height - view.h).max(0.0);
-    let (_, wheel) = mouse_wheel();
-    let mut scroll = current;
-    if wheel != 0.0 && view.contains_point(mouse) {
-        scroll -= wheel * SCROLL_SPEED;
-    }
-    scroll = scroll.clamp(0.0, max);
-    if (scroll - current).abs() > f32::EPSILON {
-        actions.push(UiAction::SetScroll(scroll));
-    }
-    scroll
-}
-
 /// True when a scrolled card sits fully within the view (used to cull the
 /// partially-clipped rows at the top/bottom, keeping panel edges clean).
 /// Re-exported from the toolkit under the game's local name.
 pub(crate) use macroquad_toolkit::ui::is_fully_visible as item_fully_visible;
 
-/// Draws a thin scrollbar down the right edge of `view` so the player can tell
-/// a wheel-scrollable list has more content below/above. No-op when everything
-/// already fits. Pairs with [`apply_scroll`]: pass the same `content_height`,
-/// `view`, and clamped `scroll`.
-pub(crate) fn draw_scroll_indicator(view: Rect, content_height: f32, scroll: f32) {
-    let overflow = content_height - view.h;
-    if overflow <= 0.5 {
-        return;
-    }
-    const BAR_W: f32 = 5.0;
-    let track_x = view.right() - BAR_W - 2.0;
-    // Track: a faint groove hinting the full scroll range.
-    draw_rectangle(
-        track_x,
-        view.y,
-        BAR_W,
-        view.h,
+/// Draws the shared drag/swipe scrollbar in Dragon's Den's warm chrome.
+pub(crate) fn draw_scrollbar(scroll: &ScrollArea, view: Rect, content_height: f32) {
+    scroll.draw_scrollbar_with(
+        view,
+        content_height,
         Color::new(
             theme::BORDER_DIM.r,
             theme::BORDER_DIM.g,
             theme::BORDER_DIM.b,
             0.35,
         ),
-    );
-    // Handle: proportional to the visible fraction, positioned by scroll.
-    let handle_h = (view.h * (view.h / content_height)).max(28.0).min(view.h);
-    let handle_y = view.y + (scroll / overflow) * (view.h - handle_h);
-    draw_rectangle(
-        track_x,
-        handle_y,
-        BAR_W,
-        handle_h,
         Color::new(theme::ACCENT.r, theme::ACCENT.g, theme::ACCENT.b, 0.85),
+        theme::TEXT_BRIGHT,
     );
 }
 

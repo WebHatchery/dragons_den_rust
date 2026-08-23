@@ -113,7 +113,7 @@ pub fn draw(
     }
 
     draw_text_centered_in_box(
-        "v0.1 framework — see IMPLEMENTATION_PLAN.md",
+        &format!("Dragon's Den · v{}", data.config.version),
         0.0,
         LOGICAL_HEIGHT - 40.0,
         LOGICAL_WIDTH,

@@ -6,7 +6,7 @@ use crate::ui::theme;
 use crate::ui::{self, GameplayCtx, UiAction};
 use macroquad::prelude::*;
 use macroquad_toolkit::prelude::*;
-use macroquad_toolkit::ui::draw_ui_text_ex;
+use macroquad_toolkit::ui::{draw_ui_text_ex, ScrollArea};
 
 pub(crate) fn rarity_color(rarity: Rarity) -> Color {
     match rarity {
@@ -18,7 +18,12 @@ pub(crate) fn rarity_color(rarity: Rarity) -> Color {
     }
 }
 
-pub fn draw(ctx: &GameplayCtx<'_>, rect: Rect, actions: &mut Vec<UiAction>) {
+pub fn draw(
+    ctx: &GameplayCtx<'_>,
+    rect: Rect,
+    scroll_area: &mut ScrollArea,
+    _actions: &mut Vec<UiAction>,
+) {
     let discovered = &ctx.state.persistent.discovered_treasures;
     let content = ui::panel(
         rect,
@@ -32,7 +37,8 @@ pub fn draw(ctx: &GameplayCtx<'_>, rect: Rect, actions: &mut Vec<UiAction>) {
     let view = Rect::new(content.x, content.y, content.w, content.h);
     let layout = GridLayout::new(content.x, content.y, content.w, 12.0, 3, 130.0);
     let total = layout.content_height(ctx.data.treasures.len());
-    let scroll = ui::apply_scroll(ctx.state.scroll_y, total, view, ctx.mouse, actions);
+    scroll_area.update_at(view, total, ctx.mouse);
+    let scroll = scroll_area.offset();
     for (index, def) in ctx.data.treasures.iter().enumerate() {
         let (x, y, w, h) = layout.get_item_rect(index, scroll);
         let card = Rect::new(x, y, w, h);
@@ -126,5 +132,5 @@ pub fn draw(ctx: &GameplayCtx<'_>, rect: Rect, actions: &mut Vec<UiAction>) {
         ui::tooltip(card, ctx.mouse, &def.name, &def.description);
     }
 
-    ui::draw_scroll_indicator(view, total, scroll);
+    ui::draw_scrollbar(scroll_area, view, total);
 }

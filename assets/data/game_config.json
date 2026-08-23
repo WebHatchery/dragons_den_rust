@@ -4,7 +4,7 @@
   "minion_name": "Kobold",
   "minion_name_plural": "Kobolds",
   "save_slot": "autosave",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "base_click": 2.0,
   "base_passive": 0.0,
   "gold_per_goblin": 5.0,

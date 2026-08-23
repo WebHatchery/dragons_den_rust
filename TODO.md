@@ -5,23 +5,18 @@ release backlog; completed work and deliberate non-goals are not repeated here._
 
 ## Release blockers
 
-- [ ] **Make every collection screen fully usable with touch.** The 15-card
-  Dragon Codex in `src/ui/dragons.rs` has no scroll or culling, so it draws
-  over the persistent bottom strip at the 1280×720 game resolution. The shared
-  `apply_scroll` helper only reads the mouse wheel, leaving long upgrades,
-  treasures, and achievements inaccessible on touch-only browsers. Add visible
-  drag/swipe scrolling (prefer a toolkit improvement if broadly reusable), use
-  it for the Codex and all long lists, and capture the corrected states. Done
-  means every entry is reachable by touch and no card overdraws another region.
+- [x] **Make every collection screen fully usable with touch.** The shared
+  toolkit `ScrollArea` now powers swipe/drag scrolling, fling, and visible
+  scrollbars for Minions, Upgrades, Treasures, Achievements, and the 15-card
+  Dragon Codex. Its gesture capture prevents a swipe from triggering a card,
+  and cards are culled before they can overdraw the persistent bottom strip.
 
-- [ ] **Set the first-public-release identity and remove stale player-facing
-  copy.** The menu still says “v0.1 framework — see IMPLEMENTATION_PLAN.md”,
-  but that file does not exist. Choose the release version, align
-  `Cargo.toml` and `assets/data/game_config.json`, replace the footer with
-  real release text, and update `game_page.json` to describe tap/click controls
-  and the visible **MENU** button instead of presenting `Esc` as the only route
-  back to the menu. Confirm the version/slot policy before publishing so the
-  first public save format is intentional.
+- [x] **Set the first-public-release identity and remove stale player-facing
+  copy.** The first public build is `1.0.0`; `Cargo.toml`, embedded save
+  metadata, and the menu footer agree. The existing `autosave` slot is the
+  intentional first-public-release format, with no legacy migration required.
+  The catalog page now describes tap/click controls, swipe scrolling, and the
+  visible **MENU** button.
 
 ## Release-completion work
 
