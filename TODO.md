@@ -1,16 +1,21 @@
 # TODO — Dragon's Den
 
-Only repository-level implementation work remains here. Shipped UI polish and
-work that depends on an external asset pack are intentionally not tracked in
-this backlog.
+_Verified 23 August 2026._
 
-## Persistence
+## Outstanding items
 
-Current `SaveData` persistence is complete: the toolkit-backed round-trip,
-offline earnings, autosave/explicit-save path, malformed-save rejection, and
-menu recovery flow are covered by focused tests.
+- None.
 
-Legacy save migration remains intentionally out of scope before the first
-public release; there are no existing player saves to preserve.
+## Closed release gates
 
-There are no outstanding repository-level TODOs.
+- Core game scope is complete: the M1–M3 loop, full content catalog, multi-tier
+  prestige progression, and large-number balance coverage are implemented.
+- Current-save persistence is complete: round-trips, offline earnings,
+  autosave/explicit saves, malformed-save rejection, and menu recovery have
+  focused coverage.
+- Legacy save migration remains deliberately out of scope before the first
+  public release because there are no player saves to preserve.
+
+Shipped UI polish and work dependent on an external asset pack are not
+repository-level implementation work and are intentionally excluded from this
+list.
