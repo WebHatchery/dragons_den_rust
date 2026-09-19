@@ -13,7 +13,7 @@
 > the `gold_per_goblin` config key are stable save-file keys, so they don't follow the
 > cosmetic rename. Pseudocode/formula blocks below therefore still read `goblins`.
 
-Sources: `game_apps/dragons_den/` (React/PHP original), `RustGames/migration_candidates.md`,
+Sources: `game_apps/dragons_den/` (React/PHP original),
 `RustGames/standing.md`, `RustGames/docs/GAME_DEVELOPMENT_GUIDE.md`,
 `RustGames/docs/CODE_STANDARDS.md`, `RustGames/docs/MACROQUAD_TOOLKIT.md`.
 
@@ -44,10 +44,9 @@ Sources: `game_apps/dragons_den/` (React/PHP original), `RustGames/migration_can
     flavor text and emoji. The GDD below treats the live loop as the real MVP to port
     and treats the dead code as **design material to selectively harvest for flavor**,
     not a second game to finish building.
-- **Why it was picked:** `migration_candidates.md` Tier 1 — "Idle/incremental with
-  prestige loop. Zero overlap in Rust roster — idle games are the single lowest-art
-  genre that exists (icons + big numbers), yet nothing like it has been built." Confirmed
-  by `standing.md`: no existing Rust game in the catalog is an idle/incremental clicker.
+- **Why it was picked:** The idle/incremental prestige loop filled a gap in the
+  Rust catalog when this port was selected. Its icons, large numbers, and upgrade
+  panels also kept the initial artwork requirements small.
 
 - **Art-liability audit.** Even more extreme than the "no art" cases already in this
   catalog: a full grep of `frontend/src` and `frontend/public` for `.png/.jpg/.svg/.webp/
@@ -80,7 +79,7 @@ Sources: `game_apps/dragons_den/` (React/PHP original), `RustGames/migration_can
   | Big-number formatting (`IdleNumber` significand+exponent pairs, K/M/B/T + letter-suffix scaling) | Keep as-is | The one genuinely idle-game-appropriate piece of depth already built, and well done — a proper Cookie-Clicker-style large-number system. Nothing in the live formulas currently reaches those scales, but the port's real prestige-scaled economy will. |
   | Sidebar stat display | Fix, don't replicate | `Sidebar.tsx` reads the **dead** `gameStore` instead of the live `serverGameStore`, so it always shows 0 gold/0 treasures/0 minions regardless of actual progress — a real bug in the original, not a design choice. Port's single source of truth avoids this class of bug entirely (see §11). |
   | Orphaned `GameBoard.tsx` layout (event log, upgrade shop, treasure collection grid, prestige card) | Revive | Fully coded, materially richer than the live layout, just never mounted. This is the layout the port's screens are actually modeled on (§9) rather than the sparser live 4-button screen. |
-  | Dragon breeding/genetics/aging, procedural world generation, weather, ancient-ruin puzzles/traps, combat/formations, rival dragon lords | Cut, harvest flavor only | This is a whole unfinished creature-collector/exploration RPG bolted onto an idle game's skeleton — even its own "combat" is a 60% coin flip, not a system. Reviving it as real gameplay would also duplicate a genre already 3-4 deep in this catalog (`iron_fauna`, `monsterhall`, `monstron`, `kaiju_sim`), which is exactly the kind of redundancy `migration_candidates.md` flags as a bad fit elsewhere. Instead: the well-designed *data* (8 elements with color swatches and flavor descriptions, the elemental advantage chart, 8 personalities) is repurposed as flavor/naming for a small "Dragon Collection" codex — thematic unlocks tied to prestige milestones, not a simulation (§5.5, §12). |
+  | Dragon breeding/genetics/aging, procedural world generation, weather, ancient-ruin puzzles/traps, combat/formations, rival dragon lords | Cut, harvest flavor only | This is a whole unfinished creature-collector/exploration RPG bolted onto an idle game's skeleton — even its own "combat" is a 60% coin flip, not a system. Reviving it as real gameplay would also duplicate a genre already represented by `iron_fauna`, `monsterhall`, `monstron`, and `kaiju_sim`. Instead: the well-designed *data* (8 elements with color swatches and flavor descriptions, the elemental advantage chart, 8 personalities) is repurposed as flavor/naming for a small "Dragon Collection" codex — thematic unlocks tied to prestige milestones, not a simulation (§5.5, §12). |
   | Server-authoritative backend, WebHatchery JWT auth, guest-session/account-linking | Cut | Unlike `stellar_legacy`'s backend (a pure JSON blob store), this one *does* hold real logic — but none of it needs a server for a standalone Steam/itch release. Local save via `macroquad-toolkit::persistence` replaces it; offline-earnings math (already computed lazily server-side from a stored timestamp) ports directly to a local "time since last save" calculation (§5.2). |
 
 - **Explicitly out of scope for the port:** dragon breeding/genetics, procedural world
